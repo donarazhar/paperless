@@ -28,6 +28,10 @@
 
         *, *::before, *::after { box-sizing: border-box; }
 
+        html {
+            font-size: 90%;
+        }
+
         html, body {
             font-family: 'Inter', sans-serif;
             background: var(--bg);

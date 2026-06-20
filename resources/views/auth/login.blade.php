@@ -24,6 +24,7 @@
             --border: #e2e8f0;
             --bg: #f8faff;
         }
+        html { font-size: 90%; }
 
         html, body {
             height: 100%;
