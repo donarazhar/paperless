@@ -107,19 +107,20 @@
                                     </a>
                                     
                                     @php
-                                        // Siapkan data disposisi untuk JSON
-                                        $dispositionsList = $letter->dispositions->map(function($d) {
+                                        // Siapkan data riwayat perjalanan surat (histories) untuk JSON
+                                        $historiesList = $letter->histories->map(function($h) {
+                                            $actor = $h->user ? $h->user->name . ' (Unit ' . ($h->user->unit->name ?? '-') . ')' : 'Sistem';
                                             return [
-                                                'tanggal' => $d->created_at->locale('id')->isoFormat('D MMM YYYY HH:mm'),
-                                                'dari' => $d->sender->name ?? 'Sistem',
-                                                'kepada' => $d->recipientUser ? $d->recipientUser->name : ($d->recipientUnit ? 'Unit ' . $d->recipientUnit->name : '--'),
-                                                'instruksi' => $d->instruction,
+                                                'tanggal' => $h->created_at->locale('id')->isoFormat('D MMM YYYY HH:mm'),
+                                                'aksi' => ucfirst(str_replace('_', ' ', $h->action)),
+                                                'aktor' => $actor,
+                                                'catatan' => $h->note,
                                             ];
                                         })->toJson();
                                     @endphp
                                     
                                     <button type="button" class="btn btn-sm btn-outline-info btn-lihat-disposisi" 
-                                            data-disposisi="{{ $dispositionsList }}"
+                                            data-disposisi="{{ $historiesList }}"
                                             data-nosurat="{{ $letter->letter_number }}"
                                             title="Lihat Disposisi">
                                         <i class="bi bi-sign-turn-right-fill"></i>
@@ -138,7 +139,7 @@
       <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
           <div class="modal-header bg-light">
-            <h5 class="modal-title fw-bold" id="modalDisposisiLabel">Riwayat Disposisi Surat</h5>
+            <h5 class="modal-title fw-bold" id="modalDisposisiLabel">Lacak Perjalanan Surat</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -207,26 +208,18 @@
                         <div class="card mb-3 border-0 bg-light">
                             <div class="card-body p-3">
                                 <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-                                    <span class="badge bg-primary">Tahap ${index + 1}</span>
+                                    <span class="badge bg-primary">${item.aksi}</span>
                                     <span class="small text-muted"><i class="bi bi-clock me-1"></i> ${item.tanggal}</span>
                                 </div>
-                                <div class="row mt-2">
-                                    <div class="col-md-5">
-                                        <div class="small text-muted mb-1">Dari:</div>
-                                        <div class="fw-bold text-dark">${item.dari}</div>
-                                    </div>
-                                    <div class="col-md-2 text-center text-muted d-flex align-items-center justify-content-center">
-                                        <i class="bi bi-arrow-right-circle-fill fs-4"></i>
-                                    </div>
-                                    <div class="col-md-5">
-                                        <div class="small text-muted mb-1">Kepada:</div>
-                                        <div class="fw-bold text-dark">${item.kepada}</div>
-                                    </div>
+                                <div class="mt-2">
+                                    <div class="small text-muted mb-1"><i class="bi bi-person-fill"></i> Oleh:</div>
+                                    <div class="fw-bold text-dark">${item.aktor}</div>
                                 </div>
+                                ${item.catatan ? `
                                 <div class="mt-3 p-3 bg-white rounded border">
-                                    <div class="small text-muted mb-1 fw-bold">Instruksi / Catatan:</div>
-                                    <div>${item.instruksi ? item.instruksi.replace(/\n/g, '<br>') : '-'}</div>
-                                </div>
+                                    <div class="small text-muted mb-1 fw-bold">Catatan:</div>
+                                    <div class="fst-italic">"${item.catatan.replace(/\n/g, '<br>')}"</div>
+                                </div>` : ''}
                             </div>
                         </div>
                     `;
