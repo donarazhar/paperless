@@ -51,40 +51,14 @@ class LetterController extends Controller
         }
 
         if ($branchId = $request->branch_id) {
-            $q->where(function($query) use ($branchId) {
-                $query->whereHas('sender.unit', function($sq) use ($branchId) {
-                    $sq->where('branch_id', $branchId);
-                })
-                ->orWhereHas('recipientUnit', function($sq) use ($branchId) {
-                    $sq->where('branch_id', $branchId);
-                })
-                ->orWhereHas('recipientUser.unit', function($sq) use ($branchId) {
-                    $sq->where('branch_id', $branchId);
-                })
-                ->orWhereHas('dispositions.unit', function($sq) use ($branchId) {
-                    $sq->where('branch_id', $branchId);
-                })
-                ->orWhereHas('dispositions.toUser.unit', function($sq) use ($branchId) {
-                    $sq->where('branch_id', $branchId);
-                });
+            $q->whereHas('sender.unit', function($sq) use ($branchId) {
+                $sq->where('branch_id', $branchId);
             });
         }
 
         if ($unitId = $request->unit_id) {
-            $q->where(function($query) use ($unitId) {
-                $query->whereHas('sender', function($sq) use ($unitId) {
-                    $sq->where('unit_id', $unitId);
-                })
-                ->orWhere('to_unit_id', $unitId)
-                ->orWhereHas('recipientUser', function($sq) use ($unitId) {
-                    $sq->where('unit_id', $unitId);
-                })
-                ->orWhereHas('dispositions', function($sq) use ($unitId) {
-                    $sq->where('to_unit_id', $unitId)
-                      ->orWhereHas('toUser', function($sq2) use ($unitId) {
-                          $sq2->where('unit_id', $unitId);
-                      });
-                });
+            $q->whereHas('sender', function($sq) use ($unitId) {
+                $sq->where('unit_id', $unitId);
             });
         }
 
