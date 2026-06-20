@@ -134,7 +134,7 @@
         <thead>
             <tr>
                 <th style="width:25%;">Ditujukan Ke</th>
-                <th style="width:30%;">Status</th>
+                <th style="width:30%;">Tanggal</th>
                 <th style="width:45%;">Catatan</th>
             </tr>
         </thead>
@@ -146,9 +146,7 @@
                 <tr>
                     <td><strong>{{ $item['aktor'] }}</strong></td>
                     <td>
-                        <div style="margin-bottom:4px;">{{ $item['tanggal'] }}</div>
-                        <div style="font-weight:bold;margin-bottom:4px;">{{ $item['aksi'] }}</div>
-                        <div>Oleh: {{ $item['by'] ?: '-' }}</div>
+                        {{ $item['tanggal'] }}
                     </td>
                     <td>{!! $catatan !!}</td>
                 </tr>
