@@ -265,18 +265,21 @@
                 
             @elseif(in_array($role, ['kasubag_tu', 'kepala_sekretariat']))
                 <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
-                    <i class="bi bi-inbox-fill"></i> Disposisi Internal
+                    <i class="bi bi-inbox-fill"></i> Surat Masuk Internal
                 </a>
                 <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
-                    <i class="bi bi-envelope-paper-fill"></i> Disposisi Eksternal
+                    <i class="bi bi-envelope-paper-fill"></i> Surat Masuk Eksternal
                 </a>
 
             @elseif($role === 'staf_unit')
                 <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
-                    <i class="bi bi-inbox-fill"></i> Disposisi Masuk
+                    <i class="bi bi-inbox-fill"></i> Surat Masuk Internal
+                </a>
+                <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
+                    <i class="bi bi-envelope-paper-fill"></i> Surat Masuk Eksternal
                 </a>
                 <a href="{{ route('letters.outbound') }}" class="sidebar-item {{ request()->routeIs('letters.outbound') ? 'active' : '' }}">
-                    <i class="bi bi-send-fill"></i> Surat Keluar
+                    <i class="bi bi-send-fill"></i> Riwayat Surat Keluar
                 </a>
             @endif
         </div>
