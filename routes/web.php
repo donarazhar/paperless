@@ -15,9 +15,7 @@ Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
-    Route::middleware(['auth', 'role:staf_tu'])->group(function () {
-        Route::get('letters', [LetterController::class, 'index'])->name('letters.index');
-    });
+    Route::get('letters', [LetterController::class, 'index'])->name('letters.index');
 
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
