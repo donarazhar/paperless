@@ -80,6 +80,7 @@
                     <input type="file" 
                            name="attachments[]" 
                            class="form-control" 
+                           id="attachmentInput"
                            multiple 
                            required>
                 </div>
@@ -97,9 +98,17 @@
         </div>
     </div>
     
-    {{-- Info Bantuan Panel Kanan --}}
+    {{-- Panel Kanan --}}
     <div class="col-lg-4 d-none d-lg-block">
-        <div class="card p-4 bg-primary bg-opacity-10 border-0">
+
+        {{-- Preview Lampiran (tampil saat ada file dipilih) --}}
+        <div id="previewCard" class="card p-4 border-0 shadow-sm mb-3" style="display: none !important;">
+            <h5 class="fw-bold text-dark mb-3"><i class="bi bi-file-earmark-text me-2 text-primary"></i>Pratinjau Lampiran</h5>
+            <div id="previewList"></div>
+        </div>
+
+        {{-- Panduan Pengiriman Surat --}}
+        <div id="panduanCard" class="card p-4 bg-primary bg-opacity-10 border-0">
             <h5 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle-fill me-2"></i> Panduan Pengiriman Surat</h5>
             <p class="small text-muted mb-3" style="line-height: 1.6;">
                 Anda kini dapat mengirimkan surat secara langsung (Peer-to-Peer) ke unit manapun di lingkungan YPI Al Azhar.
@@ -113,4 +122,54 @@
         </div>
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.getElementById('attachmentInput').addEventListener('change', function () {
+    const files = this.files;
+    const previewCard = document.getElementById('previewCard');
+    const previewList = document.getElementById('previewList');
+    
+    previewList.innerHTML = '';
+
+    if (files.length === 0) {
+        previewCard.style.setProperty('display', 'none', 'important');
+        return;
+    }
+
+    previewCard.style.setProperty('display', 'block', 'important');
+
+    Array.from(files).forEach((file) => {
+        const ext = file.name.split('.').pop().toLowerCase();
+        const sizeMB = (file.size / 1024 / 1024).toFixed(2);
+        
+        let iconClass = 'bi-file-earmark text-secondary';
+        let bgColor = '#f8f9fa';
+        if (ext === 'pdf') { iconClass = 'bi-file-earmark-pdf text-danger'; bgColor = '#fff5f5'; }
+        else if (['doc','docx'].includes(ext)) { iconClass = 'bi-file-earmark-word text-primary'; bgColor = '#f0f4ff'; }
+
+        const item = document.createElement('div');
+        item.className = 'd-flex align-items-start gap-3 p-2 rounded mb-2';
+        item.style.backgroundColor = bgColor;
+        item.innerHTML = `
+            <i class="bi ${iconClass} fs-3 flex-shrink-0 mt-1"></i>
+            <div style="overflow: hidden;">
+                <div class="fw-semibold small text-truncate" title="${file.name}">${file.name}</div>
+                <div class="text-muted" style="font-size: 0.75rem;">${sizeMB} MB &middot; ${ext.toUpperCase()}</div>
+            </div>`;
+        previewList.appendChild(item);
+
+        // PDF inline preview jika hanya satu file PDF
+        if (files.length === 1 && ext === 'pdf') {
+            const url = URL.createObjectURL(file);
+            const frame = document.createElement('iframe');
+            frame.src = url;
+            frame.style.cssText = 'width:100%;height:320px;border:1px solid #dee2e6;border-radius:0.5rem;margin-top:0.5rem;';
+            frame.title = 'Pratinjau PDF';
+            previewList.appendChild(frame);
+        }
+    });
+});
+</script>
+@endpush
 @endsection
