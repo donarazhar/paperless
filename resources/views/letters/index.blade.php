@@ -138,8 +138,8 @@
             <tr>
                 <th style="width:50px;text-align:center;">No.</th>
                 <th style="width:100px;">Tanggal</th>
-                <th>Perihal Surat</th>
                 <th style="width:90px;">No Agenda</th>
+                <th>Perihal Surat</th>
                 <th style="width:150px;">Pengirim</th>
                 <th style="width:150px;">Tujuan</th>
                 <th style="width:90px;text-align:center;">Aksi</th>
@@ -160,17 +160,17 @@
                         <span class="d-none">{{ $letter->created_at->format('Y-m-d') }}</span>
                     </td>
                     <td>
-                        <div class="subject-cell">
-                            <div class="s-title" title="{{ $letter->subject }}">{{ $letter->subject }}</div>
-                            <div class="s-num">{{ $letter->letter_number ?: '—' }}</div>
-                        </div>
-                    </td>
-                    <td>
                         @if($letter->agenda_number)
                             <span class="agenda-pill"><i class="bi bi-hash"></i>{{ $letter->agenda_number }}</span>
                         @else
                             <span style="color:#cbd5e1;font-size:0.8rem;">—</span>
                         @endif
+                    </td>
+                    <td>
+                        <div class="subject-cell">
+                            <div class="s-title" title="{{ $letter->subject }}">{{ $letter->subject }}</div>
+                            <div class="s-num">{{ $letter->letter_number ?: '—' }}</div>
+                        </div>
                     </td>
                     <td>
                         <div class="person-cell">
