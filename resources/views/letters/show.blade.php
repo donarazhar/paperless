@@ -313,12 +313,12 @@
                                 <span class="tl-action">{{ $actionLabel }}</span>
                                 <span class="tl-time">{{ $h->created_at->format('d M H:i') }}</span>
                             </div>
-                            @if($h->note)<div class="tl-note">"{{ $h->note }}"</div>@endif
                             @if($h->action === 'disposed' && $dispMatch)
-                                <div class="tl-by">Ke: <strong style="color:#334155;">{{ $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—') }}</strong> &middot; Oleh: {{ $h->user->name ?? 'System' }}</div>
+                                <div class="tl-by mb-1">Ke: <strong style="color:#334155;">{{ $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—') }}</strong> &middot; Oleh: {{ $h->user->name ?? 'System' }}</div>
                             @else
-                                <div class="tl-by"><i class="bi bi-person-fill me-1"></i>Oleh: {{ $h->user ? $h->user->name.' ('.$h->user->unit->name.')' : 'System' }}</div>
+                                <div class="tl-by mb-1"><i class="bi bi-person-fill me-1"></i>Oleh: {{ $h->user ? $h->user->name.' ('.$h->user->unit->name.')' : 'System' }}</div>
                             @endif
+                            @if($h->note)<div class="tl-note">"{{ $h->note }}"</div>@endif
                         </div>
                     </div>
                 @endforeach
