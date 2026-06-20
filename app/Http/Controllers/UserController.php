@@ -36,7 +36,7 @@ class UserController extends Controller
 
     public function create()
     {
-        $units = Unit::all();
+        $units = Unit::whereNotIn('id', User::select('unit_id')->whereNotNull('unit_id')->distinct())->get();
         return view('users.create', compact('units'));
     }
 
@@ -59,7 +59,7 @@ class UserController extends Controller
 
     public function edit(User $user)
     {
-        $units = Unit::all();
+        $units = Unit::whereNotIn('id', User::select('unit_id')->whereNotNull('unit_id')->where('unit_id', '!=', $user->unit_id)->distinct())->get();
         return view('users.edit', compact('user', 'units'));
     }
 
