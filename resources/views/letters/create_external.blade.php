@@ -87,97 +87,110 @@
     </div>
 @endif
 
-<div class="row g-4">
-    <div class="col-lg-8">
-        <form action="{{ route('letters.storeExternal') }}" method="POST" enctype="multipart/form-data" class="form-panel shadow-sm">
+<style>
+    .create-grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; align-items: start; }
+    @media(max-width:991px) { .create-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="create-grid">
+    <div>
+        <form action="{{ route('letters.storeExternal') }}" method="POST" enctype="multipart/form-data" class="form-panel shadow-sm" style="padding:1.5rem;">
             @csrf
             
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Nama Instansi Pengirim <span class="text-danger">*</span></label>
-                    <input type="text" name="external_sender_name" class="form-control" value="{{ old('external_sender_name') }}" placeholder="Contoh: Kementerian Pendidikan..." required>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Nomor Surat Fisik <span class="text-danger">*</span></label>
-                    <input type="text" name="letter_number" class="form-control" value="{{ old('letter_number') }}" placeholder="Sesuai nomor pada fisik surat..." required>
-                </div>
+            <div class="mb-3">
+                <label class="form-label">Nama Instansi Pengirim <span class="text-danger">*</span></label>
+                <input type="text" name="external_sender_name" class="form-control" value="{{ old('external_sender_name') }}" placeholder="Contoh: Kementerian Pendidikan..." required>
+            </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Nomor Surat Masuk <span class="text-danger">*</span></label>
+                <input type="text" name="letter_number" class="form-control" value="{{ old('letter_number') }}" placeholder="Nomor dari instansi pengirim..." required>
             </div>
 
-            <div class="mb-4">
+            <div class="mb-3">
+                <label class="form-label">Tujuan Unit/Personal (Internal) <span class="text-danger">*</span></label>
+                <select name="to_unit_id" class="form-select" required>
+                    <option value="">— Pilih Unit —</option>
+                    @foreach($units as $unit)
+                        <option value="{{ $unit->id }}" {{ old('to_unit_id') == $unit->id ? 'selected' : '' }}>
+                            {{ $unit->name }} {{ $unit->branch ? '(Cabang '.$unit->branch->name.')' : '' }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mb-3">
                 <label class="form-label">Perihal / Judul Surat <span class="text-danger">*</span></label>
-                <input type="text" name="subject" class="form-control" value="{{ old('subject') }}" placeholder="Contoh: Undangan Sosialisasi Program..." required>
+                <input type="text" name="subject" class="form-control" value="{{ old('subject') }}" placeholder="Contoh: Undangan Sosialisasi..." required>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Isi Ringkas <span class="text-danger">*</span></label>
+                <textarea name="body" class="form-control" rows="4" placeholder="Keterangan singkat..." required>{{ old('body') }}</textarea>
             </div>
 
             <div class="mb-4">
-                <label class="form-label">Keterangan / Ringkasan Isi <span class="text-danger">*</span></label>
-                <textarea name="body" class="form-control" rows="5" placeholder="Tuliskan intisari dari surat masuk ini..." required>{{ old('body') }}</textarea>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">Scan Dokumen Fisik <span class="text-danger">*</span></label>
-                <div class="upload-box" id="uploadBox">
-                    <i class="bi bi-cloud-arrow-up-fill ub-icon"></i>
-                    <div class="ub-title">Unggah Scan Surat Asli</div>
-                    <div class="ub-desc">Format: PDF, DOC (Maks. 5MB/file)</div>
-                    <button type="button" class="btn btn-sm btn-outline-primary" style="font-weight:600;border-radius:0.5rem;pointer-events:none;">Pilih Dokumen</button>
+                <label class="form-label">Lampiran Dokumen <span class="text-danger">*</span></label>
+                <div class="upload-box" id="uploadBox" style="padding:1.5rem 1rem;">
+                    <i class="bi bi-cloud-arrow-up-fill ub-icon" style="font-size:2rem;"></i>
+                    <div class="ub-title" style="font-size:0.9rem;">Pilih / Tarik File</div>
+                    <div class="ub-desc" style="font-size:0.75rem;margin-bottom:0;">Format: PDF, DOC, DOCX</div>
                     <input type="file" name="attachments[]" class="upload-input" id="attachmentInput" multiple required>
                 </div>
-                
-                {{-- Preview Area --}}
-                <div id="previewList" class="mt-3"></div>
             </div>
 
-            <div class="action-box">
-                <label class="form-label mb-3" style="color:#2563eb;"><i class="bi bi-signpost-split-fill me-1"></i> Tindakan Lanjutan</label>
+            <div class="mb-4">
+                <label class="form-label">Tindakan Selanjutnya <span class="text-danger">*</span></label>
                 
                 <label class="radio-card active">
-                    <input type="radio" name="action_type" value="archive" checked>
+                    <input type="radio" name="action" value="draft" checked onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('active')); this.parentElement.classList.add('active');">
                     <div class="radio-info">
-                        <strong>Simpan sebagai Arsip Unit (Selesai)</strong>
-                        <span>Pilih opsi ini jika surat sudah dieksekusi langsung oleh unit Anda dan hanya butuh diarsipkan.</span>
+                        <strong>Simpan sebagai Draft</strong>
+                        <span>Saya masih perlu memeriksa lampiran sebelum diproses.</span>
                     </div>
                 </label>
                 
                 <label class="radio-card">
-                    <input type="radio" name="action_type" value="forward">
+                    <input type="radio" name="action" value="send" onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('active')); this.parentElement.classList.add('active');">
                     <div class="radio-info">
-                        <strong>Teruskan ke Sekretariat YPIA</strong>
-                        <span>Pilih jika membutuhkan pertimbangan, arahan, atau disposisi Sekretariat Yayasan ke unit lain.</span>
+                        <strong>Lanjutkan ke Kasubag TU</strong>
+                        <span>Surat masuk ini sudah siap untuk direview/didisposisi Kasubag.</span>
                     </div>
                 </label>
             </div>
 
-            <div class="d-flex justify-content-end pt-3" style="border-top:1px solid #e8edf4;">
-                <button type="submit" class="btn-submit">
-                    <i class="bi bi-save2-fill"></i> Simpan Surat Eksternal
+            <div class="pt-2" style="border-top:1px solid #e8edf4;">
+                <button type="submit" class="btn-submit w-100 justify-content-center">
+                    <i class="bi bi-arrow-right-circle-fill"></i> Simpan & Lanjutkan
                 </button>
             </div>
         </form>
+        
+        <div class="guide-panel shadow-sm mt-4" style="padding:1.5rem;">
+            <div class="guide-title"><i class="bi bi-lightbulb-fill" style="color:#581c87;"></i> Panduan</div>
+            <div class="guide-item">
+                <div class="guide-icon"><i class="bi bi-building-down"></i></div>
+                <div class="guide-text"><strong>Surat Masuk Eksternal</strong><br>Surat yang berasal dari luar YPI Al Azhar.</div>
+            </div>
+            <div class="guide-item">
+                <div class="guide-icon"><i class="bi bi-arrow-return-right"></i></div>
+                <div class="guide-text"><strong>Tujuan Unit Internal</strong><br>Pilih unit mana di internal YPIA yang menjadi tujuan akhir surat ini.</div>
+            </div>
+            <hr style="border-color:#e9d5ff;margin:1rem 0;">
+            <div style="font-size:0.75rem;color:#475569;">
+                Lampirkan file <strong>PDF</strong> agar pimpinan/Kasubag dapat membaca surat tanpa mengunduhnya.
+            </div>
+        </div>
     </div>
     
-    <div class="col-lg-4">
-        <div class="guide-panel shadow-sm" style="position:sticky;top:2rem;">
-            <div class="guide-title"><i class="bi bi-building" style="color:#9333ea;"></i> Panduan Eksternal</div>
-            
-            <p class="text-muted" style="font-size:0.85rem;line-height:1.6;margin-bottom:1.5rem;">
-                Gunakan form ini untuk mencatat surat masuk dari <strong>pihak luar</strong> (Kementerian, instansi lain, vendor, dll).
-            </p>
-            
-            <div class="guide-item">
-                <div class="guide-icon"><i class="bi bi-archive-fill"></i></div>
-                <div class="guide-text"><strong>Opsi Arsip Unit</strong><br>Surat akan langsung ditandai selesai dan masuk ke arsip lokal unit Anda.</div>
-            </div>
-            
-            <div class="guide-item">
-                <div class="guide-icon"><i class="bi bi-arrow-up-right-circle-fill"></i></div>
-                <div class="guide-text"><strong>Opsi Teruskan YPIA</strong><br>Surat akan masuk antrean Sekretariat Pusat untuk diberi nomor agenda dan disposisi pimpinan.</div>
-            </div>
-            
-            <hr style="border-color:#e9d5ff;margin:1.25rem 0;">
-            
-            <div style="background:#fff;border-radius:0.75rem;padding:1rem;border:1px solid #e8edf4;font-size:0.8rem;color:#475569;">
-                <i class="bi bi-file-earmark-check-fill text-purple mb-2 d-block fs-6" style="color:#9333ea;"></i>
-                Pastikan hasil scan terbaca dengan jelas agar memudahkan pimpinan saat membaca pratinjau surat (PDF).
+    <div>
+        <div class="form-panel shadow-sm h-100" style="padding:1.5rem;min-height:700px;">
+            <div class="form-label mb-3">Pratinjau Dokumen Lampiran</div>
+            <div id="previewList">
+                <div class="text-center p-5 mt-4" style="border:2px dashed #e8edf4;border-radius:1rem;color:#94a3b8;">
+                    <i class="bi bi-file-earmark-pdf" style="font-size:3rem;color:#cbd5e1;margin-bottom:1rem;display:block;"></i>
+                    Belum ada dokumen yang diunggah.<br>Silakan unggah file PDF untuk melihat pratinjau.
+                </div>
             </div>
         </div>
     </div>
@@ -185,20 +198,24 @@
 
 @push('scripts')
 <script>
-document.querySelectorAll('.radio-card').forEach(card => {
-    card.addEventListener('click', function() {
-        document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('active'));
-        this.classList.add('active');
-        this.querySelector('input').checked = true;
-    });
-});
-
 document.getElementById('attachmentInput').addEventListener('change', function () {
     const files = this.files;
     const previewList = document.getElementById('previewList');
     previewList.innerHTML = '';
 
-    if (files.length === 0) return;
+    if (files.length === 0) {
+        previewList.innerHTML = `
+            <div class="text-center p-5 mt-4" style="border:2px dashed #e8edf4;border-radius:1rem;color:#94a3b8;">
+                <i class="bi bi-file-earmark-pdf" style="font-size:3rem;color:#cbd5e1;margin-bottom:1rem;display:block;"></i>
+                Belum ada dokumen yang diunggah.<br>Silakan unggah file PDF untuk melihat pratinjau.
+            </div>
+        `;
+        return;
+    }
+
+    const fileListDiv = document.createElement('div');
+    fileListDiv.className = 'd-flex flex-wrap gap-2 mb-3';
+    previewList.appendChild(fileListDiv);
 
     Array.from(files).forEach((file) => {
         const ext = file.name.split('.').pop().toLowerCase();
@@ -210,7 +227,7 @@ document.getElementById('attachmentInput').addEventListener('change', function (
         else if (['doc','docx'].includes(ext)) { typeClass = 'doc'; iconName = 'bi-file-earmark-word-fill'; }
 
         const item = document.createElement('div');
-        item.className = 'file-preview-item';
+        item.className = 'file-preview-item flex-fill';
         item.innerHTML = `
             <div class="fpi-icon ${typeClass}"><i class="bi ${iconName}"></i></div>
             <div class="fpi-info">
@@ -219,13 +236,13 @@ document.getElementById('attachmentInput').addEventListener('change', function (
             </div>
             <i class="bi bi-check-circle-fill text-success ms-2"></i>
         `;
-        previewList.appendChild(item);
+        fileListDiv.appendChild(item);
 
         if (files.length === 1 && ext === 'pdf') {
             const url = URL.createObjectURL(file);
             const frame = document.createElement('iframe');
             frame.src = url;
-            frame.style.cssText = 'width:100%;height:350px;border:1px solid #e8edf4;border-radius:0.75rem;margin-top:0.75rem;background:#fff;';
+            frame.style.cssText = 'width:100%;height:650px;border:1px solid #e8edf4;border-radius:0.75rem;background:#fff;';
             previewList.appendChild(frame);
         }
     });

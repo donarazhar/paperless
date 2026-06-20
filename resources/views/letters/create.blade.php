@@ -79,91 +79,93 @@
     </div>
 @endif
 
-<div class="row g-4">
-    <div class="col-lg-8">
-        <form action="{{ route('letters.store') }}" method="POST" enctype="multipart/form-data" class="form-panel shadow-sm">
+<style>
+    .create-grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; align-items: start; }
+    @media(max-width:991px) { .create-grid { grid-template-columns: 1fr; } }
+</style>
+
+<div class="create-grid">
+    {{-- KIRI: INPUTAN (30%) --}}
+    <div>
+        <form action="{{ route('letters.store') }}" method="POST" enctype="multipart/form-data" class="form-panel shadow-sm" style="padding:1.5rem;">
             @csrf
             
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Nomor Surat Internal</label>
-                    <input type="text" name="letter_number" class="form-control" value="{{ old('letter_number') }}" placeholder="Opsional (Kosongkan = otomatis)">
-                    <div style="font-size:0.7rem;color:#94a3b8;margin-top:6px;display:flex;gap:4px;">
-                        <i class="bi bi-info-circle text-primary"></i> Otomatis terisi saat dikirim jika kosong.
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Tujuan Unit / Cabang <span class="text-danger">*</span></label>
-                    <select name="to_unit_id" class="form-select" required>
-                        <option value="">— Pilih Unit Tujuan —</option>
-                        @foreach($units as $unit)
-                            <option value="{{ $unit->id }}" {{ old('to_unit_id') == $unit->id ? 'selected' : '' }}>
-                                {{ $unit->name }} {{ $unit->branch ? '(Cabang '.$unit->branch->name.')' : '' }}
-                            </option>
-                        @endforeach
-                    </select>
+            <div class="mb-3">
+                <label class="form-label">Nomor Surat Internal</label>
+                <input type="text" name="letter_number" class="form-control" value="{{ old('letter_number') }}" placeholder="Opsional (Kosongkan = otomatis)">
+                <div style="font-size:0.7rem;color:#94a3b8;margin-top:6px;display:flex;gap:4px;">
+                    <i class="bi bi-info-circle text-primary"></i> Otomatis terisi saat dikirim jika kosong.
                 </div>
             </div>
+            
+            <div class="mb-3">
+                <label class="form-label">Tujuan Unit / Cabang <span class="text-danger">*</span></label>
+                <select name="to_unit_id" class="form-select" required>
+                    <option value="">— Pilih Unit Tujuan —</option>
+                    @foreach($units as $unit)
+                        <option value="{{ $unit->id }}" {{ old('to_unit_id') == $unit->id ? 'selected' : '' }}>
+                            {{ $unit->name }} {{ $unit->branch ? '(Cabang '.$unit->branch->name.')' : '' }}
+                        </option>
+                    @endforeach
+                </select>
+            </div>
 
-            <div class="mb-4">
+            <div class="mb-3">
                 <label class="form-label">Perihal / Judul Surat <span class="text-danger">*</span></label>
-                <input type="text" name="subject" class="form-control" value="{{ old('subject') }}" placeholder="Contoh: Permohonan Pengajuan Dana Operasional..." required>
+                <input type="text" name="subject" class="form-control" value="{{ old('subject') }}" placeholder="Contoh: Permohonan Pengajuan..." required>
             </div>
 
-            <div class="mb-4">
-                <label class="form-label">Isi Ringkas / Keterangan Tambahan <span class="text-danger">*</span></label>
-                <textarea name="body" class="form-control" rows="5" placeholder="Tuliskan keterangan singkat mengenai surat yang dilampirkan..." required>{{ old('body') }}</textarea>
+            <div class="mb-3">
+                <label class="form-label">Isi Ringkas <span class="text-danger">*</span></label>
+                <textarea name="body" class="form-control" rows="4" placeholder="Keterangan singkat..." required>{{ old('body') }}</textarea>
             </div>
 
             <div class="mb-4">
                 <label class="form-label">Lampiran Dokumen <span class="text-danger">*</span></label>
-                <div class="upload-box" id="uploadBox">
-                    <i class="bi bi-cloud-arrow-up-fill ub-icon"></i>
-                    <div class="ub-title">Klik atau Tarik File ke Sini</div>
-                    <div class="ub-desc">Format: PDF, DOC, DOCX (Maks. 5MB/file)</div>
-                    <button type="button" class="btn btn-sm btn-outline-primary" style="font-weight:600;border-radius:0.5rem;pointer-events:none;">Pilih Dokumen</button>
+                <div class="upload-box" id="uploadBox" style="padding:1.5rem 1rem;">
+                    <i class="bi bi-cloud-arrow-up-fill ub-icon" style="font-size:2rem;"></i>
+                    <div class="ub-title" style="font-size:0.9rem;">Pilih / Tarik File</div>
+                    <div class="ub-desc" style="font-size:0.75rem;margin-bottom:0;">Format: PDF, DOC, DOCX</div>
                     <input type="file" name="attachments[]" class="upload-input" id="attachmentInput" multiple required>
                 </div>
-                
-                {{-- Preview Area --}}
-                <div id="previewList" class="mt-3"></div>
             </div>
 
-            <div class="d-flex align-items-center justify-content-end gap-2 pt-3" style="border-top:1px solid #e8edf4;">
-                <button type="submit" name="action" value="draft" class="btn-draft">
-                    <i class="bi bi-floppy"></i> Simpan Draft
-                </button>
-                <button type="submit" name="action" value="send" class="btn-submit">
+            <div class="d-flex flex-column gap-2 pt-3" style="border-top:1px solid #e8edf4;">
+                <button type="submit" name="action" value="send" class="btn-submit w-100 justify-content-center">
                     <i class="bi bi-send-fill"></i> Kirim Surat
+                </button>
+                <button type="submit" name="action" value="draft" class="btn-draft w-100 justify-content-center">
+                    <i class="bi bi-floppy"></i> Simpan Draft
                 </button>
             </div>
         </form>
-    </div>
-    
-    <div class="col-lg-4">
-        <div class="guide-panel shadow-sm" style="position:sticky;top:2rem;">
-            <div class="guide-title"><i class="bi bi-lightbulb-fill" style="color:#f59e0b;"></i> Panduan Pengiriman</div>
-            
+        
+        <div class="guide-panel shadow-sm mt-4" style="padding:1.5rem;">
+            <div class="guide-title"><i class="bi bi-lightbulb-fill" style="color:#f59e0b;"></i> Panduan</div>
             <div class="guide-item">
                 <div class="guide-icon"><i class="bi bi-send-check-fill"></i></div>
-                <div class="guide-text"><strong>Tujuan Langsung</strong><br>Jika urusan spesifik antar dua unit, pilih unit yang dituju.</div>
+                <div class="guide-text"><strong>Tujuan Langsung</strong><br>Pilih unit spesifik yang dituju.</div>
             </div>
-            
             <div class="guide-item">
                 <div class="guide-icon"><i class="bi bi-building-fill-check"></i></div>
-                <div class="guide-text"><strong>Tujuan Sekretariat</strong><br>Jika membutuhkan keputusan/kebijakan pusat, pilih Administrator/Sekretariat YPIA.</div>
+                <div class="guide-text"><strong>Sekretariat</strong><br>Pilih Administrator/Sekretariat YPIA.</div>
             </div>
-            
-            <div class="guide-item">
-                <div class="guide-icon"><i class="bi bi-search"></i></div>
-                <div class="guide-text"><strong>Pelacakan</strong><br>Pantau status persetujuan atau disposisi melalui menu Laporan Surat Keluar.</div>
+            <hr style="border-color:#bfdbfe;margin:1rem 0;">
+            <div style="font-size:0.75rem;color:#475569;">
+                Lampirkan file <strong>PDF</strong> agar penerima dapat langsung membaca (preview) surat di dalam aplikasi.
             </div>
-            
-            <hr style="border-color:#bfdbfe;margin:1.25rem 0;">
-            
-            <div style="background:#fff;border-radius:0.75rem;padding:1rem;border:1px solid #e8edf4;font-size:0.8rem;color:#475569;">
-                <i class="bi bi-info-circle-fill text-primary mb-2 d-block fs-6"></i>
-                Lampirkan file <strong>PDF</strong> agar penerima dapat langsung membaca (preview) surat di dalam aplikasi tanpa perlu mengunduhnya.
+        </div>
+    </div>
+    
+    {{-- KANAN: PREVIEW FILE (70%) --}}
+    <div>
+        <div class="form-panel shadow-sm h-100" style="padding:1.5rem;min-height:700px;">
+            <div class="form-label mb-3">Pratinjau Dokumen Lampiran</div>
+            <div id="previewList">
+                <div class="text-center p-5 mt-4" style="border:2px dashed #e8edf4;border-radius:1rem;color:#94a3b8;">
+                    <i class="bi bi-file-earmark-pdf" style="font-size:3rem;color:#cbd5e1;margin-bottom:1rem;display:block;"></i>
+                    Belum ada dokumen yang diunggah.<br>Silakan unggah file PDF untuk melihat pratinjau.
+                </div>
             </div>
         </div>
     </div>
@@ -176,7 +178,19 @@ document.getElementById('attachmentInput').addEventListener('change', function (
     const previewList = document.getElementById('previewList');
     previewList.innerHTML = '';
 
-    if (files.length === 0) return;
+    if (files.length === 0) {
+        previewList.innerHTML = `
+            <div class="text-center p-5 mt-4" style="border:2px dashed #e8edf4;border-radius:1rem;color:#94a3b8;">
+                <i class="bi bi-file-earmark-pdf" style="font-size:3rem;color:#cbd5e1;margin-bottom:1rem;display:block;"></i>
+                Belum ada dokumen yang diunggah.<br>Silakan unggah file PDF untuk melihat pratinjau.
+            </div>
+        `;
+        return;
+    }
+
+    const fileListDiv = document.createElement('div');
+    fileListDiv.className = 'd-flex flex-wrap gap-2 mb-3';
+    previewList.appendChild(fileListDiv);
 
     Array.from(files).forEach((file) => {
         const ext = file.name.split('.').pop().toLowerCase();
@@ -188,7 +202,7 @@ document.getElementById('attachmentInput').addEventListener('change', function (
         else if (['doc','docx'].includes(ext)) { typeClass = 'doc'; iconName = 'bi-file-earmark-word-fill'; }
 
         const item = document.createElement('div');
-        item.className = 'file-preview-item';
+        item.className = 'file-preview-item flex-fill';
         item.innerHTML = `
             <div class="fpi-icon ${typeClass}"><i class="bi ${iconName}"></i></div>
             <div class="fpi-info">
@@ -197,13 +211,13 @@ document.getElementById('attachmentInput').addEventListener('change', function (
             </div>
             <i class="bi bi-check-circle-fill text-success ms-2"></i>
         `;
-        previewList.appendChild(item);
+        fileListDiv.appendChild(item);
 
         if (files.length === 1 && ext === 'pdf') {
             const url = URL.createObjectURL(file);
             const frame = document.createElement('iframe');
             frame.src = url;
-            frame.style.cssText = 'width:100%;height:350px;border:1px solid #e8edf4;border-radius:0.75rem;margin-top:0.75rem;background:#fff;';
+            frame.style.cssText = 'width:100%;height:650px;border:1px solid #e8edf4;border-radius:0.75rem;background:#fff;';
             previewList.appendChild(frame);
         }
     });
