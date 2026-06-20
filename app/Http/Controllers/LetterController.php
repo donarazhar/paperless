@@ -56,9 +56,49 @@ class LetterController extends Controller
             $q->whereDate('created_at', '<=', $to);
         }
 
-        $letters = $q->latest()->get();
+        if ($branchId = $request->branch_id) {
+            $q->where(function($query) use ($branchId) {
+                $query->whereHas('sender.unit', function($sq) use ($branchId) {
+                    $sq->where('branch_id', $branchId);
+                })
+                ->orWhereHas('recipientUnit', function($sq) use ($branchId) {
+                    $sq->where('branch_id', $branchId);
+                })
+                ->orWhereHas('recipientUser.unit', function($sq) use ($branchId) {
+                    $sq->where('branch_id', $branchId);
+                })
+                ->orWhereHas('dispositions.unit', function($sq) use ($branchId) {
+                    $sq->where('branch_id', $branchId);
+                })
+                ->orWhereHas('dispositions.toUser.unit', function($sq) use ($branchId) {
+                    $sq->where('branch_id', $branchId);
+                });
+            });
+        }
 
-        return view('letters.index', compact('letters'));
+        if ($unitId = $request->unit_id) {
+            $q->where(function($query) use ($unitId) {
+                $query->whereHas('sender', function($sq) use ($unitId) {
+                    $sq->where('unit_id', $unitId);
+                })
+                ->orWhere('to_unit_id', $unitId)
+                ->orWhereHas('recipientUser', function($sq) use ($unitId) {
+                    $sq->where('unit_id', $unitId);
+                })
+                ->orWhereHas('dispositions', function($sq) use ($unitId) {
+                    $sq->where('to_unit_id', $unitId)
+                      ->orWhereHas('toUser', function($sq2) use ($unitId) {
+                          $sq2->where('unit_id', $unitId);
+                      });
+                });
+            });
+        }
+
+        $letters = $q->latest()->get();
+        $branches = \App\Models\Branch::orderBy('name')->get();
+        $units = \App\Models\Unit::orderBy('name')->get();
+
+        return view('letters.index', compact('letters', 'branches', 'units'));
     }
 
     public function inbound(Request $request)
