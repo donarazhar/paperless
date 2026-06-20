@@ -108,18 +108,6 @@
             </div>
 
             <div class="mb-3">
-                <label class="form-label">Tujuan Unit/Personal (Internal) <span class="text-danger">*</span></label>
-                <select name="to_unit_id" class="form-select" required>
-                    <option value="">— Pilih Unit —</option>
-                    @foreach($units as $unit)
-                        <option value="{{ $unit->id }}" {{ old('to_unit_id') == $unit->id ? 'selected' : '' }}>
-                            {{ $unit->name }} {{ $unit->branch ? '(Cabang '.$unit->branch->name.')' : '' }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
-
-            <div class="mb-3">
                 <label class="form-label">Perihal / Judul Surat <span class="text-danger">*</span></label>
                 <input type="text" name="subject" class="form-control" value="{{ old('subject') }}" placeholder="Contoh: Undangan Sosialisasi..." required>
             </div>
