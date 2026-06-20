@@ -66,6 +66,9 @@
           <input type="text" name="name" value="{{ $unit->name }}" class="form-control form-control-sm d-inline w-auto" required>
           <button class="btn btn-sm btn-success">Simpan</button>
         </form>
+        <a href="{{ route('letters.index', ['unit_id' => $unit->id]) }}" class="btn btn-sm btn-info text-white" title="Lihat Laporan Surat">
+            <i class="bi bi-file-earmark-text"></i> Laporan
+        </a>
         <form action="{{ route('units.destroy', $unit) }}" method="POST" class="d-inline">
           @csrf @method('DELETE')
           <button class="btn btn-sm btn-danger" onclick="return confirm('Yakin?')">Hapus</button>
