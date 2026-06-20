@@ -206,24 +206,24 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 3rem 2rem;
+            padding: 1.5rem 2rem;
             overflow-y: auto;
         }
 
         .form-box {
             width: 100%;
-            max-width: 400px;
+            max-width: 25rem;
         }
 
         .brand-wrap {
             display: flex;
             align-items: center;
             gap: 0.75rem;
-            margin-bottom: 1.75rem;
+            margin-bottom: 1rem;
         }
 
         .brand-logo {
-            width: 36px; height: 36px;
+            width: 2.25rem; height: 2.25rem;
             object-fit: contain;
             border-radius: 8px;
             border: 1px solid var(--border);
@@ -256,7 +256,7 @@
         .form-box .welcome-sub {
             color: var(--muted);
             font-size: 0.9rem;
-            margin-bottom: 2rem;
+            margin-bottom: 1.25rem;
         }
 
         /* Alert */
@@ -281,12 +281,12 @@
             letter-spacing: 0.04em;
             text-transform: uppercase;
             color: var(--text);
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.35rem;
         }
 
         .f-wrap {
             position: relative;
-            margin-bottom: 1.1rem;
+            margin-bottom: 0.85rem;
         }
 
         .f-wrap .f-icon {
@@ -302,7 +302,7 @@
 
         .f-wrap input {
             width: 100%;
-            height: 48px;
+            height: 3rem;
             border: 1.5px solid var(--border);
             border-radius: 0.75rem;
             padding: 0 1rem 0 2.75rem;
@@ -343,7 +343,7 @@
             display: flex;
             align-items: center;
             gap: 0.6rem;
-            margin: 1rem 0 1.5rem;
+            margin: 0.75rem 0 1rem;
         }
         .remember input {
             width: 16px; height: 16px;
@@ -355,7 +355,7 @@
         /* Button */
         .btn-submit {
             width: 100%;
-            height: 50px;
+            height: 3.125rem;
             background: linear-gradient(135deg, var(--blue) 0%, #7c3aed 100%);
             color: #fff;
             border: none;
@@ -387,7 +387,7 @@
         /* Google Button */
         .btn-google {
             width: 100%;
-            height: 50px;
+            height: 3.125rem;
             background: #fff;
             color: var(--text);
             border: 1.5px solid var(--border);
@@ -409,7 +409,7 @@
         /* Separator */
         .sep {
             display: flex; align-items: center; gap: 1rem;
-            margin: 1.75rem 0 1.5rem;
+            margin: 1.25rem 0 1rem;
         }
         .sep hr { flex:1; border:none; border-top: 1px solid var(--border); }
         .sep span { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
@@ -427,7 +427,7 @@
 
         .footer-copy {
             text-align: center;
-            margin-top: 2rem;
+            margin-top: 1.5rem;
             font-size: 0.75rem;
             color: #b0bad0;
         }
@@ -466,13 +466,13 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 2rem 1.5rem;
+                padding: 1rem 1.5rem;
                 background: #fff;
             }
 
             .form-box {
                 width: 100%;
-                max-width: 400px;
+                max-width: 25rem;
             }
 
             /* Add logo+brand at top for context on mobile */
@@ -480,13 +480,13 @@
                 display: flex !important;
                 align-items: center;
                 gap: 0.75rem;
-                margin-bottom: 2rem;
-                padding-bottom: 1.25rem;
+                margin-bottom: 1rem;
+                padding-bottom: 0.75rem;
                 border-bottom: 1px solid var(--border);
             }
 
             .mobile-hero-top .mh-logo {
-                width: 42px; height: 42px;
+                width: 2.625rem; height: 2.625rem;
                 object-fit: contain;
                 border-radius: 10px;
                 border: 1px solid var(--border);
@@ -506,19 +506,20 @@
                 font-weight: 500;
             }
 
-            .form-box h2 { font-size: 1.5rem; }
-            .form-box .welcome-sub { font-size: 0.875rem; margin-bottom: 1.5rem; }
-            .btn-submit { height: 50px; }
-            .sep { margin: 1.5rem 0 1.25rem; }
+            .form-box h2 { font-size: 1.35rem; }
+            .form-box .welcome-sub { font-size: 0.85rem; margin-bottom: 1rem; }
+            .btn-submit { height: 3rem; }
+            .sep { margin: 1rem 0; }
+            .info-pills { display: none; }
+            .footer-copy { margin-top: 1rem; }
         }
 
         /* Smaller mobile (≤480px) */
         @media (max-width: 480px) {
-            .form-side { padding: 1.75rem 1.25rem; }
-            .form-box h2 { font-size: 1.35rem; }
-            .f-wrap input { height: 46px; }
-            .btn-submit { height: 48px; font-size: 0.9rem; }
-            .info-pills { display: none; }
+            .form-side { padding: 1rem; }
+            .form-box h2 { font-size: 1.25rem; }
+            .f-wrap input { height: 2.875rem; }
+            .btn-submit { height: 2.875rem; font-size: 0.9rem; }
         }
 
         /* Very small phones (≤360px) */
@@ -526,8 +527,8 @@
             .form-side { padding: 1.5rem 1rem; }
             .form-box h2 { font-size: 1.2rem; }
             .welcome-sub { font-size: 0.8rem; }
-            .f-wrap input { height: 44px; font-size: 0.85rem; }
-            .btn-submit { height: 46px; font-size: 0.85rem; }
+            .f-wrap input { height: 2.75rem; font-size: 0.85rem; }
+            .btn-submit { height: 2.875rem; font-size: 0.85rem; }
             .footer-copy { font-size: 0.68rem; }
         }
     </style>
@@ -550,7 +551,7 @@
 
             <div class="hero-features">
                 <div class="hero-feat">
-                    <div class="feat-icon"><i class="bi bi-shield-check-fill"></i></div>
+                    <div class="feat-icon"><i class="bi bi-shield-lock-fill"></i></div>
                     <span>Keamanan data berlapis &amp; terenkripsi</span>
                 </div>
                 <div class="hero-feat">

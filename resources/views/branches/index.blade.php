@@ -89,7 +89,7 @@
         <tbody>
             @forelse($branches as $branch)
                 <tr>
-                    <td style="color:#94a3b8;font-size:0.78rem;font-weight:600;">{{ $loop->iteration }}</td>
+                    <td style="color:#94a3b8;font-size:0.78rem;font-weight:600;">{{ $branches->firstItem() + $loop->index }}</td>
                     <td style="font-weight:700;color:#0f172a;">{{ $branch->name }}</td>
                     <td>
                         <span class="unit-badge">
@@ -155,6 +155,10 @@
             <p class="fw-semibold mb-1" style="color:#475569;">Belum ada cabang</p>
         </div>
     @endforelse
+</div>
+
+<div class="mt-4">
+    {{ $branches->links() }}
 </div>
 
 @endsection

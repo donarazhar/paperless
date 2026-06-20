@@ -118,7 +118,7 @@ class LetterController extends Controller
             $q->whereDate('created_at', '<=', $to);
         }
 
-        $letters = $q->latest()->paginate(15);
+        $letters = $q->latest()->paginate(15)->withQueryString();
 
         return view('letters.inbox', compact('letters'));
     }
@@ -216,7 +216,7 @@ class LetterController extends Controller
             $q->whereDate('created_at', '<=', $request->date_to);
         }
 
-        $letters = $q->latest()->paginate(15);
+        $letters = $q->latest()->paginate(15)->withQueryString();
         return view('letters.inbox_external', compact('letters'));
     }
 

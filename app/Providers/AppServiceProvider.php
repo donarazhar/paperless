@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Pagination\Paginator;
 
 // Import model & policy
 use App\Models\Letter;
@@ -26,5 +27,8 @@ class AppServiceProvider extends ServiceProvider
     {
         // Daftarkan mapping model → policy
         Gate::policy(Letter::class, LetterPolicy::class);
+
+        // Gunakan Bootstrap 5 untuk Pagination
+        Paginator::useBootstrapFive();
     }
 }

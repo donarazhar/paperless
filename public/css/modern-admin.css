@@ -233,9 +233,46 @@ body {
 .empty-state .e-sub { font-size: 0.84rem; color: var(--muted); }
 
 /* ── Pagination ── */
-.pagination .page-link { border-radius: 0.55rem !important; font-size: 0.84rem; font-weight: 600; border-color: var(--border); color: var(--muted); margin: 0 2px; padding: 0.45rem 0.75rem; transition: all .15s; }
-.pagination .page-link:hover { background: var(--primary-soft); color: var(--primary); border-color: var(--primary-mid); }
-.pagination .page-item.active .page-link { background: var(--primary); border-color: var(--primary); box-shadow: 0 2px 8px rgba(37,99,235,0.3); }
+.pagination { display: flex; justify-content: center; gap: 0.35rem; margin-top: 1.5rem; margin-bottom: 0.5rem; flex-wrap: wrap; }
+.pagination .page-item { display: inline-flex; }
+.pagination .page-link { 
+    border-radius: 0.65rem !important; 
+    font-size: 0.85rem; 
+    font-weight: 700; 
+    border: 1px solid transparent; 
+    color: var(--text-2); 
+    background: var(--surface-2);
+    margin: 0; 
+    min-width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 0.85rem; 
+    transition: all .2s cubic-bezier(0.4, 0, 0.2, 1); 
+}
+.pagination .page-link:hover { 
+    background: #fff; 
+    color: var(--primary); 
+    border-color: var(--border); 
+    box-shadow: 0 4px 12px rgba(15,23,42,0.06);
+    transform: translateY(-2px);
+}
+.pagination .page-item.active .page-link { 
+    background: linear-gradient(135deg, var(--primary) 0%, #7c3aed 100%); 
+    border-color: transparent; 
+    color: #fff !important; 
+    box-shadow: 0 6px 16px rgba(37,99,235,0.25); 
+    transform: translateY(-2px);
+}
+.pagination .page-item.disabled .page-link {
+    background: transparent;
+    color: var(--muted-light);
+    border-color: transparent;
+    pointer-events: none;
+    box-shadow: none;
+    transform: none;
+}
 
 /* ── Mobile Cards ── */
 .letter-card {

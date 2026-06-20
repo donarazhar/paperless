@@ -52,7 +52,7 @@
             </tr>
         </thead>
         <tbody>
-            @php $i = 0; @endphp
+            @php $i = $units->firstItem() - 1; @endphp
             @foreach($units as $unit)
                 @if($unit->name === 'Administrator') @continue @endif
                 @php $i++; @endphp
@@ -142,6 +142,10 @@
             <p class="fw-semibold mb-1" style="color:#475569;">Belum ada unit</p>
         </div>
     @endif
+</div>
+
+<div class="mt-4">
+    {{ $units->links() }}
 </div>
 
 @endsection

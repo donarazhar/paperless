@@ -14,7 +14,7 @@ class BranchController extends Controller
 
     public function index()
     {
-        $branches = Branch::withCount('units')->get();
+        $branches = Branch::withCount('units')->paginate(15);
         return view('branches.index', compact('branches'));
     }
 

@@ -78,7 +78,7 @@
                     $inits = mb_strtoupper(mb_substr($user->name, 0, 1));
                 @endphp
                 <tr>
-                    <td style="color:#94a3b8;font-size:0.78rem;font-weight:600;">{{ $loop->iteration }}</td>
+                    <td style="color:#94a3b8;font-size:0.78rem;font-weight:600;">{{ $users->firstItem() + $loop->index }}</td>
                     <td>
                         <div class="d-flex align-items-center gap-2">
                             <div class="user-avatar" style="background:{{ $av[0] }};color:{{ $av[1] }};">{{ $inits }}</div>
@@ -166,6 +166,10 @@
             <p class="fw-semibold mb-1" style="color:#475569;">Belum ada pengguna</p>
         </div>
     @endforelse
+</div>
+
+<div class="mt-4">
+    {{ $users->links() }}
 </div>
 
 @endsection

@@ -14,7 +14,7 @@ class UnitController extends Controller
 
     public function index()
     {
-        $units = Unit::with('branch')->get();
+        $units = Unit::with('branch')->paginate(15);
         $branches = \App\Models\Branch::all();
         return view('units.index', compact('units', 'branches'));
     }

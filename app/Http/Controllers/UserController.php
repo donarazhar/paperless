@@ -26,7 +26,7 @@ class UserController extends Controller
             $query->where('unit_id', $request->unit_id);
         }
 
-        $users = $query->get();
+        $users = $query->paginate(15)->withQueryString();
         $branches = \App\Models\Branch::all();
         $units = Unit::all();
 
