@@ -174,8 +174,8 @@
             pageLength: 25
         });
 
-        // Event handler untuk tombol Lihat Disposisi
-        $('.btn-lihat-disposisi').on('click', function() {
+        // Event handler untuk tombol Lihat Disposisi (Gunakan event delegation karena DataTables memodifikasi DOM)
+        $('#laporanTable').on('click', '.btn-lihat-disposisi', function() {
             var rawData = $(this).attr('data-disposisi');
             var noSurat = $(this).attr('data-nosurat');
             var disposisi = JSON.parse(rawData);
