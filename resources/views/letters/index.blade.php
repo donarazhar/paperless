@@ -20,7 +20,7 @@
     .rpt-table tbody td:last-child  { padding-right:1.25rem; }
     .rpt-table tbody tr:last-child td { border-bottom:none; }
 
-    .subject-cell .s-title { font-size:0.875rem;font-weight:700;color:#0f172a;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .subject-cell .s-title { font-size:0.875rem;font-weight:700;color:#0f172a; }
     .subject-cell .s-num   { font-size:0.7rem;font-weight:600;color:#94a3b8;margin-top:2px; }
     .person-cell .p-name   { font-weight:600;color:#0f172a;font-size:0.845rem; }
     .person-cell .p-role   { font-size:0.72rem;color:#94a3b8;margin-top:1px; }
@@ -136,6 +136,7 @@
     <table id="laporanTable" class="rpt-table w-100">
         <thead>
             <tr>
+                <th style="width:50px;text-align:center;">No.</th>
                 <th style="width:100px;">Tanggal</th>
                 <th>Perihal Surat</th>
                 <th style="width:90px;">No Agenda</th>
@@ -151,9 +152,10 @@
                     $tujuanText   = $letter->type === 'outbound_external' ? $letter->external_recipient_name : ($letter->recipientUser ? $letter->recipientUser->name : ($letter->recipientUnit->name ?? '--'));
                 @endphp
                 <tr>
+                    <td style="text-align:center;">{{ $loop->iteration }}</td>
                     <td>
                         <div class="date-cell">
-                            <div class="d-date">{{ $letter->created_at->locale('id')->isoFormat('D MMM YY') }}</div>
+                            <div class="d-date">{{ $letter->created_at->format('d/m/Y') }}</div>
                         </div>
                         <span class="d-none">{{ $letter->created_at->format('Y-m-d') }}</span>
                     </td>
@@ -172,12 +174,12 @@
                     </td>
                     <td>
                         <div class="person-cell">
-                            <div class="p-name text-truncate" style="max-width:130px;" title="{{ $pengirimText }}">{{ $pengirimText }}</div>
+                            <div class="p-name" title="{{ $pengirimText }}">{{ $pengirimText }}</div>
                         </div>
                     </td>
                     <td>
                         <div class="person-cell">
-                            <div class="p-name text-truncate" style="max-width:130px;" title="{{ $tujuanText }}">{{ $tujuanText }}</div>
+                            <div class="p-name" title="{{ $tujuanText }}">{{ $tujuanText }}</div>
                         </div>
                     </td>
                     <td style="text-align:center;">
@@ -244,7 +246,7 @@ $(document).ready(function() {
             sInfoEmpty:'0 entri', sInfoFiltered:'(dari _MAX_)',
             oPaginate:{ sPrevious:'‹', sNext:'›' }
         },
-        order:[[0,'desc']], pageLength:25,
+        order:[], pageLength:25,
         dom: 'lrtip',
         initComplete: function() {
             var api = this.api();
