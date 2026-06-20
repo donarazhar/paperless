@@ -90,7 +90,8 @@
                         default             => 'bi-info-circle',
                     };
                     $showUrl = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
-                    $senderInitial = strtoupper(substr($letter->sender->name ?? 'A', 0, 1));
+                    $senderName = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender?->unit?->name ?? $letter->sender?->name ?? 'Sistem');
+                    $senderInitial = strtoupper(substr($senderName, 0, 1));
                 @endphp
                 <tr>
                     <td>
@@ -114,7 +115,7 @@
                     </td>
                     <td>
                         <div class="d-flex flex-column gap-2 align-items-start">
-                            <div class="s-name fw-bold text-dark">{{ $letter->sender->unit->name ?? '—' }}</div>
+                            <div class="s-name fw-bold text-dark">{{ $senderName }}</div>
                             <div>
                                 <span class="status-pill sp-done m-0">
                                     <i class="bi bi-check-circle-fill"></i> Selesai
@@ -179,7 +180,7 @@
             <div class="lc-no">{{ $letter->letter_number ?: 'No. belum ada' }}</div>
             <div class="lc-subject">{{ $letter->subject }}</div>
             <div class="lc-meta mb-2">
-                <span><i class="bi bi-person-fill"></i> {{ $letter->sender->name }}</span>
+                <span><i class="bi bi-person-fill"></i> {{ $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender?->name ?? 'Sistem') }}</span>
                 <span><i class="bi bi-calendar"></i> {{ $letter->created_at->format('d/m/Y') }}</span>
             </div>
             <div class="d-flex align-items-center justify-content-between">
