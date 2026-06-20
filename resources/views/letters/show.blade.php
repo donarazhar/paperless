@@ -318,7 +318,10 @@
                             @else
                                 <div class="tl-by mb-1"><i class="bi bi-person-fill me-1"></i>Oleh: {{ $h->user ? $h->user->name.' ('.$h->user->unit->name.')' : 'System' }}</div>
                             @endif
-                            @if($h->note)<div class="tl-note">"{{ $h->note }}"</div>@endif
+                            @if($h->note)
+                                @php $cleanNote = preg_replace('/^\[.*?\]\s*/', '', $h->note); @endphp
+                                <div class="tl-note">"{{ $cleanNote }}"</div>
+                            @endif
                         </div>
                     </div>
                 @endforeach
