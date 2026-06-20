@@ -22,7 +22,7 @@ class LetterController extends Controller
     {
         $user = Auth::user();
         
-        $q = Letter::with(['sender', 'dispositions.recipientUser', 'dispositions.recipientUnit', 'recipientUser', 'recipientUnit']);
+        $q = Letter::with(['sender', 'dispositions.toUser', 'dispositions.unit', 'recipientUser', 'recipientUnit']);
 
         // Jika staf unit, hanya tampilkan surat yang berhubungan dengan unitnya
         if ($user->role === 'staf_unit') {

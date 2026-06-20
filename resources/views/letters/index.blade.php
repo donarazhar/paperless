@@ -110,7 +110,7 @@
                                         // Siapkan data khusus disposisi untuk JSON agar menampilkan Ditujukan Ke
                                         $dispoHistory = collect();
                                         foreach($letter->dispositions as $d) {
-                                            $target = $d->recipientUser ? $d->recipientUser->name : ($d->recipientUnit ? 'Unit ' . $d->recipientUnit->name : '--');
+                                            $target = $d->toUser ? $d->toUser->name : ($d->unit ? 'Unit ' . $d->unit->name : '--');
                                             
                                             $dispoHistory->push([
                                                 'sort_date' => $d->created_at->timestamp,
