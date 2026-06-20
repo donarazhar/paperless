@@ -223,6 +223,18 @@
     @forelse($letters as $letter)
         @php
             $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->name ?? 'Sistem');
+            $tujuanText   = $letter->type === 'outbound_external' ? $letter->external_recipient_name : ($letter->recipientUser ? $letter->recipientUser->name : 'Unit '.($letter->recipientUnit->name ?? '--'));
+            $dispoHistory = collect();
+            foreach($letter->dispositions as $d) {
+                $target = $d->toUser ? $d->toUser->name : ($d->unit ? 'Unit '.$d->unit->name : '--');
+                $actor  = $d->fromUser ? $d->fromUser->name : 'Sistem';
+                $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d/m/y H:i'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$d->note ?? '-','by'=>$actor]);
+                if($d->status !== 'pending') {
+                    $sInd = $d->status==='accepted' ? 'Selesai' : ($d->status==='pertimbangan' ? 'Pertimbangan' : ucfirst($d->status));
+                    $dispoHistory->push(['sort_date'=>$d->updated_at->timestamp,'tanggal'=>$d->updated_at->format('d/m/y H:i'),'aksi'=>$sInd,'aktor'=>$actor,'catatan'=>$d->response_note ?? '-','by'=>$target]);
+                }
+            }
+            $historiesList = $dispoHistory->sortBy('sort_date')->values()->toJson();
         @endphp
         <div class="rpt-card">
             <div class="rc-no">{{ $letter->letter_number ?: '— Belum bernomor' }}</div>
@@ -240,7 +252,7 @@
                     <i class="bi bi-eye-fill"></i> Lihat
                 </a>
                 <button type="button" class="btn-lihat-disposisi"
-                        data-disposisi="{{ $letter->dispositions->toJson() }}"
+                        data-disposisi="{{ $historiesList }}"
                         data-nosurat="{{ $letter->letter_number }}"
                         data-agenda="{{ $letter->agenda_number ?? '-' }}"
                         data-perihal="{{ $letter->subject }}"
@@ -290,8 +302,20 @@
                 <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;margin-bottom:0.75rem;">
                     <i class="bi bi-clock-history me-1"></i> Riwayat Perjalanan
                 </div>
-                <div class="tl-modal" id="historyTimeline">
-                    <div style="text-align:center;padding:2rem;color:#94a3b8;font-size:0.85rem;">Belum ada riwayat.</div>
+                <div class="table-responsive mt-2">
+                    <table class="table table-hover align-middle w-100" id="tableDisposisi" style="font-size:0.85rem;">
+                        <thead style="background:#f8faff;color:#64748b;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">
+                            <tr>
+                                <th style="width:15%;">Tanggal</th>
+                                <th style="width:15%;">Status</th>
+                                <th style="width:20%;">Ditujukan Ke</th>
+                                <th style="width:20%;">Oleh</th>
+                                <th style="width:30%;">Catatan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyTableDisposisi">
+                        </tbody>
+                    </table>
                 </div>
             </div>
             <div class="modal-footer">
@@ -344,26 +368,53 @@ $(document).ready(function() {
             ? '<span style="display:inline-flex;align-items:center;gap:4px;background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:100px;"><i class=\"bi bi-hash\"></i>'+agenda+'</span>'
             : '<span style="color:#94a3b8;font-size:0.82rem;">Belum diagendakan</span>');
 
+        if ($.fn.DataTable.isDataTable('#tableDisposisi')) {
+            $('#tableDisposisi').DataTable().destroy();
+        }
+
         var html = '';
         if (!disposisi.length) {
-            html = '<div style="text-align:center;padding:2rem;color:#94a3b8;font-size:0.85rem;"><i class=\"bi bi-inbox\" style=\"font-size:2rem;display:block;margin-bottom:0.5rem;\"></i>Belum ada riwayat perjalanan.</div>';
+            html = '<tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-inbox fs-3 d-block mb-2"></i>Belum ada riwayat disposisi.</td></tr>';
         } else {
             disposisi.forEach(function(item) {
                 var catatan = item.catatan && item.catatan !== '-' ? item.catatan.replace(/\n/g,'<br>') : '<span style="color:#cbd5e1;">—</span>';
-                var dotColor = item.aksi === 'Disposisi' ? '#d97706' : (item.aksi === 'Selesai' ? '#16a34a' : '#2563eb');
-                html += `<div class="tl-item" style="--dc:${dotColor};">
-                    <div class="tl-body">
-                        <div class="d-flex justify-content-between align-items-start">
-                            <span class="tl-action">${item.aksi}</span>
-                            <span class="tl-date">${item.tanggal || ''}</span>
-                        </div>
-                        <div class="tl-by"><i class="bi bi-person-fill"></i> Ke: <strong>${item.aktor}</strong>&nbsp;·&nbsp;Oleh: ${item.by || ''}</div>
-                        <div class="tl-note">${catatan}</div>
-                    </div>
-                </div>`;
+                var badge = '';
+                if(item.aksi === 'Disposisi') badge = '<span class="badge bg-warning text-dark">Disposisi</span>';
+                else if(item.aksi === 'Selesai') badge = '<span class="badge bg-success">Selesai</span>';
+                else badge = '<span class="badge bg-primary">'+item.aksi+'</span>';
+
+                html += `<tr>
+                    <td class="text-nowrap" style="color:#64748b;">${item.tanggal || ''}</td>
+                    <td>${badge}</td>
+                    <td class="fw-bold" style="color:#334155;">${item.aktor}</td>
+                    <td>${item.by || ''}</td>
+                    <td>${catatan}</td>
+                </tr>`;
             });
         }
-        $('#historyTimeline').html(html);
+        $('#bodyTableDisposisi').html(html);
+
+        if (disposisi.length) {
+            $('#tableDisposisi').DataTable({
+                language: {
+                    sLengthMenu:'Tampilkan _MENU_ entri', sSearch:'',
+                    sZeroRecords:'Tidak ditemukan data', sInfo:'_START_–_END_ dari _TOTAL_',
+                    sInfoEmpty:'0 entri', sInfoFiltered:'(dari _MAX_)',
+                    oPaginate:{ sPrevious:'‹', sNext:'›' }
+                },
+                ordering: false,
+                pageLength: 10,
+                lengthChange: false,
+                dom: '<"d-flex justify-content-end align-items-center mb-2"f>rt<"d-flex justify-content-between align-items-center mt-2"p>',
+                initComplete: function() {
+                    var api = this.api();
+                    $(api.table().container()).find('.dataTables_filter input')
+                        .attr('placeholder', 'Cari histori...')
+                        .css({'border-radius':'0.5rem','border':'1px solid #e8edf4','padding':'0.25rem 0.75rem','outline':'none','box-shadow':'none'});
+                }
+            });
+        }
+
         new bootstrap.Modal(document.getElementById('modalDisposisi')).show();
     });
 });
