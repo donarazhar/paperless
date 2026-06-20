@@ -15,24 +15,10 @@ class LetterPolicy
      */
     public function view(User $user, Letter $letter): bool
     {
-        // Staf TU Sekretariat berfungsi sebagai Super Admin / Admin Surat Sentral
-        // sehingga memiliki akses penuh untuk melihat semua surat demi keperluan agenda & arsip.
-        if ($user->role === 'staf_tu') {
+        // Staf TU Sekretariat, Kasubag TU, dan Kepala Sekretariat berfungsi sebagai pengelola sentral
+        // sehingga memiliki akses penuh untuk melihat semua laporan surat demi keperluan arsip dan pemantauan.
+        if (in_array($user->role, ['staf_tu', 'kasubag_tu', 'kepala_sekretariat'])) {
             return true;
-        }
-
-        // Pimpinan Sekretariat & Kasubag TU
-        // Bisa melihat surat yang ditujukan ke unit Sekretariat, 
-        // atau surat yang dideposisikan ke personal mereka.
-        if (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
-            return $letter->to_unit_id === $user->unit_id
-                || $letter->to_user_id === $user->id
-                || $letter->from_user_id === $user->id
-                || $letter->created_by_user_id === $user->id
-                || $letter->dispositions()->where(function ($q) use ($user) {
-                        $q->where('to_unit_id', $user->unit_id)
-                          ->orWhere('to_user_id', $user->id);
-                    })->exists();
         }
 
         // Staf Unit Biasa
