@@ -119,7 +119,7 @@
                                     @endphp
                                     
                                     <button type="button" class="btn btn-sm btn-outline-info btn-lihat-disposisi" 
-                                            data-disposisi="{{ htmlspecialchars($dispositionsList) }}"
+                                            data-disposisi="{{ $dispositionsList }}"
                                             data-nosurat="{{ $letter->letter_number }}"
                                             title="Lihat Disposisi">
                                         <i class="bi bi-sign-turn-right-fill"></i>
