@@ -121,8 +121,8 @@
             </select>
         </div>
         <div class="col-12 col-sm-auto d-flex gap-2 align-items-end">
-            <button class="btn btn-primary" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 1rem;">
-                <i class="bi bi-funnel-fill"></i> Filter
+            <button class="btn btn-primary" style="height:40px;width:40px;border-radius:0.6rem;font-size:1.05rem;padding:0;display:inline-flex;align-items:center;justify-content:center;" title="Terapkan Filter">
+                <i class="bi bi-funnel-fill"></i>
             </button>
             <a href="{{ request()->url() }}" style="height:40px;width:40px;border-radius:0.6rem;font-size:1.05rem;background:#f1f5f9;color:#475569;border:none;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'" title="Reset Filter">
                 <i class="bi bi-arrow-clockwise"></i>
