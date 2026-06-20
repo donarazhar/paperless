@@ -5,7 +5,6 @@
 @php
     $user = Auth::user(); $role = $user->role;
     $dispRecv = $letter->dispositions->first(fn($d) => $d->to_user_id === $user->id || $d->to_unit_id === $user->unit_id);
-    $isAdmin = $role === 'admin';
     $statusMap = [
         'pending_agenda'    => ['pill'=>'sp-warn',  'label'=>'Antre Agenda',    'icon'=>'bi-hourglass-split'],
         'in_review_kasubag' => ['pill'=>'sp-blue',  'label'=>'Review Kasubag',  'icon'=>'bi-eye-fill'],
@@ -19,6 +18,10 @@
     elseif ($letter->to_unit_id==$user->unit_id && $letter->status!=='completed') $canDispose=true;
     elseif ($dispRecv && $dispRecv->status==='pending') $canDispose=true;
     if ($role==='staf_tu' && $letter->to_unit_id==$user->unit_id && $letter->status!=='completed') $canDispose=true;
+    $hasAction = ($dispRecv && $dispRecv->status==='pending')
+        || ($role==='staf_tu' && $letter->status==='pending_agenda')
+        || $canDispose
+        || ($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed']));
 @endphp
 
 <style>
@@ -30,63 +33,55 @@
     .status-pill { display:inline-flex;align-items:center;gap:5px;font-size:0.72rem;font-weight:700;padding:0.3rem 0.8rem;border-radius:100px; }
 
     .panel { background:#fff;border:1px solid #e8edf4;border-radius:1rem;padding:1.4rem; }
-    .panel + .panel { margin-top:1rem; }
 
-    .meta-row { display:flex;gap:0.5rem;align-items:flex-start;padding:0.6rem 0;border-bottom:1px solid #f4f6fb; }
-    .meta-row:last-child { border-bottom:none; }
-    .meta-key { width:130px;flex-shrink:0;font-size:0.72rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#94a3b8;padding-top:1px; }
-    .meta-val { font-size:0.875rem;color:#0f172a;font-weight:500; }
+    /* Info header */
+    .info-bar { background:#fff;border:1px solid #e8edf4;border-radius:1rem;padding:1.1rem 1.35rem;margin-bottom:1.25rem; }
+    .info-chips { display:flex;flex-wrap:wrap;gap:0.5rem 1.5rem;align-items:center; }
+    .info-chip { display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;color:#334155; }
+    .info-chip .chip-key { font-size:0.68rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#94a3b8;margin-right:2px; }
+    .info-chip .chip-val { font-weight:600;color:#0f172a; }
+    .info-body { margin-top:0.9rem;padding-top:0.9rem;border-top:1px solid #f1f5f9;font-size:0.875rem;color:#334155;line-height:1.8; }
 
     .sec-title { font-size:0.7rem;font-weight:800;letter-spacing:0.07em;text-transform:uppercase;color:#94a3b8;margin-bottom:0.85rem; }
 
-    .body-content { background:#f8faff;border:1px solid #e8edf4;border-radius:0.75rem;padding:1.25rem;font-size:0.9rem;line-height:1.85;color:#334155; }
-
     /* Attachments */
-    .att-btn { display:inline-flex;align-items:center;gap:0.5rem;padding:0.55rem 1rem;border-radius:0.6rem;font-size:0.8rem;font-weight:700;border:1.5px solid;cursor:pointer;transition:background .15s,transform .1s;text-decoration:none; }
+    .att-btn { display:inline-flex;align-items:center;gap:0.5rem;padding:0.5rem 0.9rem;border-radius:0.6rem;font-size:0.78rem;font-weight:700;border:1.5px solid;cursor:pointer;transition:background .15s;text-decoration:none; }
     .att-pdf  { background:#fff5f5;border-color:#fecaca;color:#dc2626; }
     .att-pdf:hover  { background:#fee2e2;color:#dc2626; }
     .att-doc  { background:#eff6ff;border-color:#bfdbfe;color:#2563eb; }
-    .att-doc:hover  { background:#dbeafe;color:#2563eb; }
     .att-other{ background:#f8fafc;border-color:#e2e8f0;color:#475569; }
 
     /* Timeline */
     .tl { position:relative;padding-left:1.75rem; }
     .tl::before { content:'';position:absolute;left:9px;top:4px;bottom:4px;width:2px;background:#e8edf4; }
-    .tl-item { position:relative;margin-bottom:1.25rem; }
-    .tl-dot { position:absolute;left:-1.75rem;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;border:2px solid #94a3b8;display:flex;align-items:center;justify-content:center;z-index:1; }
-    .tl-dot.sent   { border-color:#16a34a; }
-    .tl-dot.disp   { border-color:#d97706; }
-    .tl-dot.done   { border-color:#16a34a; }
-    .tl-dot.blue   { border-color:#2563eb; }
-    .tl-body { background:#f8faff;border:1px solid #eef1f7;border-radius:0.65rem;padding:0.85rem 1rem; }
-    .tl-action { font-size:0.82rem;font-weight:700;color:#0f172a; }
-    .tl-time   { font-size:0.7rem;color:#94a3b8; }
-    .tl-note   { font-size:0.78rem;color:#64748b;margin-top:4px;font-style:italic; }
-    .tl-by     { font-size:0.72rem;color:#94a3b8;margin-top:5px; }
+    .tl-item { position:relative;margin-bottom:1rem; }
+    .tl-dot { position:absolute;left:-1.75rem;top:3px;width:18px;height:18px;border-radius:50%;background:#fff;border:2px solid #94a3b8;display:flex;align-items:center;justify-content:center;z-index:1; }
+    .tl-dot.sent { border-color:#16a34a; }
+    .tl-dot.disp { border-color:#d97706; }
+    .tl-dot.done { border-color:#16a34a; }
+    .tl-dot.blue { border-color:#2563eb; }
+    .tl-body { background:#f8faff;border:1px solid #eef1f7;border-radius:0.65rem;padding:0.7rem 0.9rem; }
+    .tl-action { font-size:0.8rem;font-weight:700;color:#0f172a; }
+    .tl-time   { font-size:0.68rem;color:#94a3b8; }
+    .tl-note   { font-size:0.75rem;color:#64748b;margin-top:3px;font-style:italic; }
+    .tl-by     { font-size:0.7rem;color:#94a3b8;margin-top:4px; }
 
     /* Action panels */
-    .action-panel { border-radius:0.9rem;padding:1.1rem 1.25rem;margin-bottom:0.85rem; }
+    .action-panel { border-radius:0.9rem;padding:1rem 1.15rem;margin-bottom:0.85rem; }
     .action-panel.need { background:#fffbeb;border:1.5px solid #fde68a; }
     .action-panel.dispose { background:#fff;border:1.5px solid #e8edf4; }
     .action-panel.agenda { background:#eff6ff;border:1.5px solid #bfdbfe; }
 
-    /* PDF preview */
-    #pdfInlinePreview { background:#f8faff;border:1px solid #e8edf4;border-radius:0.75rem;padding:0.5rem;margin-top:1rem; }
+    /* Main grid */
+    .show-grid { display:grid;grid-template-columns:340px 1fr;gap:1.25rem;align-items:start; }
+    @media(max-width:991px) { .show-grid { grid-template-columns:1fr; } }
 
-    /* Back button */
     .btn-back { display:inline-flex;align-items:center;gap:5px;background:#f8faff;border:1.5px solid #e8edf4;color:#475569;border-radius:0.6rem;padding:0.45rem 1rem;font-size:0.85rem;font-weight:600;text-decoration:none;transition:background .15s; }
     .btn-back:hover { background:#eff6ff;color:#2563eb;border-color:#bfdbfe; }
-
-    .top-grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.25rem; align-items: start; margin-bottom: 1.5rem; }
-    .bottom-grid { display: grid; grid-template-columns: 1fr 380px; gap: 1.25rem; align-items: start; }
-    @media(max-width:991px) { 
-        .top-grid { grid-template-columns: 1fr; } 
-        .bottom-grid { grid-template-columns: 1fr; }
-    }
 </style>
 
-{{-- Header --}}
-<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+{{-- ═══ PAGE HEADER ═══ --}}
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
     <div>
         <div class="d-flex align-items-center gap-2 mb-1">
             <span class="status-pill {{ $sm['pill'] }}"><i class="bi {{ $sm['icon'] }}"></i> {{ $sm['label'] }}</span>
@@ -100,10 +95,82 @@
     <a href="{{ url()->previous() }}" class="btn-back"><i class="bi bi-arrow-left"></i> Kembali</a>
 </div>
 
-{{-- ═══ TOP GRID (30% Inputan - 70% Preview) ═══ --}}
-<div class="top-grid">
+{{-- ═══ 1. INFORMASI SURAT (Full Width) ═══ --}}
+<div class="info-bar mb-4">
+    <div class="info-chips">
+        <div class="info-chip">
+            <span class="chip-key">No. Surat</span>
+            <span class="chip-val">{{ $letter->letter_number ?: '—' }}</span>
+        </div>
+        <div class="info-chip">
+            <span class="chip-key">Jenis</span>
+            <span class="chip-val text-capitalize">{{ str_replace('_',' ',$letter->type) }}</span>
+        </div>
+        <div class="info-chip">
+            <span class="chip-key">Pengirim</span>
+            <span class="chip-val">
+                @if($letter->type==='external')
+                    <span style="color:#7c3aed;">{{ $letter->external_sender_name }}</span>
+                    <span class="text-muted" style="font-weight:400;font-size:0.72rem;"> · Instansi Luar (diinput: {{ $letter->creator->name ?? 'Admin' }})</span>
+                @else
+                    {{ $letter->sender->name ?? 'Sistem' }}
+                    @if($letter->sender->unit->name ?? false)
+                        <span class="text-muted" style="font-weight:400;font-size:0.72rem;"> · {{ $letter->sender->unit->name }}</span>
+                    @endif
+                @endif
+            </span>
+        </div>
+        <div class="info-chip">
+            <span class="chip-key">Tujuan</span>
+            <span class="chip-val">
+                @if($letter->type==='outbound_external')
+                    <span style="color:#2563eb;">{{ $letter->external_recipient_name }}</span>
+                    <span class="text-muted" style="font-weight:400;font-size:0.72rem;"> · Instansi Luar</span>
+                @elseif($letter->recipientUser)
+                    {{ $letter->recipientUser->name }}
+                    @if($letter->recipientUser->unit->name ?? false)
+                        <span class="text-muted" style="font-weight:400;font-size:0.72rem;"> · {{ $letter->recipientUser->unit->name }}</span>
+                    @endif
+                @else
+                    Unit {{ $letter->recipientUnit->name ?? '—' }}
+                @endif
+            </span>
+        </div>
+    </div>
+    @if($letter->body)
+    <div class="info-body">
+        <span style="font-size:0.68rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#94a3b8;margin-right:8px;">Isi</span>
+        {!! nl2br(e($letter->body)) !!}
+    </div>
+    @endif
 
-    {{-- KIRI: INPUTAN (30%) --}}
+    {{-- External Notes --}}
+    @if($letter->type==='outbound_external')
+    <div style="margin-top:0.85rem;padding-top:0.85rem;border-top:1px solid #f1f5f9;">
+        <span style="font-size:0.68rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:#94a3b8;margin-right:8px;">Keterangan Eksternal</span>
+        <span style="font-size:0.875rem;color:#374151;">{!! nl2br(e($letter->external_notes ?: 'Belum ada keterangan.')) !!}</span>
+        @if($letter->from_user_id == Auth::id())
+            <div class="mt-2">
+                <button class="att-btn att-other" data-bs-toggle="collapse" data-bs-target="#extNoteForm" style="font-size:0.75rem;">
+                    <i class="bi bi-pencil-square"></i> Perbarui
+                </button>
+                <div class="collapse mt-2" id="extNoteForm">
+                    <form action="{{ route('letters.updateExternalNotes', $letter) }}" method="POST">
+                        @csrf
+                        <textarea name="external_notes" class="form-control mb-2" rows="2">{{ $letter->external_notes }}</textarea>
+                        <button type="submit" class="btn btn-sm btn-warning fw-bold">Simpan</button>
+                    </form>
+                </div>
+            </div>
+        @endif
+    </div>
+    @endif
+</div>
+
+{{-- ═══ 2. MAIN GRID (30% Aksi+Timeline | 70% Preview) ═══ --}}
+<div class="show-grid">
+
+    {{-- KIRI (30%): AKSI + TIMELINE --}}
     <div>
         {{-- Perlu Tindakan --}}
         @if($dispRecv && $dispRecv->status==='pending')
@@ -187,7 +254,7 @@
 
         {{-- Selesaikan --}}
         @if($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed']))
-        <div>
+        <div class="mb-3">
             <form action="{{ route('letters.complete', $letter) }}" method="POST">
                 @csrf
                 <button class="btn btn-success w-100 fw-bold py-2" onclick="return confirm('Tandai surat ini sebagai Selesai?')">
@@ -197,20 +264,51 @@
         </div>
         @endif
 
-        {{-- Pesan Jika Tidak Ada Inputan --}}
-        @if(!($dispRecv && $dispRecv->status==='pending') && !($role==='staf_tu' && $letter->status==='pending_agenda') && !$canDispose && !($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed'])))
-            <div class="panel text-center p-4">
-                <i class="bi bi-shield-check text-success" style="font-size:2.5rem;"></i>
-                <div style="font-size:0.85rem;font-weight:600;color:#64748b;margin-top:0.5rem;">Tidak ada aksi yang diperlukan saat ini.</div>
-            </div>
+        @if(!$hasAction)
+        <div class="panel text-center p-4 mb-3">
+            <i class="bi bi-shield-check text-success" style="font-size:2.5rem;"></i>
+            <div style="font-size:0.85rem;font-weight:600;color:#64748b;margin-top:0.5rem;">Tidak ada aksi yang diperlukan saat ini.</div>
+        </div>
         @endif
+
+        {{-- LACAK PERJALANAN SURAT (di bawah card aksi) --}}
+        <div class="panel" style="margin-top:0;">
+            <div class="sec-title">Lacak Perjalanan Surat</div>
+            @if($letter->histories->isEmpty())
+                <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:0.85rem;">Belum ada riwayat.</div>
+            @else
+            <div class="tl">
+                @foreach($letter->histories as $h)
+                    @php
+                        $dc = 'blue';
+                        if($h->action==='sent') $dc='sent';
+                        elseif(str_contains($h->action,'dispos')) $dc='disp';
+                        elseif($h->action==='disposition_accepted') $dc='done';
+                    @endphp
+                    <div class="tl-item">
+                        <div class="tl-dot {{ $dc }}">
+                            <i class="bi bi-circle-fill" style="font-size:5px;color:inherit;"></i>
+                        </div>
+                        <div class="tl-body">
+                            <div class="d-flex justify-content-between">
+                                <span class="tl-action">{{ ucfirst(str_replace('_',' ',$h->action)) }}</span>
+                                <span class="tl-time">{{ $h->created_at->format('d M H:i') }}</span>
+                            </div>
+                            @if($h->note)<div class="tl-note">"{{ $h->note }}"</div>@endif
+                            <div class="tl-by"><i class="bi bi-person-fill me-1"></i>{{ $h->user ? $h->user->name.' ('.$h->user->unit->name.')' : 'System' }}</div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+            @endif
+        </div>
     </div>
 
-    {{-- KANAN: PREVIEW DOKUMEN (70%) --}}
+    {{-- KANAN (70%): PREVIEW DOKUMEN --}}
     <div class="panel" style="margin-top:0;">
         <div class="sec-title">Pratinjau Dokumen Lampiran</div>
         @if($letter->attachments->count())
-            <div class="d-flex flex-wrap gap-2 mb-2" id="attachmentButtons">
+            <div class="d-flex flex-wrap gap-2 mb-3" id="attachmentButtons">
                 @foreach($letter->attachments as $att)
                     @php
                         $url  = Storage::url($att->file_path);
@@ -233,10 +331,11 @@
                 @endforeach
             </div>
             <div id="pdfInlinePreview" style="display:none;">
-                <div class="d-flex justify-content-between align-items-center mb-2 px-2 pt-1">
-                    <span style="font-size:0.75rem;font-weight:700;color:#64748b;"><i class="bi bi-file-earmark-pdf text-danger me-1"></i><span id="pdfPreviewName"></span></span>
+                <div class="d-flex align-items-center gap-2 mb-2 px-1">
+                    <i class="bi bi-file-earmark-pdf text-danger"></i>
+                    <span style="font-size:0.75rem;font-weight:700;color:#64748b;" id="pdfPreviewName"></span>
                 </div>
-                <iframe id="pdfInlineFrame" style="width:100%;height:650px;border:none;border-radius:0.5rem;background:#fff;"></iframe>
+                <iframe id="pdfInlineFrame" style="width:100%;height:680px;border:none;border-radius:0.5rem;background:#fff;"></iframe>
             </div>
         @else
             <div class="text-center p-5" style="border:1.5px dashed #e8edf4;border-radius:0.75rem;">
@@ -244,115 +343,6 @@
                 <div style="font-size:0.85rem;color:#94a3b8;font-weight:500;margin-top:0.5rem;">Surat ini tidak memiliki lampiran dokumen.</div>
             </div>
         @endif
-    </div>
-
-</div>
-
-{{-- ═══ BOTTOM GRID (Info Tambahan) ═══ --}}
-<h5 class="fw-bold mb-3 mt-5" style="color:var(--text);font-size:1.1rem;"><i class="bi bi-info-square-fill me-2 text-primary"></i>Informasi Tambahan</h5>
-<div class="bottom-grid">
-
-    {{-- KIRI: Detail Surat --}}
-    <div>
-        {{-- Info Surat --}}
-        <div class="panel mb-0">
-            <div class="sec-title">Informasi Surat</div>
-            <div class="meta-row">
-                <div class="meta-key">No. Surat</div>
-                <div class="meta-val">{{ $letter->letter_number ?: '—' }}</div>
-            </div>
-            <div class="meta-row">
-                <div class="meta-key">Jenis</div>
-                <div class="meta-val text-capitalize">{{ str_replace('_',' ',$letter->type) }}</div>
-            </div>
-            <div class="meta-row">
-                <div class="meta-key">Pengirim</div>
-                <div class="meta-val">
-                    @if($letter->type==='external')
-                        <span style="font-weight:700;color:#2563eb;">{{ $letter->external_sender_name }}</span>
-                        <span class="text-muted" style="font-size:0.75rem;"> (Instansi Luar)</span>
-                        <div style="font-size:0.75rem;color:#94a3b8;">Diinput oleh: {{ $letter->creator->name ?? 'Admin' }}</div>
-                    @else
-                        {{ $letter->sender->name ?? 'Sistem' }}
-                        <div style="font-size:0.75rem;color:#94a3b8;">{{ $letter->sender->unit->name ?? '' }}</div>
-                    @endif
-                </div>
-            </div>
-            <div class="meta-row">
-                <div class="meta-key">Tujuan</div>
-                <div class="meta-val">
-                    @if($letter->type==='outbound_external')
-                        <span style="font-weight:700;color:#2563eb;">{{ $letter->external_recipient_name }}</span>
-                        <span class="text-muted" style="font-size:0.75rem;"> (Instansi Luar)</span>
-                    @elseif($letter->recipientUser)
-                        {{ $letter->recipientUser->name }}
-                        <div style="font-size:0.75rem;color:#94a3b8;">{{ $letter->recipientUser->unit->name ?? '' }}</div>
-                    @else
-                        Unit {{ $letter->recipientUnit->name ?? '—' }}
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        {{-- Isi --}}
-        <div class="panel" style="margin-top:1rem;">
-            <div class="sec-title">Isi / Uraian Surat</div>
-            <div class="body-content">{!! nl2br(e($letter->body)) !!}</div>
-        </div>
-
-        {{-- External Notes --}}
-        @if($letter->type==='outbound_external')
-        <div class="panel" style="margin-top:1rem;background:#fffbeb;border-color:#fde68a;">
-            <div class="sec-title">Keterangan / Status Eksternal</div>
-            <p style="font-size:0.9rem;color:#374151;line-height:1.7;">{!! nl2br(e($letter->external_notes ?: 'Belum ada keterangan.')) !!}</p>
-            @if($letter->from_user_id == Auth::id())
-                <button class="att-btn att-other" data-bs-toggle="collapse" data-bs-target="#extNoteForm" style="font-size:0.78rem;">
-                    <i class="bi bi-pencil-square"></i> Perbarui Keterangan
-                </button>
-                <div class="collapse mt-2" id="extNoteForm">
-                    <form action="{{ route('letters.updateExternalNotes', $letter) }}" method="POST">
-                        @csrf
-                        <textarea name="external_notes" class="form-control mb-2" rows="2">{{ $letter->external_notes }}</textarea>
-                        <button type="submit" class="btn btn-sm btn-warning fw-bold">Simpan</button>
-                    </form>
-                </div>
-            @endif
-        </div>
-        @endif
-    </div>
-
-    {{-- KANAN: Timeline --}}
-    <div>
-        <div class="panel" style="margin-top:0;">
-            <div class="sec-title">Lacak Perjalanan Surat</div>
-            @if($letter->histories->isEmpty())
-                <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:0.85rem;">Belum ada riwayat.</div>
-            @else
-            <div class="tl">
-                @foreach($letter->histories as $h)
-                    @php
-                        $dc = 'blue';
-                        if($h->action==='sent') $dc='sent';
-                        elseif(str_contains($h->action,'dispos')) $dc='disp';
-                        elseif($h->action==='disposition_accepted') $dc='done';
-                    @endphp
-                    <div class="tl-item">
-                        <div class="tl-dot {{ $dc }}">
-                            <i class="bi bi-circle-fill" style="font-size:6px;color:inherit;"></i>
-                        </div>
-                        <div class="tl-body">
-                            <div class="d-flex justify-content-between">
-                                <span class="tl-action">{{ ucfirst(str_replace('_',' ',$h->action)) }}</span>
-                                <span class="tl-time">{{ $h->created_at->format('d M H:i') }}</span>
-                            </div>
-                            @if($h->note)<div class="tl-note">"{{ $h->note }}"</div>@endif
-                            <div class="tl-by"><i class="bi bi-person-fill me-1"></i>{{ $h->user ? $h->user->name.' ('.$h->user->unit->name.')' : 'System' }}</div>
-                        </div>
-                    </div>
-                @endforeach
-            </div>
-            @endif
-        </div>
     </div>
 
 </div>
@@ -402,26 +392,27 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // PDF Inline
-    const prev=document.getElementById('pdfInlinePreview'), frame=document.getElementById('pdfInlineFrame'), nameEl=document.getElementById('pdfPreviewName');
+    const prev=document.getElementById('pdfInlinePreview');
+    const frame=document.getElementById('pdfInlineFrame');
+    const nameEl=document.getElementById('pdfPreviewName');
     const pdfBtns = document.querySelectorAll('.view-pdf');
-    pdfBtns.forEach(btn=>btn.addEventListener('click',(e)=>{
+
+    pdfBtns.forEach(btn => btn.addEventListener('click', (e) => {
         if(!frame||!prev) return;
-        frame.src=btn.dataset.src; nameEl.textContent=btn.dataset.name;
-        prev.style.display='block'; 
-        if(e.isTrusted) prev.scrollIntoView({behavior:'smooth',block:'start'});
+        frame.src = btn.dataset.src;
+        nameEl.textContent = btn.dataset.name;
+        prev.style.display = 'block';
+        if(e.isTrusted) prev.scrollIntoView({behavior:'smooth', block:'start'});
     }));
 
-    if(pdfBtns.length > 0) {
-        pdfBtns[0].click();
-    }
+    if(pdfBtns.length > 0) pdfBtns[0].click();
 
-    // Disposisi toggle
-    const sU=document.getElementById('selectUnit'), sP=document.getElementById('selectUser');
-    document.getElementsByName('recipient_type').forEach(r=>r.addEventListener('change',()=>{
-        const u=document.getElementById('typeUser').checked;
-        if(sU) sU.style.display=u?'none':'block';
-        if(sP) sP.style.display=u?'block':'none';
+    const sU = document.getElementById('selectUnit');
+    const sP = document.getElementById('selectUser');
+    document.getElementsByName('recipient_type').forEach(r => r.addEventListener('change', () => {
+        const u = document.getElementById('typeUser').checked;
+        if(sU) sU.style.display = u ? 'none' : 'block';
+        if(sP) sP.style.display = u ? 'block' : 'none';
     }));
 });
 </script>
