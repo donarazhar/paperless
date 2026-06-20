@@ -56,8 +56,7 @@
                 <th style="width:50px;">#</th>
                 <th style="width:110px;">Tanggal</th>
                 <th>Perihal Surat</th>
-                <th style="width:180px;">Pengirim</th>
-                <th style="width:190px;">Status / Disposisi</th>
+                <th style="width:280px;">Pengirim & Status</th>
                 <th style="width:110px;">Aksi</th>
             </tr>
         </thead>
@@ -65,7 +64,7 @@
             @forelse($letters as $letter)
                 @php
                     $authUser = Auth::user();
-                    $disp = $letter->dispositions->first(fn($d) =>
+                    $disp = $letter->dispositions->sortByDesc('created_at')->first(fn($d) =>
                         $d->to_user_id === $authUser->id || $d->to_unit_id === $authUser->unit_id
                     );
                     $status = $letter->status;
@@ -107,29 +106,28 @@
                     <td>
                         <div class="subject-cell">
                             <div class="s-title">{{ $letter->subject }}</div>
-                            <div class="s-num">{{ $letter->letter_number ?: '— Belum ada nomor' }}</div>
+                            <div class="s-num" style="margin-bottom:0.25rem;">{{ $letter->letter_number ?: '— Belum ada nomor' }}</div>
+                            @if($letter->agenda_number)
+                                <div><span class="agenda-pill" style="display:inline-flex; align-items:center; gap:0.25rem; padding:0.2rem 0.5rem; border-radius:0.4rem; background:rgba(219,234,254,0.5); color:#1e40af; font-size:0.7rem; font-weight:600;"><i class="bi bi-hash"></i>Agenda: {{ $letter->agenda_number }}</span></div>
+                            @endif
                         </div>
                     </td>
                     <td>
-                        <div class="sender-cell">
-                            <div class="sender-avatar">{{ $senderInitial }}</div>
+                        <div class="d-flex flex-column gap-2 align-items-start">
+                            <div class="s-name fw-bold text-dark">{{ $letter->sender->unit->name ?? '—' }}</div>
                             <div>
-                                <div class="s-name">{{ $letter->sender->name }}</div>
-                                <div class="s-unit">{{ $letter->sender->unit->name ?? '' }}</div>
+                                @if($disp && $letter->status !== 'in_review_kasubag')
+                                    <span class="status-pill sp-disp m-0" style="display:inline-flex;margin-bottom:0.25rem !important;">
+                                        <i class="bi bi-exclamation-circle-fill"></i> Disposisi dr. {{ $disp->fromUser->unit->name ?? $disp->fromUser->name }}
+                                    </span>
+                                    <div class="disp-note mt-1" style="font-size:0.75rem;">"{{ \Illuminate\Support\Str::limit($disp->note, 50) }}"</div>
+                                @else
+                                    <span class="status-pill {{ $pillClass }} m-0">
+                                        <i class="bi {{ $pillIcon }}"></i> {{ $pillText }}
+                                    </span>
+                                @endif
                             </div>
                         </div>
-                    </td>
-                    <td>
-                        @if($disp)
-                            <span class="status-pill sp-disp">
-                                <i class="bi bi-exclamation-circle-fill"></i> Ada Disposisi
-                            </span>
-                            <div class="disp-note">"{{ \Illuminate\Support\Str::limit($disp->note, 50) }}"</div>
-                        @else
-                            <span class="status-pill {{ $pillClass }}">
-                                <i class="bi {{ $pillIcon }}"></i> {{ $pillText }}
-                            </span>
-                        @endif
                     </td>
                     <td>
                         <a href="{{ $showUrl }}" class="btn-open">
@@ -139,7 +137,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="6">
+                    <td colspan="5">
                         <div class="empty-state">
                             <div class="empty-icon-wrap"><i class="bi bi-inbox"></i></div>
                             <div class="e-title">Tidak ada surat masuk</div>

@@ -4,7 +4,7 @@
 @section('content')
 @php
     $user = Auth::user(); $role = $user->role;
-    $dispRecv = $letter->dispositions->first(fn($d) => $d->to_user_id === $user->id || $d->to_unit_id === $user->unit_id);
+    $dispRecv = $letter->dispositions->sortByDesc('created_at')->first(fn($d) => $d->to_user_id === $user->id || $d->to_unit_id === $user->unit_id);
     $statusMap = [
         'pending_agenda'    => ['bg'=>'#fef9c3', 'color'=>'#92400e', 'border'=>'#fde68a', 'label'=>'Antre Agenda',    'icon'=>'bi-hourglass-split'],
         'in_review_kasubag' => ['bg'=>'#dbeafe', 'color'=>'#1d4ed8', 'border'=>'#bfdbfe', 'label'=>'Review Kasubag',  'icon'=>'bi-eye-fill'],
@@ -15,14 +15,30 @@
     $sm = $statusMap[$letter->status] ?? ['bg'=>'#f1f5f9', 'color'=>'#475569', 'border'=>'#e2e8f0', 'label'=>ucfirst($letter->status),'icon'=>'bi-info-circle'];
     
     $canDispose = false;
-    if ($role==='kasubag_tu' && in_array($letter->status,['in_review_kasubag','in_consideration'])) $canDispose=true;
-    elseif ($letter->to_unit_id==$user->unit_id && $letter->status!=='completed') $canDispose=true;
-    elseif ($dispRecv && $dispRecv->status==='pending') $canDispose=true;
-    if ($role==='staf_tu' && $letter->to_unit_id==$user->unit_id && $letter->status!=='completed') $canDispose=true;
-    $hasAction = ($dispRecv && $dispRecv->status==='pending')
+    if ($letter->status !== 'completed') {
+        if (in_array($role, ['kasubag_tu', 'kepala_sekretariat'])) {
+            if (in_array($letter->status, ['in_review_kasubag', 'in_consideration']) || ($dispRecv && $dispRecv->status === 'pending')) {
+                $canDispose = true;
+            }
+        } else {
+            if ($letter->to_unit_id == $user->unit_id) {
+                $canDispose = true;
+                // Prevent Staf TU from manually disposing if it needs an agenda first
+                if ($role === 'staf_tu' && $letter->status === 'pending_agenda') {
+                    $canDispose = false;
+                }
+            }
+            elseif ($dispRecv && $dispRecv->status === 'pending') {
+                $canDispose = true;
+            }
+        }
+    }
+    $hasAction = $letter->status !== 'completed' && (
+        ($dispRecv && $dispRecv->status==='pending')
         || ($role==='staf_tu' && $letter->status==='pending_agenda')
         || $canDispose
-        || ($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed']));
+        || ($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed']))
+    );
 @endphp
 
 
@@ -167,13 +183,12 @@
     {{-- KOLOM KIRI (Aksi & Timeline) --}}
     <div>
         {{-- Perlu Tindakan --}}
-        @if($dispRecv && $dispRecv->status==='pending')
+        @if($role === 'staf_tu' && $letter->status !== 'completed' && $dispRecv && $dispRecv->status==='pending' && in_array($dispRecv->fromUser->role ?? '', ['kasubag_tu', 'kepala_sekretariat']))
         <div class="action-box warning">
             <div class="action-title text-warning-emphasis"><i class="bi bi-exclamation-circle-fill"></i> Tindakan Diperlukan</div>
             <div class="action-desc">Disposisi dari <strong>{{ $dispRecv->fromUser->name }}</strong>:<br><em style="color:#92400e;">"{{ $dispRecv->note }}"</em></div>
             <div class="d-flex flex-column gap-2">
-                <button class="btn-custom outline w-100 text-primary-emphasis" data-bs-toggle="modal" data-bs-target="#pertimbanganModal"><i class="bi bi-chat-text"></i> Beri Pertimbangan</button>
-                <button class="btn-custom success w-100" data-bs-toggle="modal" data-bs-target="#acceptModal"><i class="bi bi-check-circle"></i> Tandai Selesai</button>
+                <button class="btn-custom success w-100" data-bs-toggle="modal" data-bs-target="#acceptModal"><i class="bi bi-archive-fill"></i> Masukkan ke Arsip</button>
             </div>
         </div>
         @endif
@@ -194,7 +209,7 @@
         {{-- Disposisi --}}
         @if($canDispose)
         <div class="action-box default">
-            <div class="action-title"><i class="bi bi-arrow-right-circle-fill text-primary"></i> Teruskan / Disposisi</div>
+            <div class="action-title"><i class="bi bi-arrow-right-circle-fill text-primary"></i> Disposisi</div>
             <form action="{{ route('letters.dispositions.store', $letter) }}" method="POST">
                 @csrf
                 <div class="d-flex gap-3 mb-3 p-2 rounded" style="background:var(--surface-2); border:1px solid var(--border);">
@@ -229,13 +244,6 @@
         </div>
         @endif
 
-        {{-- Selesaikan --}}
-        @if($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed']))
-        <form action="{{ route('letters.complete', $letter) }}" method="POST" class="mb-4">
-            @csrf
-            <button class="btn-custom success w-100" onclick="return confirm('Tandai perjalanan surat ini sebagai Selesai secara final?')"><i class="bi bi-check-all"></i> Perjalanan Surat Selesai</button>
-        </form>
-        @endif
 
         @if(!$hasAction)
         <div class="d-flex align-items-center gap-3 p-3 mb-4" style="background:var(--surface); border:1.5px solid var(--border); border-radius:1rem; box-shadow:0 2px 8px rgba(15,23,42,0.03);">
@@ -336,40 +344,19 @@
 
 {{-- MODALS --}}
 @if($dispRecv)
-<div class="modal fade" id="pertimbanganModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg" style="border-radius:1.25rem; overflow:hidden;">
-            <div class="modal-header border-0 bg-primary-subtle px-4 py-3">
-                <h5 class="modal-title fw-bold text-primary-emphasis"><i class="bi bi-chat-text-fill me-2"></i>Beri Pertimbangan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form action="{{ route('dispositions.respond', $dispRecv) }}" method="POST">
-                @csrf <input type="hidden" name="action" value="pertimbangan">
-                <div class="modal-body p-4">
-                    <label class="form-label fw-bold" style="font-size:0.85rem;">Tuliskan catatan pertimbangan Anda</label>
-                    <textarea name="response_note" class="form-control" rows="4" required placeholder="Contoh: Terkait arahan tersebut, kami menyarankan..." style="border-radius:0.75rem;"></textarea>
-                </div>
-                <div class="modal-footer border-0 p-4 pt-0">
-                    <button type="button" class="btn btn-light fw-bold px-4" style="border-radius:0.75rem;" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary fw-bold px-4" style="border-radius:0.75rem;">Kirim Pertimbangan</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 <div class="modal fade" id="acceptModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered modal-sm">
         <div class="modal-content border-0 shadow-lg" style="border-radius:1.5rem;">
-            <form action="{{ route('dispositions.respond', $dispRecv) }}" method="POST">
-                @csrf <input type="hidden" name="action" value="accepted">
+            <form action="{{ route('letters.complete', $letter) }}" method="POST">
+                @csrf
                 <div class="modal-body text-center p-4 pt-5">
                     <div style="width:80px;height:80px;background:var(--green-soft);color:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
                         <i class="bi bi-check-lg" style="font-size:3rem;line-height:0;"></i>
                     </div>
-                    <h5 class="fw-bold mb-2">Selesaikan Tugas?</h5>
-                    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:2rem;">Tugas atau arahan dari disposisi ini sudah selesai Anda kerjakan secara penuh?</p>
+                    <h5 class="fw-bold mb-2">Arsipkan Surat?</h5>
+                    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:2rem;">Tugas atau arahan dari disposisi ini sudah selesai dan surat siap untuk diarsipkan secara permanen?</p>
                     <div class="d-flex flex-column gap-2">
-                        <button type="submit" class="btn btn-success fw-bold py-2" style="border-radius:0.75rem;">Ya, Selesai</button>
+                        <button type="submit" class="btn btn-success fw-bold py-2" style="border-radius:0.75rem;">Ya, Arsipkan</button>
                         <button type="button" class="btn btn-light fw-bold py-2" style="border-radius:0.75rem;" data-bs-dismiss="modal">Batal</button>
                     </div>
                 </div>

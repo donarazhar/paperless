@@ -47,8 +47,10 @@ class DispositionController extends Controller
             'note' => 'Agenda: ' . $data['agenda_number'],
         ]);
 
+        $route = $letter->type === 'external' ? 'letters.inboundExternal' : 'letters.inbound';
+
         return redirect()
-            ->route('letters.show', ['letter' => Hashids::encode($letter->id)])
+            ->route($route)
             ->with('success', 'Surat berhasil diagendakan dan diteruskan ke Kasubag TU.');
     }
 
@@ -65,6 +67,28 @@ class DispositionController extends Controller
             'note' => 'required|string',
         ]);
 
+        $targetUnit = \App\Models\Unit::find($data['to_unit_id'] ?? null);
+        $targetUser = \App\Models\User::with('unit')->find($data['to_user_id'] ?? null);
+        
+        $isSekretariat = ($targetUnit && $targetUnit->is_sekretariat) || 
+                         ($targetUser && $targetUser->unit && $targetUser->unit->is_sekretariat);
+
+        if ($isSekretariat) {
+            if (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
+                $stafTu = \App\Models\User::where('role', 'staf_tu')->first();
+                if ($stafTu) {
+                    $data['to_unit_id'] = null;
+                    $data['to_user_id'] = $stafTu->id;
+                }
+            } else {
+                $kasubagTu = \App\Models\User::where('role', 'kasubag_tu')->first();
+                if ($kasubagTu) {
+                    $data['to_unit_id'] = null;
+                    $data['to_user_id'] = $kasubagTu->id;
+                }
+            }
+        }
+
         Disposition::create([
             'letter_id' => $letter->id,
             'from_user_id' => Auth::id(),
@@ -74,7 +98,12 @@ class DispositionController extends Controller
             'status' => 'pending',
         ]);
 
-        $letter->update(['status' => 'in_consideration']);
+        $newStatus = 'in_consideration';
+        if ($isSekretariat && !$letter->agenda_number) {
+            $newStatus = 'pending_agenda';
+        }
+
+        $letter->update(['status' => $newStatus]);
 
         LetterHistory::create([
             'letter_id' => $letter->id,

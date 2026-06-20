@@ -44,6 +44,8 @@ Route::middleware('auth')->group(function () {
     Route::get('letters/inbox-external', [LetterController::class, 'inboundExternal'])->name('letters.inboundExternal');
     Route::get('letters/outbox', [LetterController::class, 'outbound'])->name('letters.outbound');
     Route::get('letters/outbox-external', [LetterController::class, 'outboundExternal'])->name('letters.outboundExternal');
+    Route::get('letters/arsip', [LetterController::class, 'arsip'])->name('letters.arsip');
+    
     Route::get('letters/{letter}', [LetterController::class, 'show'])->name('letters.show');
     Route::get('letters/{letter}/print-disposition', [LetterController::class, 'printDisposition'])->name('letters.printDisposition');
     Route::post('letters/{letter}/mark-read', [LetterController::class, 'markRead'])->name('letters.markRead');

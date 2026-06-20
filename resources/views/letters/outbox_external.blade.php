@@ -50,9 +50,9 @@
             <tr>
                 <th style="width:40px;">#</th>
                 <th style="width:110px;">Tanggal</th>
+                <th style="width:200px;">No. Surat / Agenda</th>
                 <th>Perihal Surat</th>
-                <th style="width:200px;">Instansi Tujuan</th>
-                <th style="width:120px;">Status</th>
+                <th style="width:220px;">Tujuan & Status</th>
                 <th style="width:100px;">Aksi</th>
             </tr>
         </thead>
@@ -68,21 +68,27 @@
                         </div>
                     </td>
                     <td>
+                        <div class="d-flex flex-column gap-1">
+                            <div class="s-num" style="font-family:monospace; font-size:0.8rem; color:#475569;">{{ $letter->letter_number ?: '—' }}</div>
+                            @if($letter->agenda_number)
+                                <div><span class="agenda-pill" style="display:inline-flex; align-items:center; gap:0.25rem; padding:0.2rem 0.5rem; border-radius:0.4rem; background:rgba(219,234,254,0.5); color:#1e40af; font-size:0.7rem; font-weight:600;"><i class="bi bi-hash"></i>Agenda: {{ $letter->agenda_number }}</span></div>
+                            @endif
+                        </div>
+                    </td>
+                    <td>
                         <div class="subject-cell">
                             <div class="s-title">{{ $letter->subject }}</div>
-                            <div class="s-num">{{ $letter->letter_number ?: '—' }}</div>
                         </div>
                     </td>
                     <td>
-                        <div class="recip-cell">
-                            <div class="r-name">{{ $letter->external_recipient_name }}</div>
-                            <div class="r-type"><i class="bi bi-building me-1"></i>Instansi Luar</div>
+                        <div class="d-flex flex-column gap-2 align-items-start">
+                            <div class="recip-cell p-0 m-0 border-0 bg-transparent">
+                                <div class="r-name fw-bold text-dark">{{ $letter->external_recipient_name }}</div>
+                            </div>
+                            <span class="status-pill m-0">
+                                <i class="bi bi-check-circle-fill"></i> Tercatat
+                            </span>
                         </div>
-                    </td>
-                    <td>
-                        <span class="status-pill">
-                            <i class="bi bi-check-circle-fill"></i> Tercatat
-                        </span>
                     </td>
                     <td>
                         <a href="{{ route('letters.show', \Vinkla\Hashids\Facades\Hashids::encode($letter->id)) }}" class="btn-open">
@@ -91,7 +97,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="6">
+                <tr><td colspan="5">
                     <div class="empty-state">
                         <i class="bi bi-send-arrow-up"></i>
                         <p class="fw-semibold mb-1" style="color:#475569;">Belum ada surat keluar eksternal</p>

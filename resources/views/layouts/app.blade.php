@@ -275,11 +275,14 @@
                         </ul>
                     </li>
                     @endif
-
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('letters.index') ? 'active' : '' }}" href="{{ route('letters.index') }}">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') ? 'active' : '' }}" href="#" data-bs-toggle="dropdown">
                             <i class="bi bi-bar-chart-line-fill me-2"></i> Laporan
                         </a>
+                        <ul class="dropdown-menu border-0">
+                            <li><a class="dropdown-item" href="{{ route('letters.index') }}">Laporan Surat</a></li>
+                            <li><a class="dropdown-item" href="{{ route('letters.arsip') }}">Arsip Surat</a></li>
+                        </ul>
                     </li>
 
                     <!-- Dropdown Master Data -->

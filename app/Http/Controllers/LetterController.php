@@ -75,27 +75,27 @@ class LetterController extends Controller
             'dispositions',
         ])->where('type', 'internal');
 
-        if ($user->role === 'staf_unit') {
-            $q->whereHas(
-                'dispositions',
-                fn($d) =>
-                $d->where('to_user_id', $user->id)
-                  ->orWhere('to_unit_id', $user->unit_id)
-            );
-        } elseif ($user->role === 'staf_tu') {
-            // Staf TU can see letters coming to the sekretariat that are pending_agenda
-            $q->where('to_unit_id', $user->unit_id)
-              ->whereIn('status', ['pending_agenda', 'in_consideration', 'completed']);
-        } elseif (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
-            $q->where(function ($q) use ($user) {
-                $q->where('to_unit_id', $user->unit_id)
-                    ->orWhereHas(
-                        'dispositions',
-                        fn($d) =>
-                        $d->where('to_user_id', $user->id)
-                    );
-            });
-        }
+        // Filter out drafts from inbox
+        $q->where('status', '!=', 'draft');
+
+        // Unified Visibility Logic: User sees letters addressed to their unit OR dispositioned to them/their unit
+        $q->where(function ($query) use ($user) {
+            if (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
+                // Kasubag TU & Kepala Sekretariat MUST NOT see raw letters sent to Secretariat.
+                // They only see them after Staf TU assigns an agenda and creates a disposition.
+                $query->whereHas('dispositions', function ($d) use ($user) {
+                    $d->where('to_user_id', $user->id)
+                      ->orWhere('to_unit_id', $user->unit_id);
+                });
+            } else {
+                // Staf Unit and Staf TU see letters sent directly to their unit
+                $query->where('to_unit_id', $user->unit_id)
+                      ->orWhereHas('dispositions', function ($d) use ($user) {
+                          $d->where('to_user_id', $user->id)
+                            ->orWhere('to_unit_id', $user->unit_id);
+                      });
+            }
+        });
 
         //— pencarian & filter seperti sebelumnya —
         if ($s = $request->search) {
@@ -123,37 +123,74 @@ class LetterController extends Controller
         return view('letters.inbox', compact('letters'));
     }
 
+    public function arsip(Request $request)
+    {
+        $user = Auth::user();
+        $q = Letter::with(['sender', 'dispositions.toUser', 'dispositions.unit', 'recipientUser', 'recipientUnit'])
+                   ->whereIn('type', ['internal', 'external']);
+
+        $q->where('status', 'completed');
+
+        // Apply visibility rules for non-Staf TU users
+        if ($user->role === 'staf_unit') {
+            // Untuk unit: Hanya arsip dari surat keluar internal mereka sendiri
+            $q->where('from_user_id', $user->id);
+        }
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%")
+                      ->orWhereHas('sender.unit', function ($sq) use ($s) {
+                          $sq->where('name', 'like', "%{$s}%");
+                      });
+            });
+        }
+
+        if ($from = $request->date_from) {
+            $q->whereDate('created_at', '>=', $from);
+        }
+        if ($to = $request->date_to) {
+            $q->whereDate('created_at', '<=', $to);
+        }
+
+        $letters = $q->latest()->paginate(15)->withQueryString();
+
+        return view('letters.arsip', compact('letters'));
+    }
+
     public function inboundExternal(Request $request)
     {
         $user = Auth::user();
         $q = Letter::with(['sender', 'dispositions', 'recipientUser', 'recipientUnit'])
                    ->where('type', 'external');
 
-        if ($user->role === 'staf_unit') {
-            $q->where(function ($query) use ($user) {
-                $query->where('created_by_user_id', $user->id)
-                      ->orWhereHas('dispositions', function ($sq) use ($user) {
+        $q->where(function ($query) use ($user) {
+            $query->where('created_by_user_id', $user->id); // Everyone sees what they created
+
+            if (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
+                // Kasubag/Kepala ONLY see it via dispositions or specific post-agenda statuses
+                $query->orWhereHas('dispositions', function ($sq) use ($user) {
                           $sq->where('to_user_id', $user->id)
                              ->orWhere('to_unit_id', $user->unit_id);
                       })
-                      ->orWhere('to_unit_id', $user->unit_id);
-            });
-        } elseif ($user->role === 'staf_tu') {
-            $q->where(function ($query) use ($user) {
-                  $query->whereIn('status', ['pending_agenda', 'in_consideration', 'completed'])
-                        ->orWhere('to_unit_id', $user->unit_id)
-                        ->orWhere('created_by_user_id', $user->id);
-              });
-        } elseif ($user->role === 'kasubag_tu' || $user->role === 'kepala_sekretariat') {
-            $q->where(function ($query) use ($user) {
-                  $query->whereIn('status', ['in_review_kasubag', 'in_consideration', 'completed'])
-                        ->orWhere('to_unit_id', $user->unit_id)
-                        ->orWhere('created_by_user_id', $user->id)
-                        ->orWhereHas('dispositions', function ($sq) use ($user) {
-                            $sq->where('to_user_id', $user->id);
-                        });
-              });
-        }
+                      ->orWhereIn('status', ['in_review_kasubag', 'in_consideration', 'completed']);
+            } else {
+                // Staf Unit / Staf TU see direct letters to their unit
+                $query->orWhere('to_unit_id', $user->unit_id)
+                      ->orWhereHas('dispositions', function ($sq) use ($user) {
+                          $sq->where('to_user_id', $user->id)
+                             ->orWhere('to_unit_id', $user->unit_id);
+                      });
+
+                // Catch-all for external letters forwarded to Secretariat without explicit to_unit_id
+                if ($user->role === 'staf_tu') {
+                    $query->orWhereIn('status', ['pending_agenda', 'in_consideration', 'completed']);
+                }
+            }
+        });
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -286,6 +323,16 @@ class LetterController extends Controller
             'attachments.*' => 'file|max:5120',
         ]);
 
+        $targetUnit = \App\Models\Unit::find($data['to_unit_id']);
+        $isSekretariat = $targetUnit && $targetUnit->is_sekretariat;
+        
+        $status = 'sent';
+        if ($request->action === 'draft') {
+            $status = 'draft';
+        } elseif ($isSekretariat) {
+            $status = 'pending_agenda';
+        }
+
         $letter = Letter::create([
             'type' => 'internal',
             'letter_number' => $data['letter_number'] ?? '-',
@@ -293,7 +340,7 @@ class LetterController extends Controller
             'body' => $data['body'],
             'from_user_id' => Auth::id(),
             'to_unit_id' => $data['to_unit_id'],
-            'status' => $request->action === 'draft' ? 'draft' : 'sent',
+            'status' => $status,
         ]);
 
         if ($request->hasFile('attachments')) {
