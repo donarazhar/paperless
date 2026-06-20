@@ -167,10 +167,10 @@
                   <table id="historyTable" class="table table-hover table-bordered align-middle w-100" style="font-size: 0.9rem;">
                       <thead class="table-light">
                           <tr>
-                              <th>Waktu</th>
-                              <th>Status / Aksi</th>
-                              <th>Ditujukan Ke</th>
-                              <th>Catatan</th>
+                              <th style="width: 15%;">Waktu</th>
+                              <th style="width: 20%;">Status / Aksi</th>
+                              <th style="width: 20%;">Ditujukan Ke</th>
+                              <th style="width: 45%;">Catatan</th>
                           </tr>
                       </thead>
                       <tbody id="historyTableBody">
@@ -246,7 +246,7 @@
                             <td class="text-nowrap"><i class="bi bi-calendar3 me-1 text-muted"></i> ${item.tanggal}</td>
                             <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-start lh-base">${item.aksi}</span></td>
                             <td>${item.aktor}</td>
-                            <td><div class="fst-italic text-wrap" style="max-width: 300px;">${catatan}</div></td>
+                            <td><div class="fst-italic text-wrap text-break">${catatan}</div></td>
                         </tr>
                     `;
                 });
