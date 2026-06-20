@@ -35,6 +35,10 @@
             overflow-x: hidden;
             min-height: 100vh;
         }
+        
+        body {
+            padding-top: var(--header-h);
+        }
 
         a { text-decoration: none; color: inherit; }
 
@@ -46,8 +50,10 @@
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             border-bottom: 1px solid var(--border);
-            position: sticky;
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
             z-index: 1030;
             min-height: var(--header-h);
             box-shadow: 0 1px 12px rgba(15,23,42,0.03);
