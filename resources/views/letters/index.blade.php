@@ -51,6 +51,7 @@
                         <th>Tgl Dibuat</th>
                         <th>Jenis</th>
                         <th>No Surat</th>
+                        <th>No Agenda</th>
                         <th>Perihal</th>
                         <th>Pengirim</th>
                         <th>Tujuan</th>
@@ -75,6 +76,13 @@
                                 @endif
                             </td>
                             <td class="fw-bold">{{ $letter->letter_number }}</td>
+                            <td class="text-nowrap">
+                                @if($letter->agenda_number)
+                                    <span class="badge bg-secondary">{{ $letter->agenda_number }}</span>
+                                @else
+                                    <span class="text-muted">-</span>
+                                @endif
+                            </td>
                             <td>
                                 <div class="text-truncate" style="max-width: 200px;" title="{{ $letter->subject }}">
                                     {{ $letter->subject }}
@@ -135,9 +143,16 @@
                                         $historiesList = $dispoHistory->sortBy('sort_date')->values()->toJson();
                                     @endphp
                                     
+                                    @php
+                                        $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->name ?? 'Sistem');
+                                    @endphp
+                                    
                                     <button type="button" class="btn btn-sm btn-outline-info btn-lihat-disposisi" 
                                             data-disposisi="{{ $historiesList }}"
                                             data-nosurat="{{ $letter->letter_number }}"
+                                            data-agenda="{{ $letter->agenda_number ?? '-' }}"
+                                            data-perihal="{{ $letter->subject }}"
+                                            data-pengirim="{{ $pengirimText }}"
                                             title="Lihat Disposisi">
                                         <i class="bi bi-sign-turn-right-fill"></i>
                                     </button>
@@ -158,9 +173,23 @@
             <h5 class="modal-title fw-bold" id="modalDisposisiLabel">Lacak Perjalanan Surat</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body">
-              <div class="alert alert-primary py-2 mb-4">
-                  <strong>No Surat:</strong> <span id="modalNoSurat"></span>
+          <div class="modal-body p-4">
+              <!-- Info Surat Section -->
+              <div class="alert alert-light border border-secondary-subtle mb-4">
+                  <div class="row gx-3 gy-2">
+                      <div class="col-12">
+                          <span class="text-muted small text-uppercase fw-semibold">Perihal Surat</span>
+                          <div class="fw-bold text-dark" id="modalPerihal"></div>
+                      </div>
+                      <div class="col-md-6 mt-3">
+                          <span class="text-muted small text-uppercase fw-semibold">Pengirim</span>
+                          <div class="fw-medium text-dark" id="modalPengirim"></div>
+                      </div>
+                      <div class="col-md-6 mt-3">
+                          <span class="text-muted small text-uppercase fw-semibold">No. Agenda</span>
+                          <div><span class="badge bg-secondary" id="modalAgenda"></span></div>
+                      </div>
+                  </div>
               </div>
               
               <div class="table-responsive">
@@ -225,9 +254,19 @@
         $('#laporanTable').on('click', '.btn-lihat-disposisi', function() {
             var rawData = $(this).attr('data-disposisi');
             var noSurat = $(this).attr('data-nosurat');
+            var agenda = $(this).attr('data-agenda');
+            var perihal = $(this).attr('data-perihal');
+            var pengirim = $(this).attr('data-pengirim');
             var disposisi = JSON.parse(rawData);
             
-            $('#modalNoSurat').text(noSurat);
+            $('#modalDisposisiLabel').text('Lacak Perjalanan: ' + noSurat);
+            $('#modalPerihal').text(perihal);
+            $('#modalPengirim').text(pengirim);
+            if (agenda && agenda !== '-') {
+                $('#modalAgenda').text(agenda).removeClass('bg-secondary text-muted').addClass('bg-primary');
+            } else {
+                $('#modalAgenda').text('Belum diagendakan').removeClass('bg-primary').addClass('bg-secondary text-muted');
+            }
             
             // Hancurkan DataTable lama jika ada, sebelum memodifikasi isi tbody
             if (historyDataTable !== null) {
