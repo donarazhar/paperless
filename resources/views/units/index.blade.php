@@ -131,9 +131,6 @@
                     </td>
                     <td>
                         <div class="d-flex gap-1 flex-wrap">
-                            <a href="{{ route('letters.index', ['unit_id'=>$unit->id]) }}" class="btn-rpt" title="Lihat Laporan Surat">
-                                <i class="bi bi-file-earmark-bar-graph-fill"></i>
-                            </a>
                             <form action="{{ route('units.destroy', $unit) }}" method="POST">
                                 @csrf @method('DELETE')
                                 <button class="btn-del" onclick="return confirm('Hapus unit ini?')">
@@ -177,9 +174,6 @@
             </form>
 
             <div class="uc-actions">
-                <a href="{{ route('letters.index', ['unit_id'=>$unit->id]) }}" class="btn-rpt">
-                    <i class="bi bi-file-earmark-bar-graph-fill"></i> Laporan Surat
-                </a>
                 <form action="{{ route('units.destroy', $unit) }}" method="POST">
                     @csrf @method('DELETE')
                     <button class="btn-del" onclick="return confirm('Hapus unit ini?')">
