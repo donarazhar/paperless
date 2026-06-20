@@ -75,7 +75,7 @@
     </div>
 
     @php
-        $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->name ?? 'Sistem');
+        $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->unit->name ?? ($letter->sender->name ?? 'Sistem'));
         $tujuanText   = $letter->type === 'outbound_external' ? $letter->external_recipient_name : ($letter->recipientUser ? $letter->recipientUser->name : ($letter->recipientUnit->name ?? '--'));
         
         $dispoHistory = collect();

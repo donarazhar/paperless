@@ -147,7 +147,7 @@
         <tbody>
             @foreach($letters as $letter)
                 @php
-                    $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->name ?? 'Sistem');
+                    $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->unit->name ?? ($letter->sender->name ?? 'Sistem'));
                     $tujuanText   = $letter->type === 'outbound_external' ? $letter->external_recipient_name : ($letter->recipientUser ? $letter->recipientUser->name : ($letter->recipientUnit->name ?? '--'));
                 @endphp
                 <tr>
@@ -203,7 +203,7 @@
 <div class="cards-wrap">
     @forelse($letters as $letter)
         @php
-            $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->name ?? 'Sistem');
+            $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->unit->name ?? ($letter->sender->name ?? 'Sistem'));
         @endphp
         <div class="rpt-card">
             <div class="rc-no">{{ $letter->letter_number ?: '— Belum bernomor' }}</div>
