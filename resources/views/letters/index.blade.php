@@ -49,13 +49,11 @@
                 <thead class="table-light">
                     <tr>
                         <th>Tgl Dibuat</th>
-                        <th>Jenis</th>
                         <th>No Surat</th>
                         <th>No Agenda</th>
                         <th>Perihal</th>
                         <th>Pengirim</th>
                         <th>Tujuan</th>
-                        <th>Status</th>
                         <th class="text-end">Aksi</th>
                     </tr>
                 </thead>
@@ -65,15 +63,6 @@
                             <td>
                                 <span class="d-none">{{ $letter->created_at->format('Y-m-d H:i:s') }}</span>
                                 {{ $letter->created_at->locale('id')->isoFormat('D MMM YYYY') }}
-                            </td>
-                            <td>
-                                @if($letter->type == 'internal')
-                                    <span class="badge bg-primary bg-opacity-10 text-primary">Internal</span>
-                                @elseif($letter->type == 'external')
-                                    <span class="badge bg-warning bg-opacity-10 text-warning">M. Eksternal</span>
-                                @else
-                                    <span class="badge bg-secondary bg-opacity-10 text-secondary">K. Eksternal</span>
-                                @endif
                             </td>
                             <td class="fw-bold">{{ $letter->letter_number }}</td>
                             <td class="text-nowrap">
@@ -103,9 +92,6 @@
                                 @else
                                     Unit {{ $letter->recipientUnit->name ?? '--' }}
                                 @endif
-                            </td>
-                            <td class="text-capitalize">
-                                <span class="badge bg-success">{{ str_replace('_', ' ', $letter->status) }}</span>
                             </td>
                             <td class="text-end">
                                 <div class="btn-group">
