@@ -168,7 +168,22 @@
         // Inisialisasi DataTables
         $('#laporanTable').DataTable({
             language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/id.json',
+                "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+                "sProcessing":   "Sedang memproses...",
+                "sLengthMenu":   "Tampilkan _MENU_ entri",
+                "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+                "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
+                "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
+                "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
+                "sInfoPostFix":  "",
+                "sSearch":       "Cari:",
+                "sUrl":          "",
+                "oPaginate": {
+                    "sFirst":    "Pertama",
+                    "sPrevious": "Sebelumnya",
+                    "sNext":     "Selanjutnya",
+                    "sLast":     "Terakhir"
+                }
             },
             order: [[0, 'desc']], // Urutkan berdasarkan kolom pertama (Tgl Dibuat) menurun
             pageLength: 25
