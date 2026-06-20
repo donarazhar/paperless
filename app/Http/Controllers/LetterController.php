@@ -250,7 +250,8 @@ class LetterController extends Controller
     public function create()
     {
         $this->authorizeRole('staf_unit');
-        return view('letters.create');
+        $units = \App\Models\Unit::all();
+        return view('letters.create', compact('units'));
     }
 
     public function store(Request $request)
@@ -262,11 +263,10 @@ class LetterController extends Controller
             'subject' => 'required|string',
             'body' => 'required|string',
             'action' => 'required|in:draft,send',
+            'to_unit_id' => 'required|exists:units,id',
             'attachments' => 'required|array|min:1',
             'attachments.*' => 'file|max:5120',
         ]);
-
-        $sekretariatUnit = Unit::where('is_sekretariat', true)->firstOrFail();
 
         $letter = Letter::create([
             'type' => 'internal',
@@ -274,8 +274,8 @@ class LetterController extends Controller
             'subject' => $data['subject'],
             'body' => $data['body'],
             'from_user_id' => Auth::id(),
-            'to_unit_id' => $sekretariatUnit->id,
-            'status' => $request->action === 'draft' ? 'draft' : 'pending_agenda',
+            'to_unit_id' => $data['to_unit_id'],
+            'status' => $request->action === 'draft' ? 'draft' : 'sent',
         ]);
 
         if ($request->hasFile('attachments')) {
@@ -288,7 +288,7 @@ class LetterController extends Controller
 
                 $path = $file->storeAs('attachments', $filename, 'public');
 
-                Attachment::create([
+                \App\Models\Attachment::create([
                     'letter_id' => $letter->id,
                     'file_path' => $path,
                 ]);
