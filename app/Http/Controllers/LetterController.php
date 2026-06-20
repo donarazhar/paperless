@@ -24,7 +24,8 @@ class LetterController extends Controller
             abort(403);
         }
 
-        $q = Letter::with(['sender', 'recipientUser', 'recipientUnit']);
+        $q = Letter::with(['sender', 'dispositions', 'recipientUser', 'recipientUnit'])
+                   ->where('type', 'internal');
 
         if ($s = $request->search) {
             $q->where(
@@ -63,7 +64,7 @@ class LetterController extends Controller
             'recipientUser',
             'recipientUnit',
             'dispositions',
-        ]);
+        ])->where('type', 'internal');
 
         if ($user->role === 'staf_unit') {
             $q->whereHas(
@@ -106,17 +107,117 @@ class LetterController extends Controller
             $q->whereDate('created_at', '<=', $to);
         }
 
-        $letters = $q->latest()
-            ->paginate(15)
-            ->withQueryString();
+        $letters = $q->latest()->paginate(15);
 
         return view('letters.inbox', compact('letters'));
     }
 
+    public function inboundExternal(Request $request)
+    {
+        $user = Auth::user();
+        $q = Letter::with(['sender', 'dispositions', 'recipientUser', 'recipientUnit'])
+                   ->where('type', 'external');
+
+        if ($user->role === 'staf_unit') {
+            $q->where(function ($query) use ($user) {
+                $query->where('created_by_user_id', $user->id)
+                      ->orWhereHas('dispositions', function ($sq) use ($user) {
+                          $sq->where('to_user_id', $user->id)
+                             ->orWhere('to_unit_id', $user->unit_id);
+                      })
+                      ->orWhere('to_unit_id', $user->unit_id);
+            });
+        } elseif ($user->role === 'staf_tu') {
+            $q->where(function ($query) use ($user) {
+                  $query->whereIn('status', ['pending_agenda', 'in_consideration', 'completed'])
+                        ->orWhere('created_by_user_id', $user->id);
+              });
+        } elseif ($user->role === 'kasubag_tu' || $user->role === 'kepala_sekretariat') {
+            $q->where(function ($query) use ($user) {
+                  $query->whereIn('status', ['in_review_kasubag', 'in_consideration', 'completed'])
+                        ->orWhere('created_by_user_id', $user->id)
+                        ->orWhereHas('dispositions', function ($sq) use ($user) {
+                            $sq->where('to_user_id', $user->id);
+                        });
+              });
+        }
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%$s%")
+                      ->orWhere('subject', 'like', "%$s%")
+                      ->orWhere('external_sender_name', 'like', "%$s%");
+            });
+        }
+
+        if ($request->filled('status')) {
+            $q->where('status', $request->status);
+        }
+
+        if ($request->filled('date_from')) {
+            $q->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->filled('date_to')) {
+            $q->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $letters = $q->latest()->paginate(15);
+        return view('letters.inbox_external', compact('letters'));
+    }
+
+    public function createExternal()
+    {
+        return view('letters.create_external');
+    }
+
+    public function storeExternal(Request $request)
+    {
+        $data = $request->validate([
+            'external_sender_name' => 'required|string|max:255',
+            'letter_number'        => 'required|string|max:255',
+            'subject'              => 'required|string|max:255',
+            'body'                 => 'required|string',
+            'attachments.*'        => 'file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+            'action_type'          => 'required|in:archive,forward',
+        ]);
+
+        $letter = Letter::create([
+            'type'                 => 'external',
+            'external_sender_name' => $data['external_sender_name'],
+            'created_by_user_id'   => Auth::id(),
+            'from_user_id'         => null,
+            'to_unit_id'           => ($data['action_type'] === 'archive') ? Auth::user()->unit_id : null,
+            'letter_number'        => $data['letter_number'],
+            'subject'              => $data['subject'],
+            'body'                 => $data['body'],
+            'status'               => ($data['action_type'] === 'archive') ? 'completed' : 'pending_agenda',
+        ]);
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('attachments', 'public');
+                $letter->attachments()->create([
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                ]);
+            }
+        }
+
+        $msg = ($data['action_type'] === 'archive') 
+            ? 'Surat Eksternal berhasil diarsipkan.' 
+            : 'Surat Eksternal berhasil diteruskan ke Sekretariat YPIA untuk Disposisi.';
+
+        return redirect()->route('letters.inboundExternal')->with('success', $msg);
+    }
+
     public function outbound(Request $request)
     {
+        $user = Auth::user();
         $q = Letter::with(['recipientUser', 'recipientUnit'])
-            ->where('from_user_id', Auth::id());
+            ->where('from_user_id', $user->id)
+            ->where('type', 'internal');
 
         // -- FILTERS --
         if ($s = $request->search) {

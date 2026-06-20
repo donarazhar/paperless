@@ -14,6 +14,8 @@ class Letter extends Model
         'from_user_id',
         'to_user_id',
         'to_unit_id',
+        'external_sender_name',
+        'created_by_user_id',
         'status'
     ];
 
@@ -36,6 +38,11 @@ class Letter extends Model
     public function recipientUnit()
     {
         return $this->belongsTo(Unit::class, 'to_unit_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
     public function attachments()

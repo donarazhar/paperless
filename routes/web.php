@@ -30,7 +30,11 @@ Route::middleware('auth')->group(function () {
         Route::post('letters', [LetterController::class, 'store'])->name('letters.store');
     });
 
+    Route::get('letters/create-external', [LetterController::class, 'createExternal'])->name('letters.createExternal');
+    Route::post('letters/external', [LetterController::class, 'storeExternal'])->name('letters.storeExternal');
+
     Route::get('letters/inbox', [LetterController::class, 'inbound'])->name('letters.inbound');
+    Route::get('letters/inbox-external', [LetterController::class, 'inboundExternal'])->name('letters.inboundExternal');
     Route::get('letters/outbox', [LetterController::class, 'outbound'])->name('letters.outbound');
     Route::get('letters/{letter}', [LetterController::class, 'show'])->name('letters.show');
     Route::post('letters/{letter}/mark-read', [LetterController::class, 'markRead'])->name('letters.markRead');

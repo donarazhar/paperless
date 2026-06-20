@@ -246,7 +246,10 @@
                     <i class="bi bi-folder2-open"></i> Semua Surat
                 </a>
                 <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
-                    <i class="bi bi-inbox-fill"></i> Antrean Agenda
+                    <i class="bi bi-inbox-fill"></i> Surat Masuk Internal
+                </a>
+                <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
+                    <i class="bi bi-envelope-paper-fill"></i> Surat Masuk Eksternal
                 </a>
                 
                 <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Master Data</div>
@@ -262,7 +265,10 @@
                 
             @elseif(in_array($role, ['kasubag_tu', 'kepala_sekretariat']))
                 <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
-                    <i class="bi bi-envelope-open-fill"></i> Surat & Disposisi
+                    <i class="bi bi-inbox-fill"></i> Disposisi Internal
+                </a>
+                <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
+                    <i class="bi bi-envelope-paper-fill"></i> Disposisi Eksternal
                 </a>
 
             @elseif($role === 'staf_unit')

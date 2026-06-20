@@ -81,7 +81,14 @@
                         </tr>
                         <tr>
                             <td class="letter-label">Pengirim</td>
-                            <td>: <span class="fw-medium">{{ $letter->sender->name }}</span> ({{ str_replace('_', ' ', $letter->sender->role) }} – {{ $letter->sender->unit->name }})</td>
+                            <td>: 
+                                @if($letter->type === 'external')
+                                    <span class="fw-bold text-primary">{{ $letter->external_sender_name }}</span> (Instansi Luar)
+                                    <div class="small text-muted mt-1" style="margin-left: 10px;">Diinput oleh: {{ $letter->creator->name ?? 'Admin' }}</div>
+                                @else
+                                    <span class="fw-medium">{{ $letter->sender->name ?? 'Sistem' }}</span> ({{ str_replace('_', ' ', $letter->sender->role ?? '') }} – {{ $letter->sender->unit->name ?? '' }})
+                                @endif
+                            </td>
                         </tr>
                         <tr>
                             <td class="letter-label">Tujuan</td>
