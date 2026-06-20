@@ -28,6 +28,7 @@ class LetterPolicy
             return $letter->to_unit_id === $user->unit_id
                 || $letter->to_user_id === $user->id
                 || $letter->from_user_id === $user->id
+                || $letter->created_by_user_id === $user->id
                 || $letter->dispositions()->where(function ($q) use ($user) {
                         $q->where('to_unit_id', $user->unit_id)
                           ->orWhere('to_user_id', $user->id);
@@ -41,6 +42,7 @@ class LetterPolicy
             return $letter->from_user_id === $user->id
                 || $letter->to_user_id === $user->id
                 || $letter->to_unit_id === $user->unit_id
+                || $letter->created_by_user_id === $user->id
                 || $letter->dispositions()->where(function ($q) use ($user) {
                         $q->where('to_unit_id', $user->unit_id)
                           ->orWhere('to_user_id', $user->id);
