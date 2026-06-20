@@ -153,10 +153,10 @@
                     foreach($letter->dispositions as $d) {
                         $target = $d->toUser ? $d->toUser->name : ($d->unit ? 'Unit '.$d->unit->name : '--');
                         $actor  = $d->fromUser ? $d->fromUser->name : 'Sistem';
-                        $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d/m/y H:i'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$d->note ?? '-','by'=>$actor]);
+                        $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d/m/y'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$d->note ?? '-','by'=>$actor]);
                         if($d->status !== 'pending') {
                             $sInd = $d->status==='accepted' ? 'Selesai' : ($d->status==='pertimbangan' ? 'Pertimbangan' : ucfirst($d->status));
-                            $dispoHistory->push(['sort_date'=>$d->updated_at->timestamp,'tanggal'=>$d->updated_at->format('d/m/y H:i'),'aksi'=>$sInd,'aktor'=>$actor,'catatan'=>$d->response_note ?? '-','by'=>$target]);
+                            $dispoHistory->push(['sort_date'=>$d->updated_at->timestamp,'tanggal'=>$d->updated_at->format('d/m/y'),'aksi'=>$sInd,'aktor'=>$actor,'catatan'=>$d->response_note ?? '-','by'=>$target]);
                         }
                     }
                     $historiesList = $dispoHistory->sortBy('sort_date')->values()->toJson();
@@ -228,10 +228,10 @@
             foreach($letter->dispositions as $d) {
                 $target = $d->toUser ? $d->toUser->name : ($d->unit ? 'Unit '.$d->unit->name : '--');
                 $actor  = $d->fromUser ? $d->fromUser->name : 'Sistem';
-                $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d/m/y H:i'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$d->note ?? '-','by'=>$actor]);
+                $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d/m/y'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$d->note ?? '-','by'=>$actor]);
                 if($d->status !== 'pending') {
                     $sInd = $d->status==='accepted' ? 'Selesai' : ($d->status==='pertimbangan' ? 'Pertimbangan' : ucfirst($d->status));
-                    $dispoHistory->push(['sort_date'=>$d->updated_at->timestamp,'tanggal'=>$d->updated_at->format('d/m/y H:i'),'aksi'=>$sInd,'aktor'=>$actor,'catatan'=>$d->response_note ?? '-','by'=>$target]);
+                    $dispoHistory->push(['sort_date'=>$d->updated_at->timestamp,'tanggal'=>$d->updated_at->format('d/m/y'),'aksi'=>$sInd,'aktor'=>$actor,'catatan'=>$d->response_note ?? '-','by'=>$target]);
                 }
             }
             $historiesList = $dispoHistory->sortBy('sort_date')->values()->toJson();
@@ -306,11 +306,9 @@
                     <table class="table table-hover align-middle w-100" id="tableDisposisi" style="font-size:0.85rem;">
                         <thead style="background:#f8faff;color:#64748b;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;">
                             <tr>
-                                <th style="width:15%;">Tanggal</th>
-                                <th style="width:15%;">Status</th>
-                                <th style="width:20%;">Ditujukan Ke</th>
-                                <th style="width:20%;">Oleh</th>
-                                <th style="width:30%;">Catatan</th>
+                                <th style="width:25%;">Ditujukan Ke</th>
+                                <th style="width:30%;">Status</th>
+                                <th style="width:45%;">Catatan</th>
                             </tr>
                         </thead>
                         <tbody id="bodyTableDisposisi">
@@ -374,7 +372,7 @@ $(document).ready(function() {
 
         var html = '';
         if (!disposisi.length) {
-            html = '<tr><td colspan="5" class="text-center py-4 text-muted"><i class="bi bi-inbox fs-3 d-block mb-2"></i>Belum ada riwayat disposisi.</td></tr>';
+            html = '<tr><td colspan="3" class="text-center py-4 text-muted"><i class="bi bi-inbox fs-3 d-block mb-2"></i>Belum ada riwayat disposisi.</td></tr>';
         } else {
             disposisi.forEach(function(item) {
                 var catatan = item.catatan && item.catatan !== '-' ? item.catatan.replace(/\n/g,'<br>') : '<span style="color:#cbd5e1;">—</span>';
@@ -384,10 +382,12 @@ $(document).ready(function() {
                 else badge = '<span class="badge bg-primary">'+item.aksi+'</span>';
 
                 html += `<tr>
-                    <td class="text-nowrap" style="color:#64748b;">${item.tanggal || ''}</td>
-                    <td>${badge}</td>
                     <td class="fw-bold" style="color:#334155;">${item.aktor}</td>
-                    <td>${item.by || ''}</td>
+                    <td>
+                        <div style="font-size:0.75rem;color:#64748b;margin-bottom:2px;"><i class="bi bi-calendar3"></i> ${item.tanggal}</div>
+                        <div class="mb-1">${badge}</div>
+                        <div style="font-size:0.75rem;color:#475569;"><i class="bi bi-person-fill"></i> Oleh: ${item.by || ''}</div>
+                    </td>
                     <td>${catatan}</td>
                 </tr>`;
             });
