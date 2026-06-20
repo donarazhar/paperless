@@ -44,31 +44,6 @@ class LetterController extends Controller
                     ->orWhere('subject', 'like', "%{$s}%")
             );
         }
-        
-        if ($cat = $request->category) {
-            if ($cat === 'masuk_internal') {
-                $q->where('type', 'internal');
-                if ($user->role === 'staf_unit') {
-                    $q->where(function($sq) use ($user) {
-                        $sq->where('to_unit_id', $user->unit_id)
-                           ->orWhere('to_user_id', $user->id)
-                           ->orWhereHas('dispositions', function($d) use ($user) {
-                               $d->where('to_user_id', $user->id)
-                                 ->orWhere('to_unit_id', $user->unit_id);
-                           });
-                    });
-                }
-            } elseif ($cat === 'keluar_internal') {
-                $q->where('type', 'internal');
-                if ($user->role === 'staf_unit') {
-                    $q->where('from_user_id', $user->id);
-                }
-            } elseif ($cat === 'masuk_eksternal') {
-                $q->where('type', 'external');
-            } elseif ($cat === 'keluar_eksternal') {
-                $q->where('type', 'outbound_external');
-            }
-        }
         if ($t = $request->type) {
             $q->where('type', $t);
         }
