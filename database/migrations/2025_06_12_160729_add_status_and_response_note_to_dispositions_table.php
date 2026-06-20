@@ -8,7 +8,7 @@ return new class extends Migration {
     public function up(): void
     {
         Schema::table('dispositions', function (Blueprint $table) {
-            $table->enum('status', ['pending', 'accepted', 'rejected', 'followup'])
+            $table->string('status')
                 ->default('pending')
                 ->after('note');
             $table->text('response_note')

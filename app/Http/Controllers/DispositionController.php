@@ -15,14 +15,46 @@ class DispositionController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Manager membuat disposisi
-     */
+    public function agenda(Request $request, Letter $letter)
+    {
+        $this->authorizeRole('staf_tu');
+        
+        $data = $request->validate([
+            'agenda_number' => 'required|string',
+            'note' => 'nullable|string',
+        ]);
+
+        $letter->update([
+            'agenda_number' => $data['agenda_number'],
+            'status' => 'in_review_kasubag'
+        ]);
+
+        $kasubagTuUser = \App\Models\User::where('role', 'kasubag_tu')->first();
+        if ($kasubagTuUser) {
+            Disposition::create([
+                'letter_id' => $letter->id,
+                'from_user_id' => Auth::id(),
+                'to_user_id' => $kasubagTuUser->id,
+                'note' => $data['note'] ?? 'Mohon arahan/disposisi',
+                'status' => 'pending',
+            ]);
+        }
+
+        LetterHistory::create([
+            'letter_id' => $letter->id,
+            'user_id' => Auth::id(),
+            'action' => 'agenda_assigned',
+            'note' => 'Agenda: ' . $data['agenda_number'],
+        ]);
+
+        return redirect()
+            ->route('letters.show', ['letter' => Hashids::encode($letter->id)])
+            ->with('success', 'Surat berhasil diagendakan dan diteruskan ke Kasubag TU.');
+    }
+
     public function store(Request $request, Letter $letter)
     {
-        if (Auth::user()->role !== 'manager') {
-            abort(403);
-        }
+        $this->authorizeRole('kasubag_tu');
 
         $data = $request->validate([
             'to_unit_id' => 'nullable|exists:units,id|required_without:to_user_id',
@@ -30,7 +62,7 @@ class DispositionController extends Controller
             'note' => 'required|string',
         ]);
 
-        $disp = Disposition::create([
+        Disposition::create([
             'letter_id' => $letter->id,
             'from_user_id' => Auth::id(),
             'to_unit_id' => $data['to_unit_id'] ?? null,
@@ -39,7 +71,7 @@ class DispositionController extends Controller
             'status' => 'pending',
         ]);
 
-        $letter->update(['status' => 'disposed']);
+        $letter->update(['status' => 'in_consideration']);
 
         LetterHistory::create([
             'letter_id' => $letter->id,
@@ -53,41 +85,48 @@ class DispositionController extends Controller
             ->with('success', 'Disposisi berhasil dikirim.');
     }
 
-    /**
-     * Penerima merespon disposisi: accept / reject / followup
-     */
     public function respond(Request $request, Disposition $disposition)
     {
         $user = Auth::user();
-        // pastikan penerima disposisi
-        if (
-            !(
-                $disposition->to_user_id === $user->id ||
-                $disposition->to_unit_id === $user->unit_id
-            )
-        ) {
+        if (!($disposition->to_user_id === $user->id || $disposition->to_unit_id === $user->unit_id)) {
             abort(403);
         }
 
         $data = $request->validate([
-            'action' => 'required|in:accepted,rejected,followup',
-            'response_note' => 'required_if:action,rejected,followup|string',
+            'action' => 'required|in:pertimbangan,accepted,rejected,followup',
+            'response_note' => 'required|string',
         ]);
 
         $disposition->update([
             'status' => $data['action'],
-            'response_note' => $data['response_note'] ?? null,
+            'response_note' => $data['response_note'],
         ]);
 
         LetterHistory::create([
             'letter_id' => $disposition->letter_id,
             'user_id' => $user->id,
-            'action' => 'disposition_' . $data['action'],
-            'note' => $data['response_note'] ?? null,
+            'action' => 'disposition_responded',
+            'note' => "[$data[action]] " . $data['response_note'],
+        ]);
+
+        return back()->with('success', 'Tanggapan berhasil disimpan.');
+    }
+
+    public function selesai(Request $request, Letter $letter)
+    {
+        $this->authorizeRole('staf_tu');
+
+        $letter->update(['status' => 'completed']);
+
+        LetterHistory::create([
+            'letter_id' => $letter->id,
+            'user_id' => Auth::id(),
+            'action' => 'completed',
+            'note' => 'Proses surat telah selesai.',
         ]);
 
         return redirect()
-            ->route('letters.show', ['letter' => Hashids::encode($disposition->letter_id)])
-            ->with('success', 'Anda telah ' . ($data['action'] === 'accepted' ? 'menerima' : 'menolak/tindak lanjut') . ' disposisi.');
+            ->route('letters.show', ['letter' => Hashids::encode($letter->id)])
+            ->with('success', 'Surat telah ditandai Selesai.');
     }
 }

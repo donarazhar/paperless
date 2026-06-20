@@ -41,61 +41,6 @@
                required>
       </div>
 
-      {{-- Pilihan penerima --}}
-      <div class="mb-3">
-        <label class="form-label">Kirim Ke</label>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input"
-                 type="radio"
-                 name="recipient_type"
-                 id="recUnit"
-                 value="unit"
-                 {{ old('recipient_type', 'unit') == 'unit' ? 'checked' : '' }}>
-          <label class="form-check-label" for="recUnit">Unit</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input"
-                 type="radio"
-                 name="recipient_type"
-                 id="recUser"
-                 value="user"
-                 {{ old('recipient_type') == 'user' ? 'checked' : '' }}>
-          <label class="form-check-label" for="recUser">Pengguna</label>
-        </div>
-      </div>
-
-      <div class="mb-3" id="selectUnit">
-        <label class="form-label">Pilih Unit</label>
-        <select name="to_unit_id" class="form-select">
-          <option value="">– Pilih Unit –</option>
-          @foreach($units as $unit)
-          @if ($unit->name == 'Administrator')
-            @continue
-          @endif  
-            <option value="{{ $unit->id }}"
-              {{ old('to_unit_id') == $unit->id ? 'selected' : '' }}>
-              {{ $unit->name }}
-            </option>
-          @endforeach
-        </select>
-      </div>
-
-      <div class="mb-3" id="selectUser">
-        <label class="form-label">Pilih Pengguna</label>
-        <select name="to_user_id" class="form-select">
-          <option value="">– Pilih Pengguna –</option>
-          @foreach(\App\Models\User::all() as $u)
-            @if ($u->role == 'admin')
-              @continue
-            @endif 
-            <option value="{{ $u->id }}"
-              {{ old('to_user_id') == $u->id ? 'selected' : '' }}>
-              {{ $u->name }} ({{ $u->email }})
-            </option>
-          @endforeach
-        </select>
-      </div>
-
       <div class="mb-3">
         <label class="form-label">Isi Surat</label>
         <textarea name="body"
@@ -129,24 +74,4 @@
         <a href="{{ route('letters.inbound') }}" class="btn btn-link">Batal</a>
       </div>
     </form>
-
-    {{-- Script kecil untuk toggle select --}}
-    <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const selUnit = document.getElementById('selectUnit');
-      const selUser = document.getElementById('selectUser');
-      function toggle() {
-        if (document.getElementById('recUnit').checked) {
-          selUnit.style.display = 'block';
-          selUser.style.display = 'none';
-        } else {
-          selUnit.style.display = 'none';
-          selUser.style.display = 'block';
-        }
-      }
-      document.querySelectorAll('input[name="recipient_type"]')
-              .forEach(el => el.addEventListener('change', toggle));
-      toggle();
-    });
-    </script>
 @endsection

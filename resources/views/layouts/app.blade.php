@@ -6,10 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="icon" href="{{ asset('favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" href="{{ asset('img/logo.png') }}" type="image/png">
 
 
-    <title>@yield('title') – MailApp | Bank Jateng Syariah Pekalongan</title>
+    <title>@yield('title') – Paperless Mail | Yayasan Pesantren Islam Al Azhar</title>
 
 
     <!-- Google Font: Inter -->
@@ -88,9 +88,9 @@
     <nav class="navbar navbar-expand-lg bg-white shadow-sm">
         <div class="container">
             <a class="navbar-brand fw-bold" href="{{ route('dashboard') }}">
-                <img src="https://bucket-api.baznas.go.id/bucket-api/file?bucket=bzn-fdr-smb-p5739641&file=attachments/rekening/172292650008666680_497-v2-Bank-Jateng-Syariah.png"
+                <img src="{{ asset('img/logo.png') }}"
                     class="brand-logo mb-2"
-                    alt="Logo Bank Jateng"
+                    alt="Logo Al Azhar"
                     style="height: 60px; width: auto;"> 
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -111,12 +111,12 @@
                         </a>
                     </li>
 
-                    {{-- Admin --}}
-                    @if($role === 'admin')
+                    {{-- Super Admin (Staf TU) --}}
+                    @if($role === 'staf_tu')
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('letters.index') ? 'active' : '' }}"
-                                href="{{ route('letters.index') }}">
-                                <i class="bi bi-envelope-fill"></i> All Letters
+                            <a class="nav-link {{ request()->routeIs('letters.inbound') ? 'active' : '' }}"
+                                href="{{ route('letters.inbound') }}">
+                                <i class="bi bi-inbox-fill"></i> Antrean Surat (Agenda)
                             </a>
                         </li>
                         <li class="nav-item">
@@ -126,27 +126,36 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a class="nav-link {{ request()->routeIs('branches.*') ? 'active' : '' }}"
+                                href="{{ route('branches.index') }}">
+                                <i class="bi bi-building"></i> Cabang
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('units.*') ? 'active' : '' }}"
                                 href="{{ route('units.index') }}">
                                 <i class="bi bi-diagram-3-fill"></i> Units
                             </a>
                         </li>
 
-                        {{-- Manager --}}
-                    @elseif($role === 'manager')
+                    {{-- Kasubag TU / Kepala Sekretariat --}}
+                    @elseif(in_array($role, ['kasubag_tu', 'kepala_sekretariat']))
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('letters.inbound') ? 'active' : '' }}"
                                 href="{{ route('letters.inbound') }}">
-                                <i class="bi bi-inbox-fill"></i> Surat Masuk
+                                <i class="bi bi-inbox-fill"></i> Surat Masuk / Disposisi
                             </a>
                         </li>
 
-                        {{-- Staff --}}
-                    @elseif($role === 'staff')
+                    {{-- hapus Staf TU yg duplicate di bawah --}}
+                    
+
+                    {{-- Staf Unit --}}
+                    @elseif($role === 'staf_unit')
                         <li class="nav-item">
                             <a class="nav-link {{ request()->routeIs('letters.inbound') ? 'active' : '' }}"
                                 href="{{ route('letters.inbound') }}">
-                                <i class="bi bi-inbox-fill"></i> Surat Masuk
+                                <i class="bi bi-inbox-fill"></i> Disposisi Masuk
                             </a>
                         </li>
                         <li class="nav-item">

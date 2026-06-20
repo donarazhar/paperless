@@ -15,44 +15,40 @@ Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 
 Route::middleware('auth')->group(function () {
-    Route::middleware(['auth', 'role:admin'])->group(function () {
-        // Daftar semua surat
+    Route::middleware(['auth', 'role:staf_tu'])->group(function () {
         Route::get('letters', [LetterController::class, 'index'])->name('letters.index');
     });
 
-    // Dashboard & Profile (semua user)
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('profile/password', [ProfileController::class, 'showPasswordForm'])->name('profile.password');
     Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
-    // **Staff-only: buat & kirim surat**
-    Route::middleware('role:staff')->group(function () {
+    Route::middleware('role:staf_unit')->group(function () {
         Route::get('letters/create', [LetterController::class, 'create'])->name('letters.create');
         Route::post('letters', [LetterController::class, 'store'])->name('letters.store');
     });
 
-    // **Inbox & Outbox (semua role)**
     Route::get('letters/inbox', [LetterController::class, 'inbound'])->name('letters.inbound');
     Route::get('letters/outbox', [LetterController::class, 'outbound'])->name('letters.outbound');
     Route::get('letters/{letter}', [LetterController::class, 'show'])->name('letters.show');
     Route::post('letters/{letter}/mark-read', [LetterController::class, 'markRead'])->name('letters.markRead');
 
-    // **Manager-only: disposisi surat**
-    Route::middleware('role:manager')->post(
-        'letters/{letter}/dispositions',
-        [DispositionController::class, 'store']
-    )->name('letters.dispositions.store');
+    Route::middleware('role:staf_tu')->group(function () {
+        Route::post('letters/{letter}/agenda', [DispositionController::class, 'agenda'])->name('letters.agenda');
+        Route::post('letters/{letter}/complete', [DispositionController::class, 'selesai'])->name('letters.complete');
+    });
 
-    Route::post(
-        'dispositions/{disposition}/respond',
-        [DispositionController::class, 'respond']
-    )->name('dispositions.respond');
+    Route::middleware('role:kasubag_tu')->group(function () {
+        Route::post('letters/{letter}/dispositions', [DispositionController::class, 'store'])->name('letters.dispositions.store');
+    });
 
-    // **Admin-only: manajemen user & unit**
-    Route::middleware('role:admin')->group(function () {
+    Route::post('dispositions/{disposition}/respond', [DispositionController::class, 'respond'])->name('dispositions.respond');
+
+    Route::middleware('role:staf_tu')->group(function () {
         Route::resource('users', UserController::class);
         Route::resource('units', UnitController::class)->except(['show']);
+        Route::resource('branches', \App\Http\Controllers\BranchController::class)->except(['show']);
     });
 });

@@ -6,6 +6,28 @@
         <a href="{{ route('users.create') }}" class="btn btn-primary">Tambah User</a>
     </div>
 
+    <form method="GET" action="{{ route('users.index') }}" class="row g-2 mb-4">
+        <div class="col-md-4">
+            <select name="branch_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Semua Cabang --</option>
+                @foreach($branches as $b)
+                    <option value="{{ $b->id }}" {{ request('branch_id') == $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-4">
+            <select name="unit_id" class="form-select" onchange="this.form.submit()">
+                <option value="">-- Semua Unit --</option>
+                @foreach($units as $u)
+                    <option value="{{ $u->id }}" {{ request('unit_id') == $u->id ? 'selected' : '' }}>{{ $u->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-4">
+            <a href="{{ route('users.index') }}" class="btn btn-secondary">Reset</a>
+        </div>
+    </form>
+
     <table class="table table-hover">
         <thead>
             <tr>
@@ -13,6 +35,7 @@
                 <th>Nama</th>
                 <th>Email</th>
                 <th>Role</th>
+                <th>Cabang</th>
                 <th>Unit</th>
                 <th>Aksi</th>
             </tr>
@@ -24,6 +47,7 @@
                     <td>{{ $user->name }}</td>
                     <td>{{ $user->email }}</td>
                     <td>{{ ucfirst($user->role) }}</td>
+                    <td>{{ $user->unit->branch->name ?? '-' }}</td>
                     <td>{{ $user->unit->name }}</td>
                     @if ($user->role == 'admin')
                         <td>

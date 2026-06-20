@@ -10,14 +10,28 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        // Hanya admin yang boleh CRUD user
-        $this->middleware(['auth', 'role:admin']);
+        // Hanya staf_tu yang boleh CRUD user
+        $this->middleware(['auth', 'role:staf_tu']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('unit')->get();
-        return view('users.index', compact('users'));
+        $query = User::with(['unit.branch']);
+
+        if ($request->filled('branch_id')) {
+            $query->whereHas('unit', function($q) use ($request) {
+                $q->where('branch_id', $request->branch_id);
+            });
+        }
+        if ($request->filled('unit_id')) {
+            $query->where('unit_id', $request->unit_id);
+        }
+
+        $users = $query->get();
+        $branches = \App\Models\Branch::all();
+        $units = Unit::all();
+
+        return view('users.index', compact('users', 'branches', 'units'));
     }
 
     public function create()
@@ -32,7 +46,7 @@ class UserController extends Controller
             'name' => 'required|string',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:admin,manager,staff',
+            'role' => 'required|in:staf_unit,staf_tu,kasubag_tu,kepala_sekretariat',
             'unit_id' => 'required|exists:units,id',
         ]);
 
@@ -54,7 +68,7 @@ class UserController extends Controller
         $data = $request->validate([
             'name' => 'required|string',
             'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin,manager,staff',
+            'role' => 'required|in:staf_unit,staf_tu,kasubag_tu,kepala_sekretariat',
             'unit_id' => 'required|exists:units,id',
         ]);
 

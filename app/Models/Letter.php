@@ -8,6 +8,7 @@ class Letter extends Model
     protected $fillable = [
         'type',
         'letter_number',
+        'agenda_number',
         'subject',
         'body',
         'from_user_id',

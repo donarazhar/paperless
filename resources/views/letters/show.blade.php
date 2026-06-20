@@ -3,23 +3,13 @@
 
 @section('content')
         @php
-    // Mapping role ke label
-    $roleLabels = [
-        'admin' => 'Administrator',
-        'staff' => 'Staff',
-        'manager' => 'Manajer',
-    ];
     $user = Auth::user();
-    // Disposisi yang diterima oleh current user/unit
-    $dispRecv = $letter->dispositions
-        ->first(fn($d) => $d->to_user_id === $user->id || $d->to_unit_id === $user->unit_id);
-    // Semua disposisi yang dikirim oleh current user (manager)
-    $dispSent = $letter->dispositions
-        ->filter(fn($d) => $d->from_user_id === $user->id);
-    // Untuk admin
+    $role = $user->role;
+    $dispRecv = $letter->dispositions->first(fn($d) => $d->to_user_id === $user->id || $d->to_unit_id === $user->unit_id);
+    $dispSent = $letter->dispositions->filter(fn($d) => $d->from_user_id === $user->id);
     $allDisp = $letter->dispositions;
-    $isAdmin = Auth::user()->role === 'admin';
-          @endphp
+    $isAdmin = $role === 'admin';
+        @endphp
 
         <h1 class="mb-4">Detail Surat</h1>
 
@@ -40,27 +30,19 @@
 
                     @if($dispRecv->status === 'pending')
                         <div class="mt-3">
+                            <button class="btn btn-info me-2" data-bs-toggle="modal" data-bs-target="#pertimbanganModal">
+                                <i class="bi bi-chat-text"></i> Beri Pertimbangan
+                            </button>
                             <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#acceptModal">
-                                <i class="bi bi-check-circle"></i> Terima
-                            </button>
-                            <button class="btn btn-danger me-2" data-bs-toggle="modal" data-bs-target="#rejectModal">
-                                <i class="bi bi-x-circle"></i> Tolak
-                            </button>
-                            <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#followupModal">
-                                <i class="bi bi-arrow-clockwise"></i> Follow‐up
+                                <i class="bi bi-check-circle"></i> Selesai/Terima
                             </button>
                         </div>
                     @else
                         <div class="mt-2">
-                            <span
-                                class="badge bg-{{ $dispRecv->status === 'accepted' ? 'success' : ($dispRecv->status === 'rejected' ? 'danger' : 'warning') }}">
-                                {{ ucfirst($dispRecv->status) }}
-                            </span>
+                            <span class="badge bg-secondary">{{ ucfirst($dispRecv->status) }}</span>
                             @if($dispRecv->response_note)
-                                <div
-                                    class="mt-2 p-3 border rounded 
-                                                                                                                                {{ $dispRecv->status === 'accepted' ? 'border-success' : ($dispRecv->status === 'rejected' ? 'border-danger' : 'border-warning') }}">
-                                    <small class="text-muted">Catatan Respon:</small>
+                                <div class="mt-2 p-3 border rounded border-secondary">
+                                    <small class="text-muted">Catatan Respon/Pertimbangan:</small>
                                     <blockquote class="mb-0">{{ $dispRecv->response_note }}</blockquote>
                                 </div>
                             @endif
@@ -247,9 +229,14 @@
                         Unit {{ $letter->recipientUnit->name }}
                     @endif
                 </p>
+                @if($letter->agenda_number)
+                <p>
+                    <strong>No Agenda (Sekretariat):</strong> {{ $letter->agenda_number }}
+                </p>
+                @endif
                 <p>
                     <strong>Status:</strong>
-                    <span class="text-capitalize">{{ $letter->status }}</span>
+                    <span class="badge bg-primary">{{ str_replace('_', ' ', strtoupper($letter->status)) }}</span>
                 </p>
             </div>
         </div>
@@ -284,18 +271,24 @@
         {{-- 6) AKSI & NAV --}}
         {{-- Aksi: Tandai Dibaca, Disposisi, Kembali --}}
         <div class="d-flex gap-2 mb-4">
-            @if($letter->status === 'sent' && in_array($user->role, ['staff', 'manager']))
-                <form action="{{ route('letters.markRead', $letter) }}" method="POST" class="d-inline">
+            @if($role === 'staf_tu' && $letter->status === 'pending_agenda')
+                <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#agendaForm">
+                    <i class="bi bi-journal-plus"></i> Beri Nomor Agenda & Teruskan
+                </button>
+            @endif
+
+            @if($role === 'staf_tu' && !in_array($letter->status, ['draft', 'pending_agenda', 'completed']))
+                <form action="{{ route('letters.complete', $letter) }}" method="POST" class="d-inline">
                     @csrf
-                    <button class="btn btn-success">
-                        <i class="bi bi-eye-fill"></i> Tandai Dibaca
+                    <button class="btn btn-success" onclick="return confirm('Tandai surat ini sebagai Selesai?')">
+                        <i class="bi bi-check-all"></i> Selesai
                     </button>
                 </form>
             @endif
 
-            @if($user->role === 'manager' && !$dispRecv)
+            @if($role === 'kasubag_tu' && in_array($letter->status, ['in_review_kasubag', 'in_consideration']))
                 <button class="btn btn-warning" data-bs-toggle="collapse" data-bs-target="#newDispoForm">
-                    <i class="bi bi-arrow-repeat"></i> Disposisi
+                    <i class="bi bi-arrow-repeat"></i> Disposisi ke Unit
                 </button>
             @endif
 
@@ -304,8 +297,30 @@
             </a>
         </div>
 
-        {{-- Form Disposisi (hanya manager & belum dispo) --}}
-        @if($user->role === 'manager' && !$dispRecv)
+        {{-- Form Agenda (Staf TU) --}}
+        @if($role === 'staf_tu' && $letter->status === 'pending_agenda')
+            <div class="collapse mb-4" id="agendaForm">
+                <div class="card card-body border-primary">
+                    <form action="{{ route('letters.agenda', $letter) }}" method="POST">
+                        @csrf
+                        <div class="mb-3">
+                            <label class="form-label">Nomor Agenda</label>
+                            <input type="text" name="agenda_number" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Catatan Pengantar</label>
+                            <textarea name="note" class="form-control" rows="2" placeholder="Mohon arahan/disposisi..."></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send-fill"></i> Agendakan & Teruskan ke Kasubag TU
+                        </button>
+                    </form>
+                </div>
+            </div>
+        @endif
+
+        {{-- Form Disposisi (Kasubag TU) --}}
+        @if($role === 'kasubag_tu' && in_array($letter->status, ['in_review_kasubag', 'in_consideration']))
             <div class="collapse mb-4" id="newDispoForm">
                 <div class="card card-body">
                     <form action="{{ route('letters.dispositions.store', $letter) }}" method="POST">
@@ -426,7 +441,7 @@
                                 oleh
                                 @if($h->user)
                                     {{ $h->user->name }}
-                                    ({{ $roleLabels[$h->user->role] ?? ucfirst($h->user->role) }}
+                                    ({{ ucfirst(str_replace('_', ' ', $h->user->role)) }}
                                     – {{ $h->user->unit->name }})
                                 @else
                                     System
@@ -456,6 +471,31 @@
 
         {{-- 9) MODAL RESPOND --}}
         @if($dispRecv)
+            {{-- Pertimbangan --}}
+            <div class="modal fade" id="pertimbanganModal" tabindex="-1" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <form action="{{ route('dispositions.respond', $dispRecv) }}" method="POST">
+                            @csrf
+                            <input type="hidden" name="action" value="pertimbangan">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Beri Pertimbangan</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="mb-3">
+                                    <label class="form-label">Catatan Pertimbangan</label>
+                                    <textarea name="response_note" class="form-control" rows="4" required placeholder="Tuliskan pertimbangan unit..."></textarea>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                                <button type="submit" class="btn btn-info text-white">Kirim Pertimbangan</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
             {{-- Accept --}}
             <div class="modal fade" id="acceptModal" tabindex="-1" aria-hidden="true">
                 <div class="modal-dialog modal-dialog-centered">

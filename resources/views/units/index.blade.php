@@ -6,14 +6,23 @@
 <form action="{{ route('units.store') }}" method="POST" class="mb-4">
   @csrf
   <div class="input-group">
-    <input type="text" name="name" class="form-control" placeholder="Nama Unit" required>
+    <select name="branch_id" class="form-select" required>
+      <option value="">-- Pilih Cabang --</option>
+      @foreach($branches as $b)
+        <option value="{{ $b->id }}">{{ $b->name }}</option>
+      @endforeach
+    </select>
+    <input type="text" name="name" class="form-control w-50" placeholder="Nama Unit" required>
+    <div class="input-group-text">
+        <input class="form-check-input mt-0 me-2" type="checkbox" name="is_sekretariat" value="1" aria-label="Checkbox for following text input"> Sekretariat
+    </div>
     <button class="btn btn-primary">Tambah Unit</button>
   </div>
 </form>
 
 <table class="table">
   <thead>
-    <tr><th>#</th><th>Nama Unit</th><th>Aksi</th></tr>
+    <tr><th>#</th><th>Cabang</th><th>Nama Unit</th><th>Tipe</th><th>Aksi</th></tr>
   </thead>
   <tbody>
     @foreach($units as $unit)
@@ -22,11 +31,24 @@
     @endif
     <tr>
       <td>{{ $loop->iteration }}</td>
+      <td>{{ $unit->branch->name ?? '-' }}</td>
       <td>{{ $unit->name }}</td>
+      <td>
+        @if($unit->is_sekretariat)
+            <span class="badge bg-primary">Sekretariat</span>
+        @else
+            <span class="badge bg-secondary">Unit Biasa</span>
+        @endif
+      </td>
       <td>
         <form action="{{ route('units.update', $unit) }}" method="POST" class="d-inline">
           @csrf @method('PUT')
-          <input type="text" name="name" value="{{ $unit->name }}" class="form-control d-inline w-auto" required>
+          <select name="branch_id" class="form-select form-select-sm d-inline w-auto" required>
+            @foreach($branches as $b)
+              <option value="{{ $b->id }}" {{ $unit->branch_id == $b->id ? 'selected' : '' }}>{{ $b->name }}</option>
+            @endforeach
+          </select>
+          <input type="text" name="name" value="{{ $unit->name }}" class="form-control form-control-sm d-inline w-auto" required>
           <button class="btn btn-sm btn-success">Simpan</button>
         </form>
         <form action="{{ route('units.destroy', $unit) }}" method="POST" class="d-inline">

@@ -5,7 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <title>Login – MailApp | Bank Jateng Syariah Pekalongan</title>
+    <title>Login – Paperless Mail | Yayasan Pesantren Islam Al Azhar</title>
+    <link rel="icon" href="{{ asset('img/logo.png') }}" type="image/png">
 
     <!-- Prevent caching (hindari CSRF token kadaluarsa pada reload) -->
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
@@ -28,10 +29,7 @@
         html,
        body {
     font-family: 'Inter', sans-serif !important;
-    background: url('{{ asset('img/gedung-bank-jateng.jpg') }}') no-repeat center center fixed;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
+    background: linear-gradient(135deg, #005f9e 0%, #003366 100%);
     min-height: 100vh;
     position: relative;
     z-index: 1;
@@ -99,11 +97,11 @@ body::before {
             <div class="col-12 col-md-8 col-lg-5">
                 <div class="card login-card p-4">
                     <div class="text-center mb-4">
-                        <img src="https://bucket-api.baznas.go.id/bucket-api/file?bucket=bzn-fdr-smb-p5739641&file=attachments/rekening/172292650008666680_497-v2-Bank-Jateng-Syariah.png"
-                            class="brand-logo mb-2" alt="Logo Bank Jateng">
-                        <h4 class="fw-bold mb-1">MailApp</h4>
-                        <div class="text-primary-emphasis mb-2">Bank Jateng Syariah Pekalongan</div>
-                        <div class="text-muted small">Sistem Surat Menyurat Internal</div>
+                        <img src="{{ asset('img/logo.png') }}"
+                            class="brand-logo mb-2" alt="Logo Al Azhar">
+                        <h4 class="fw-bold mb-1">Paperless Mail</h4>
+                        <div class="text-primary-emphasis mb-2">Yayasan Pesantren Islam Al Azhar</div>
+                        <div class="text-muted small">Sistem Informasi Persuratan berbasis Paperless</div>
                     </div>
 
                     {{-- Tampilkan flash error (login gagal / token expired) --}}
@@ -154,7 +152,7 @@ body::before {
 
                     <hr class="my-4">
                     <div class="text-center text-muted small">
-                        &copy; {{ date('Y') }} MailApp | RPL SMK Muhammadiyah Kesesi
+                        &copy; {{ date('Y') }} Paperless Mail | Yayasan Pesantren Islam Al Azhar
                     </div>
                 </div>
             </div>

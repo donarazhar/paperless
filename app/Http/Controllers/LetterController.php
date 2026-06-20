@@ -18,27 +18,22 @@ class LetterController extends Controller
         $this->middleware('auth');
     }
 
-    /**
-     * Daftar Semua Surat (Admin only)
-     */
     public function index(Request $request)
     {
-        // Pastikan hanya Admin
         if (Auth::user()->role !== 'admin') {
             abort(403);
         }
 
         $q = Letter::with(['sender', 'recipientUser', 'recipientUnit']);
 
-        // optional: pencarian
         if ($s = $request->search) {
             $q->where(
                 fn($q) =>
                 $q->where('letter_number', 'like', "%{$s}%")
+                    ->orWhere('agenda_number', 'like', "%{$s}%")
                     ->orWhere('subject', 'like', "%{$s}%")
             );
         }
-        // optional: filter type inbound/outbound
         if ($t = $request->type) {
             $q->where('type', $t);
         }
@@ -59,14 +54,10 @@ class LetterController extends Controller
         return view('letters.index', compact('letters'));
     }
 
-    /**
-     * Surat Masuk (Inbox)
-     */
     public function inbound(Request $request)
     {
         $user = Auth::user();
 
-        // Base query: load relasi yang dibutuhkan
         $q = Letter::with([
             'sender',
             'recipientUser',
@@ -74,39 +65,34 @@ class LetterController extends Controller
             'dispositions',
         ]);
 
-        if ($user->role === 'staff') {
-            // Staff: hanya tipe inbound, ke user atau via disposisi
-            $q->where('type', 'inbound')
-                ->where(function ($q) use ($user) {
-                    $q->where('to_user_id', $user->id)
-                        ->orWhereHas(
-                            'dispositions',
-                            fn($d) =>
-                            $d->where('to_user_id', $user->id)
-                        );
-                });
-        } elseif ($user->role === 'manager') {
-            // Manager: **hapus** filter type, 
-            // lihat semua surat (inbound eksternal & outbound internal)
-            // yang ke unitnya, personal, atau via disposisi
+        if ($user->role === 'staf_unit') {
+            $q->whereHas(
+                'dispositions',
+                fn($d) =>
+                $d->where('to_user_id', $user->id)
+                  ->orWhere('to_unit_id', $user->unit_id)
+            );
+        } elseif ($user->role === 'staf_tu') {
+            // Staf TU can see letters coming to the sekretariat that are pending_agenda
+            $q->where('to_unit_id', $user->unit_id)
+              ->whereIn('status', ['pending_agenda', 'in_consideration', 'completed']);
+        } elseif (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
             $q->where(function ($q) use ($user) {
                 $q->where('to_unit_id', $user->unit_id)
-                    ->orWhere('to_user_id', $user->id)
                     ->orWhereHas(
                         'dispositions',
                         fn($d) =>
-                        $d->where('to_unit_id', $user->unit_id)
-                            ->orWhere('to_user_id', $user->id)
+                        $d->where('to_user_id', $user->id)
                     );
             });
         }
-        // else Admin: tidak dibatasi sama sekali
 
         //— pencarian & filter seperti sebelumnya —
         if ($s = $request->search) {
             $q->where(
                 fn($q) =>
                 $q->where('letter_number', 'like', "%{$s}%")
+                    ->orWhere('agenda_number', 'like', "%{$s}%")
                     ->orWhere('subject', 'like', "%{$s}%")
             );
         }
@@ -127,13 +113,9 @@ class LetterController extends Controller
         return view('letters.inbox', compact('letters'));
     }
 
-    /**
-     * Surat Keluar (Outbox) — hanya milik staff
-     */
     public function outbound(Request $request)
     {
         $q = Letter::with(['recipientUser', 'recipientUnit'])
-            ->where('type', 'outbound')
             ->where('from_user_id', Auth::id());
 
         // -- FILTERS --
@@ -141,6 +123,7 @@ class LetterController extends Controller
             $q->where(
                 fn($q) =>
                 $q->where('letter_number', 'like', "%{$s}%")
+                    ->orWhere('agenda_number', 'like', "%{$s}%")
                     ->orWhere('subject', 'like', "%{$s}%")
             );
         }
@@ -161,53 +144,35 @@ class LetterController extends Controller
         return view('letters.outbox', compact('letters'));
     }
 
-    /**
-     * Form Buat Surat (Staff only)
-     */
     public function create()
     {
-        $this->authorizeRole('staff');
-        $units = Unit::all();
-        return view('letters.create', compact('units'));
+        $this->authorizeRole('staf_unit');
+        return view('letters.create');
     }
 
-    /**
-     * Simpan Surat (draft atau kirim)
-     */
     public function store(Request $request)
     {
-        $this->authorizeRole('staff'); // pastikan hanya staff
+        $this->authorizeRole('staf_unit');
 
         $data = $request->validate([
-            'letter_number' => 'nullable|string|unique:letters,letter_number',
+            'letter_number' => 'nullable|string',
             'subject' => 'required|string',
             'body' => 'required|string',
-            // harus pilih salah satu penerima
-            'to_user_id' => 'nullable|exists:users,id|required_without:to_unit_id',
-            'to_unit_id' => 'nullable|exists:units,id|required_without:to_user_id',
-            'recipient_type' => 'required|in:unit,user',
             'action' => 'required|in:draft,send',
-            // attachments wajib satu atau lebih
             'attachments' => 'required|array|min:1',
-
-            // pakai mimetypes, bukan mimes
             'attachments.*' => 'file|max:5120',
         ]);
 
-        // nomor otomatis bila kirim
-        if ($request->action === 'send' && empty($data['letter_number'])) {
-            $data['letter_number'] = 'L-' . now()->format('Ymd') . '-' . Str::upper(Str::random(4));
-        }
+        $sekretariatUnit = Unit::where('is_sekretariat', true)->firstOrFail();
 
         $letter = Letter::create([
-            'type' => 'outbound',
-            'letter_number' => $data['letter_number'],
+            'type' => 'internal',
+            'letter_number' => $data['letter_number'] ?? '-',
             'subject' => $data['subject'],
             'body' => $data['body'],
             'from_user_id' => Auth::id(),
-            'to_user_id' => $data['to_user_id'] ?? null,
-            'to_unit_id' => $data['to_unit_id'] ?? null,
-            'status' => $request->action === 'draft' ? 'draft' : 'sent',
+            'to_unit_id' => $sekretariatUnit->id,
+            'status' => $request->action === 'draft' ? 'draft' : 'pending_agenda',
         ]);
 
         if ($request->hasFile('attachments')) {
@@ -253,26 +218,16 @@ class LetterController extends Controller
         return view('letters.show', compact('letter'));
     }
 
-    /**
-     * Tandai Surat sebagai Dibaca atau Selesai
-     */
     public function markRead(Letter $letter)
     {
         $user = Auth::user();
 
-        // Hanya staff atau manager yang boleh menandai sebagai dibaca
-        if (in_array($user->role, ['staff', 'manager']) && $letter->status === 'sent') {
-            // Set status selalu ke 'read', terlepas dari role
-            $letter->update(['status' => 'read']);
-
-            // Catat history
-            LetterHistory::create([
-                'letter_id' => $letter->id,
-                'user_id' => $user->id,
-                'action' => 'read',
-                'note' => null,
-            ]);
-        }
+        LetterHistory::create([
+            'letter_id' => $letter->id,
+            'user_id' => $user->id,
+            'action' => 'read',
+            'note' => null,
+        ]);
 
         return back();
     }

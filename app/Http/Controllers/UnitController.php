@@ -8,27 +8,44 @@ class UnitController extends Controller
 {
     public function __construct()
     {
-        // Hanya admin yang boleh CRUD unit
-        $this->middleware(['auth', 'role:admin']);
+        // Hanya staf_tu (Super Admin) yang boleh CRUD unit
+        $this->middleware(['auth', 'role:staf_tu']);
     }
 
     public function index()
     {
-        $units = Unit::all();
-        return view('units.index', compact('units'));
+        $units = Unit::with('branch')->get();
+        $branches = \App\Models\Branch::all();
+        return view('units.index', compact('units', 'branches'));
     }
 
     public function store(Request $request)
     {
-        $request->validate(['name' => 'required|string|unique:units,name']);
-        Unit::create(['name' => $request->name]);
+        $request->validate([
+            'name' => 'required|string|unique:units,name',
+            'branch_id' => 'required|exists:branches,id',
+            'is_sekretariat' => 'boolean'
+        ]);
+        Unit::create([
+            'name' => $request->name,
+            'branch_id' => $request->branch_id,
+            'is_sekretariat' => $request->boolean('is_sekretariat')
+        ]);
         return back()->with('success', 'Unit berhasil ditambahkan.');
     }
 
     public function update(Request $request, Unit $unit)
     {
-        $request->validate(['name' => 'required|string|unique:units,name,' . $unit->id]);
-        $unit->update(['name' => $request->name]);
+        $request->validate([
+            'name' => 'required|string|unique:units,name,' . $unit->id,
+            'branch_id' => 'required|exists:branches,id',
+            'is_sekretariat' => 'boolean'
+        ]);
+        $unit->update([
+            'name' => $request->name,
+            'branch_id' => $request->branch_id,
+            'is_sekretariat' => $request->boolean('is_sekretariat')
+        ]);
         return back()->with('success', 'Unit berhasil diperbarui.');
     }
 
