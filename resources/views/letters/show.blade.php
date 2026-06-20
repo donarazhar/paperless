@@ -150,15 +150,17 @@
             {{-- Lampiran --}}
             @if($letter->attachments->count())
                 <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size:0.85rem;">Lampiran Dokumen</h6>
-                <div class="d-flex flex-wrap gap-2 mb-4">
+                <div class="d-flex flex-wrap gap-2 mb-4" id="attachmentButtons">
                     @foreach($letter->attachments as $att)
                         @php
                             $url = Storage::url($att->file_path);
                             $ext = strtolower(pathinfo($att->file_path, PATHINFO_EXTENSION));
                             $name = basename($att->file_path);
+                            $bgColor = $ext === 'pdf' ? '#fff5f5' : ($ext === 'docx' || $ext === 'doc' ? '#f0f4ff' : '#f8f9fa');
+                            $iconClass = $ext === 'pdf' ? 'bi-file-earmark-pdf-fill text-danger' : ($ext === 'docx' || $ext === 'doc' ? 'bi-file-earmark-word-fill text-primary' : 'bi-file-earmark-fill text-secondary');
                         @endphp
                         @if($ext === 'pdf')
-                            <button class="btn btn-outline-danger view-pdf" data-src="{{ $url }}">
+                            <button class="btn btn-outline-danger view-pdf" data-src="{{ $url }}" data-name="{{ $name }}">
                                 <i class="bi bi-file-earmark-pdf-fill"></i> {{ $name }}
                             </button>
                         @else
@@ -167,6 +169,15 @@
                             </a>
                         @endif
                     @endforeach
+                </div>
+
+                {{-- Inline PDF Preview --}}
+                <div id="pdfInlinePreview" class="mb-4" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h6 class="fw-bold text-muted text-uppercase mb-0" style="font-size:0.85rem;"><i class="bi bi-file-earmark-pdf text-danger me-1"></i> <span id="pdfPreviewName"></span></h6>
+                        <button class="btn btn-sm btn-light border" id="closePdfPreview"><i class="bi bi-x-lg"></i> Tutup</button>
+                    </div>
+                    <iframe id="pdfInlineFrame" style="width:100%;height:520px;border:1px solid #dee2e6;border-radius:0.5rem;"></iframe>
                 </div>
             @endif
 
@@ -324,20 +335,7 @@
     </div>
 </div>
 
-{{-- MODALS --}}
-<div class="modal fade" id="pdfModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen-sm-down modal-xl modal-dialog-centered">
-        <div class="modal-content border-0 shadow-lg">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title fw-bold">Preview Dokumen</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body p-0 bg-secondary">
-                <iframe id="pdfFrame" style="width:100%;height:85vh; border:none;"></iframe>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 @if($dispRecv)
     <div class="modal fade" id="pertimbanganModal" tabindex="-1">
@@ -386,15 +384,29 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // PDF Preview
-            const pdfModal = new bootstrap.Modal(document.getElementById('pdfModal'));
+            // PDF Inline Preview
+            const inlinePreview = document.getElementById('pdfInlinePreview');
+            const inlineFrame = document.getElementById('pdfInlineFrame');
+            const inlineName = document.getElementById('pdfPreviewName');
+            const closeBtn = document.getElementById('closePdfPreview');
+
             document.querySelectorAll('.view-pdf').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.getElementById('pdfFrame').src = btn.dataset.src;
-                    pdfModal.show();
+                    if (inlineFrame && inlinePreview) {
+                        inlineFrame.src = btn.dataset.src;
+                        inlineName.textContent = btn.dataset.name;
+                        inlinePreview.style.display = 'block';
+                        inlinePreview.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
                 });
             });
-            document.getElementById('pdfModal').addEventListener('hidden.bs.modal', () => document.getElementById('pdfFrame').src = '');
+
+            if (closeBtn) {
+                closeBtn.addEventListener('click', () => {
+                    inlinePreview.style.display = 'none';
+                    inlineFrame.src = '';
+                });
+            }
 
             // Disposisi Radio Toggle
             const selUnit = document.getElementById('selectUnit');
