@@ -98,7 +98,11 @@
 {{-- Filter --}}
 <div class="filter-bar">
     <form class="row gy-2 gx-2 align-items-end" method="GET">
-        <div class="col-12 col-sm-6 col-md-5">
+        <div class="col-12 col-sm-4 col-md-4">
+            <label class="f-label">Pencarian</label>
+            <input type="text" name="search" class="form-control" placeholder="Cari perihal/nomor..." value="{{ request('search') }}">
+        </div>
+        <div class="col-12 col-sm-4 col-md-3">
             <label class="f-label">Cabang</label>
             <select name="branch_id" class="form-select">
                 <option value="">Semua Cabang</option>
@@ -107,7 +111,7 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-12 col-sm-6 col-md-5">
+        <div class="col-12 col-sm-4 col-md-3">
             <label class="f-label">Unit Kerja</label>
             <select name="unit_id" class="form-select">
                 <option value="">Semua Unit</option>
