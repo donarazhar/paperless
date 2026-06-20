@@ -1,307 +1,374 @@
 @extends('layouts.app')
 @section('title', 'Laporan Surat')
 
-@push('styles')
-<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-<style>
-    .dataTables_wrapper .dataTables_paginate .paginate_button {
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-</style>
-@endpush
-
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="h3 fw-bold mb-0">Laporan Surat</h1>
+<style>
+    .filter-bar { background:#fff;border:1px solid #e8edf4;border-radius:1rem;padding:1.1rem 1.35rem;margin-bottom:1.25rem; }
+    .filter-bar .f-label { font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;margin-bottom:0.35rem;display:block; }
+    .filter-bar .form-control,.filter-bar .form-select { height:40px;font-size:0.865rem;border-radius:0.6rem;border:1.5px solid #e8edf4;background:#fafbfd;padding:0 0.9rem; }
+    .filter-bar .form-control:focus,.filter-bar .form-select:focus { border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,0.09)!important; }
+
+    /* Table */
+    .rpt-table { width:100%;border-collapse:separate;border-spacing:0; }
+    .rpt-table thead th { font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;padding:0.65rem 0.85rem;border-bottom:1px solid #e8edf4;white-space:nowrap;background:#fafbfd; }
+    .rpt-table thead th:first-child { border-radius:0.75rem 0 0 0;padding-left:1.25rem; }
+    .rpt-table thead th:last-child  { border-radius:0 0.75rem 0 0;padding-right:1.25rem; }
+    .rpt-table tbody tr { transition:background .12s; }
+    .rpt-table tbody tr:hover td { background:#f8faff; }
+    .rpt-table tbody td { padding:0.85rem 0.85rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;font-size:0.855rem;color:#334155; }
+    .rpt-table tbody td:first-child { padding-left:1.25rem; }
+    .rpt-table tbody td:last-child  { padding-right:1.25rem; }
+    .rpt-table tbody tr:last-child td { border-bottom:none; }
+
+    .subject-cell .s-title { font-size:0.875rem;font-weight:700;color:#0f172a;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap; }
+    .subject-cell .s-num   { font-size:0.7rem;font-weight:600;color:#94a3b8;margin-top:2px; }
+    .person-cell .p-name   { font-weight:600;color:#0f172a;font-size:0.845rem; }
+    .person-cell .p-role   { font-size:0.72rem;color:#94a3b8;margin-top:1px; }
+    .date-cell .d-date     { font-weight:600;font-size:0.835rem;color:#334155; }
+
+    .agenda-pill { display:inline-flex;align-items:center;gap:4px;background:#dbeafe;color:#1d4ed8;font-size:0.68rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:100px; }
+
+    /* Action buttons */
+    .btn-act { display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;font-size:0.85rem;border:none;cursor:pointer;transition:background .15s,color .15s;text-decoration:none; }
+    .btn-act-view { background:#eff6ff;color:#2563eb; }
+    .btn-act-view:hover { background:#dbeafe;color:#1d4ed8; }
+    .btn-act-disp { background:#fdf4ff;color:#7e22ce; }
+    .btn-act-disp:hover { background:#ede9fe;color:#6b21a8; }
+
+    /* DataTables overrides */
+    .dataTables_wrapper .dataTables_length select,
+    .dataTables_wrapper .dataTables_filter input { height:36px;border-radius:0.5rem;border:1.5px solid #e8edf4;font-size:0.85rem;padding:0 0.75rem; }
+    .dataTables_wrapper .dataTables_filter input:focus { outline:none;border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,0.09); }
+    .dataTables_wrapper .dataTables_info { font-size:0.8rem;color:#94a3b8; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button { padding:0!important;margin:0!important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current a,
+    .dataTables_wrapper .dataTables_paginate .paginate_button.current a:hover { background:#2563eb!important;color:#fff!important;border-color:#2563eb!important;border-radius:0.4rem!important; }
+    .dataTables_wrapper .dataTables_paginate .paginate_button a { border-radius:0.4rem!important;font-size:0.82rem; }
+    .dataTables_top { display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-bottom:1rem; }
+    .dataTables_top .dataTables_length { margin:0; }
+    .dataTables_top .dataTables_filter { margin:0; }
+    .dataTables_bottom { display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;margin-top:1rem; }
+
+    /* Modal */
+    .modal-content { border:none;border-radius:1.1rem;box-shadow:0 20px 60px rgba(15,23,42,0.15); }
+    .modal-header { border-bottom:1px solid #e8edf4;padding:1.1rem 1.4rem;border-radius:1.1rem 1.1rem 0 0; }
+    .modal-footer { border-top:1px solid #e8edf4;padding:0.9rem 1.4rem; }
+    .modal-body { padding:1.25rem 1.4rem; }
+
+    .info-card { background:#f8faff;border:1px solid #e8edf4;border-radius:0.75rem;padding:1rem 1.1rem;margin-bottom:1.25rem; }
+    .info-card .ic-label { font-size:0.68rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;margin-bottom:3px; }
+    .info-card .ic-val   { font-size:0.875rem;font-weight:700;color:#0f172a; }
+
+    .tl-modal { padding-left:1.5rem;position:relative; }
+    .tl-modal::before { content:'';position:absolute;left:7px;top:4px;bottom:4px;width:2px;background:#e8edf4; }
+    .tl-item { position:relative;margin-bottom:1rem; }
+    .tl-item::before { content:'';position:absolute;left:-1.5rem;top:5px;width:14px;height:14px;border-radius:50%;background:#fff;border:2px solid #2563eb; }
+    .tl-body { background:#fff;border:1px solid #e8edf4;border-radius:0.65rem;padding:0.75rem 0.9rem; }
+    .tl-action { font-size:0.8rem;font-weight:700;color:#0f172a; }
+    .tl-date   { font-size:0.7rem;color:#94a3b8; }
+    .tl-note   { font-size:0.78rem;color:#64748b;margin-top:4px;font-style:italic; }
+    .tl-by     { font-size:0.72rem;color:#94a3b8;margin-top:4px;display:flex;align-items:center;gap:4px; }
+
+    /* Mobile cards */
+    .rpt-card { background:#fff;border:1px solid #e8edf4;border-radius:0.9rem;padding:1rem 1.1rem;margin-bottom:0.65rem; }
+    .rpt-card .rc-no { font-size:0.68rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#94a3b8;margin-bottom:3px; }
+    .rpt-card .rc-sub { font-size:0.875rem;font-weight:700;color:#0f172a;margin-bottom:0.35rem; }
+    .rpt-card .rc-meta { font-size:0.75rem;color:#64748b;display:flex;flex-wrap:wrap;gap:0.6rem; }
+
+    .empty-state { text-align:center;padding:4rem 1rem;color:#94a3b8; }
+    .empty-state i { font-size:3rem;display:block;margin-bottom:0.75rem;color:#cbd5e1; }
+
+    .table-wrap { display:block; }
+    .cards-wrap { display:none; }
+    @media(max-width:900px) { .table-wrap{display:none;} .cards-wrap{display:block;} }
+    @media(max-width:600px) { .filter-bar{padding:0.9rem 1rem;} }
+</style>
+
+{{-- Page Header --}}
+<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <div>
+        <h1 class="h5 fw-bold mb-0" style="letter-spacing:-0.03em;">Laporan Surat</h1>
+        <p class="text-muted mb-0" style="font-size:0.82rem;">Rekap seluruh surat beserta riwayat perjalanannya</p>
     </div>
+    <span class="badge" style="background:#eff6ff;color:#2563eb;font-size:0.78rem;padding:0.45rem 0.9rem;border-radius:100px;">
+        <i class="bi bi-bar-chart-line-fill me-1"></i>{{ count($letters) }} data
+    </span>
+</div>
 
-    {{-- Form Filter Tanggal & Status (Backend Filter) --}}
-    <div class="card p-4 mb-4 border-0 shadow-sm">
-        <form class="row gy-3 gx-3 align-items-end" method="GET">
-            <div class="col-md-5">
-                <label class="form-label text-muted small fw-bold">Cabang</label>
-                <select name="branch_id" class="form-select">
-                    <option value="">Semua Cabang</option>
-                    @foreach($branches as $b)
-                        <option value="{{ $b->id }}" @selected(request('branch_id') == $b->id)>{{ $b->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-5">
-                <label class="form-label text-muted small fw-bold">Unit Kerja</label>
-                <select name="unit_id" class="form-select">
-                    <option value="">Semua Unit</option>
-                    @foreach($units as $u)
-                        <option value="{{ $u->id }}" @selected(request('unit_id') == $u->id)>{{ $u->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div class="col-md-2">
-                <button class="btn btn-primary fw-bold w-100 mb-2 mt-2"><i class="bi bi-funnel"></i> Filter</button>
-                <a href="{{ request()->url() }}" class="btn btn-light border w-100 fw-bold"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
-            </div>
-        </form>
-    </div>
-
-    <div class="card p-4 border-0 shadow-sm">
-        <div class="table-responsive">
-            <table id="laporanTable" class="table table-hover align-middle w-100">
-                <thead class="table-light">
-                    <tr>
-                        <th>Tgl Dibuat</th>
-                        <th>No Surat</th>
-                        <th>No Agenda</th>
-                        <th>Perihal</th>
-                        <th>Pengirim</th>
-                        <th>Tujuan</th>
-                        <th class="text-end">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($letters as $letter)
-                        <tr>
-                            <td>
-                                <span class="d-none">{{ $letter->created_at->format('Y-m-d H:i:s') }}</span>
-                                {{ $letter->created_at->locale('id')->isoFormat('D MMM YYYY') }}
-                            </td>
-                            <td class="fw-bold">{{ $letter->letter_number }}</td>
-                            <td class="text-nowrap">
-                                @if($letter->agenda_number)
-                                    <span class="badge bg-secondary">{{ $letter->agenda_number }}</span>
-                                @else
-                                    <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td>
-                                <div class="text-truncate" style="max-width: 200px;" title="{{ $letter->subject }}">
-                                    {{ $letter->subject }}
-                                </div>
-                            </td>
-                            <td>
-                                @if($letter->type === 'external')
-                                    {{ $letter->external_sender_name }}
-                                @else
-                                    {{ $letter->sender->name ?? 'Sistem' }}
-                                @endif
-                            </td>
-                            <td>
-                                @if($letter->type === 'outbound_external')
-                                    {{ $letter->external_recipient_name }}
-                                @elseif($letter->recipientUser)
-                                    {{ $letter->recipientUser->name }}
-                                @else
-                                    Unit {{ $letter->recipientUnit->name ?? '--' }}
-                                @endif
-                            </td>
-                            <td class="text-end">
-                                <div class="btn-group">
-                                    <a href="{{ route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
-                                       class="btn btn-sm btn-outline-primary" title="Detail Surat">
-                                        <i class="bi bi-eye"></i>
-                                    </a>
-                                    
-                                    @php
-                                        // Siapkan data khusus disposisi untuk JSON agar menampilkan Ditujukan Ke
-                                        $dispoHistory = collect();
-                                        foreach($letter->dispositions as $d) {
-                                            $target = $d->toUser ? $d->toUser->name : ($d->unit ? 'Unit ' . $d->unit->name : '--');
-                                            $actor = $d->fromUser ? $d->fromUser->name : 'Sistem';
-                                            
-                                            $dispoHistory->push([
-                                                'sort_date' => $d->created_at->timestamp,
-                                                'tanggal' => $d->created_at->format('d/m/y'),
-                                                'aksi' => 'Disposisi <br><small class="text-muted fw-normal"><i class="bi bi-person-fill"></i> Oleh: ' . $actor . '</small>',
-                                                'aktor' => $target,
-                                                'catatan' => $d->note ?? '-',
-                                            ]);
-
-                                            if ($d->status !== 'pending') {
-                                                $statusIndo = $d->status === 'accepted' ? 'Selesai' : ($d->status === 'pertimbangan' ? 'Memberi Pertimbangan' : ucfirst($d->status));
-                                                $dispoHistory->push([
-                                                    'sort_date' => $d->updated_at->timestamp,
-                                                    'tanggal' => $d->updated_at->format('d/m/y'),
-                                                    'aksi' => $statusIndo . ' <br><small class="text-muted fw-normal"><i class="bi bi-person-fill"></i> Oleh: ' . $target . '</small>',
-                                                    'aktor' => $actor,
-                                                    'catatan' => $d->response_note ?? '-',
-                                                ]);
-                                            }
-                                        }
-                                        $historiesList = $dispoHistory->sortBy('sort_date')->values()->toJson();
-                                    @endphp
-                                    
-                                    @php
-                                        $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->name ?? 'Sistem');
-                                    @endphp
-                                    
-                                    <button type="button" class="btn btn-sm btn-outline-info btn-lihat-disposisi" 
-                                            data-disposisi="{{ $historiesList }}"
-                                            data-nosurat="{{ $letter->letter_number }}"
-                                            data-agenda="{{ $letter->agenda_number ?? '-' }}"
-                                            data-perihal="{{ $letter->subject }}"
-                                            data-pengirim="{{ $pengirimText }}"
-                                            title="Lihat Disposisi">
-                                        <i class="bi bi-sign-turn-right-fill"></i>
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
+{{-- Filter --}}
+<div class="filter-bar">
+    <form class="row gy-2 gx-2 align-items-end" method="GET">
+        <div class="col-12 col-sm-6 col-md-5">
+            <label class="f-label">Cabang</label>
+            <select name="branch_id" class="form-select">
+                <option value="">Semua Cabang</option>
+                @foreach($branches as $b)
+                    <option value="{{ $b->id }}" @selected(request('branch_id')==$b->id)>{{ $b->name }}</option>
+                @endforeach
+            </select>
         </div>
-    </div>
+        <div class="col-12 col-sm-6 col-md-5">
+            <label class="f-label">Unit Kerja</label>
+            <select name="unit_id" class="form-select">
+                <option value="">Semua Unit</option>
+                @foreach($units as $u)
+                    <option value="{{ $u->id }}" @selected(request('unit_id')==$u->id)>{{ $u->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-12 col-sm-auto d-flex gap-2 align-items-end">
+            <button class="btn btn-primary" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 1rem;">
+                <i class="bi bi-funnel-fill"></i> Filter
+            </button>
+            <a href="{{ request()->url() }}" class="btn btn-light border" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 0.9rem;">
+                <i class="bi bi-arrow-counterclockwise"></i>
+            </a>
+        </div>
+    </form>
+</div>
 
-    {{-- Modal Disposisi --}}
-    <div class="modal fade" id="modalDisposisi" tabindex="-1" aria-labelledby="modalDisposisiLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+{{-- DESKTOP TABLE --}}
+<div class="table-wrap" style="background:#fff;border:1px solid #e8edf4;border-radius:1rem;overflow:hidden;padding:1rem 0.25rem 0.75rem;">
+    <div class="dataTables_top px-3">
+        <div id="dtLength"></div>
+        <div id="dtSearch"></div>
+    </div>
+    <table id="laporanTable" class="rpt-table w-100">
+        <thead>
+            <tr>
+                <th style="width:100px;">Tanggal</th>
+                <th>Perihal Surat</th>
+                <th style="width:90px;">No Agenda</th>
+                <th style="width:150px;">Pengirim</th>
+                <th style="width:150px;">Tujuan</th>
+                <th style="width:90px;text-align:center;">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach($letters as $letter)
+                @php
+                    $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->name ?? 'Sistem');
+                    $tujuanText   = $letter->type === 'outbound_external' ? $letter->external_recipient_name : ($letter->recipientUser ? $letter->recipientUser->name : 'Unit '.($letter->recipientUnit->name ?? '--'));
+                    $dispoHistory = collect();
+                    foreach($letter->dispositions as $d) {
+                        $target = $d->toUser ? $d->toUser->name : ($d->unit ? 'Unit '.$d->unit->name : '--');
+                        $actor  = $d->fromUser ? $d->fromUser->name : 'Sistem';
+                        $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d/m/y H:i'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$d->note ?? '-','by'=>$actor]);
+                        if($d->status !== 'pending') {
+                            $sInd = $d->status==='accepted' ? 'Selesai' : ($d->status==='pertimbangan' ? 'Pertimbangan' : ucfirst($d->status));
+                            $dispoHistory->push(['sort_date'=>$d->updated_at->timestamp,'tanggal'=>$d->updated_at->format('d/m/y H:i'),'aksi'=>$sInd,'aktor'=>$actor,'catatan'=>$d->response_note ?? '-','by'=>$target]);
+                        }
+                    }
+                    $historiesList = $dispoHistory->sortBy('sort_date')->values()->toJson();
+                @endphp
+                <tr>
+                    <td>
+                        <div class="date-cell">
+                            <div class="d-date">{{ $letter->created_at->locale('id')->isoFormat('D MMM YY') }}</div>
+                        </div>
+                        <span class="d-none">{{ $letter->created_at->format('Y-m-d') }}</span>
+                    </td>
+                    <td>
+                        <div class="subject-cell">
+                            <div class="s-title" title="{{ $letter->subject }}">{{ $letter->subject }}</div>
+                            <div class="s-num">{{ $letter->letter_number ?: '—' }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        @if($letter->agenda_number)
+                            <span class="agenda-pill"><i class="bi bi-hash"></i>{{ $letter->agenda_number }}</span>
+                        @else
+                            <span style="color:#cbd5e1;font-size:0.8rem;">—</span>
+                        @endif
+                    </td>
+                    <td>
+                        <div class="person-cell">
+                            <div class="p-name text-truncate" style="max-width:130px;" title="{{ $pengirimText }}">{{ $pengirimText }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="person-cell">
+                            <div class="p-name text-truncate" style="max-width:130px;" title="{{ $tujuanText }}">{{ $tujuanText }}</div>
+                        </div>
+                    </td>
+                    <td style="text-align:center;">
+                        <div class="d-flex gap-1 justify-content-center">
+                            <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
+                               class="btn-act btn-act-view" title="Lihat Detail">
+                                <i class="bi bi-eye-fill"></i>
+                            </a>
+                            <button type="button" class="btn-act btn-act-disp btn-lihat-disposisi"
+                                    data-disposisi="{{ $historiesList }}"
+                                    data-nosurat="{{ $letter->letter_number }}"
+                                    data-agenda="{{ $letter->agenda_number ?? '-' }}"
+                                    data-perihal="{{ $letter->subject }}"
+                                    data-pengirim="{{ $pengirimText }}"
+                                    title="Lacak Perjalanan">
+                                <i class="bi bi-sign-turn-right-fill"></i>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+            @endforeach
+        </tbody>
+    </table>
+    <div class="dataTables_bottom px-3">
+        <div id="dtInfo"></div>
+        <div id="dtPaginate"></div>
+    </div>
+</div>
+
+{{-- MOBILE CARDS --}}
+<div class="cards-wrap">
+    @forelse($letters as $letter)
+        @php
+            $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->name ?? 'Sistem');
+        @endphp
+        <div class="rpt-card">
+            <div class="rc-no">{{ $letter->letter_number ?: '— Belum bernomor' }}</div>
+            <div class="rc-sub">{{ $letter->subject }}</div>
+            <div class="rc-meta mb-2">
+                <span><i class="bi bi-person-fill"></i> {{ $pengirimText }}</span>
+                <span><i class="bi bi-clock"></i> {{ $letter->created_at->locale('id')->isoFormat('D MMM YYYY') }}</span>
+                @if($letter->agenda_number)
+                    <span><i class="bi bi-hash"></i> {{ $letter->agenda_number }}</span>
+                @endif
+            </div>
+            <div class="d-flex gap-2">
+                <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
+                   style="display:inline-flex;align-items:center;gap:5px;background:#eff6ff;color:#2563eb;border:none;border-radius:0.5rem;font-size:0.78rem;font-weight:700;padding:0.4rem 0.85rem;text-decoration:none;">
+                    <i class="bi bi-eye-fill"></i> Lihat
+                </a>
+                <button type="button" class="btn-lihat-disposisi"
+                        data-disposisi="{{ $letter->dispositions->toJson() }}"
+                        data-nosurat="{{ $letter->letter_number }}"
+                        data-agenda="{{ $letter->agenda_number ?? '-' }}"
+                        data-perihal="{{ $letter->subject }}"
+                        data-pengirim="{{ $pengirimText }}"
+                        style="display:inline-flex;align-items:center;gap:5px;background:#fdf4ff;color:#7e22ce;border:none;border-radius:0.5rem;font-size:0.78rem;font-weight:700;padding:0.4rem 0.85rem;cursor:pointer;">
+                    <i class="bi bi-sign-turn-right-fill"></i> Lacak
+                </button>
+            </div>
+        </div>
+    @empty
+        <div class="empty-state">
+            <i class="bi bi-bar-chart-line"></i>
+            <p class="fw-semibold mb-1" style="color:#475569;">Belum ada data laporan</p>
+        </div>
+    @endforelse
+</div>
+
+{{-- Modal Lacak Perjalanan --}}
+<div class="modal fade" id="modalDisposisi" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content">
-          <div class="modal-header bg-light">
-            <h5 class="modal-title fw-bold" id="modalDisposisiLabel">Lacak Perjalanan Surat</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body p-4">
-              <!-- Info Surat Section -->
-              <div class="alert alert-light border border-secondary-subtle mb-4">
-                  <div class="row gx-3 gy-2">
-                      <div class="col-12">
-                          <span class="text-muted small text-uppercase fw-semibold">Perihal Surat</span>
-                          <div class="fw-bold text-dark" id="modalPerihal"></div>
-                      </div>
-                      <div class="col-md-6 mt-3">
-                          <span class="text-muted small text-uppercase fw-semibold">Pengirim</span>
-                          <div class="fw-medium text-dark" id="modalPengirim"></div>
-                      </div>
-                      <div class="col-md-6 mt-3">
-                          <span class="text-muted small text-uppercase fw-semibold">No. Agenda</span>
-                          <div><span class="badge bg-secondary" id="modalAgenda"></span></div>
-                      </div>
-                  </div>
-              </div>
-              
-              <div class="table-responsive">
-                  <table id="historyTable" class="table table-hover table-bordered align-middle w-100" style="font-size: 0.9rem;">
-                      <thead class="table-light">
-                          <tr>
-                              <th style="width: 25%; min-width: 150px;">Ditujukan Ke</th>
-                              <th style="width: 25%; min-width: 180px;">Status & Waktu</th>
-                              <th style="width: 50%; min-width: 300px;">Catatan</th>
-                          </tr>
-                      </thead>
-                      <tbody id="historyTableBody">
-                          <!-- Konten riwayat akan dirender via JS -->
-                      </tbody>
-                  </table>
-              </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-          </div>
+            <div class="modal-header">
+                <div>
+                    <div class="fw-800" style="font-size:0.95rem;font-weight:800;color:#0f172a;" id="modalDisposisiLabel">Lacak Perjalanan Surat</div>
+                    <div style="font-size:0.75rem;color:#94a3b8;" id="modalSubLabel"></div>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="info-card">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="ic-label">Perihal</div>
+                            <div class="ic-val" id="modalPerihal"></div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="ic-label">Pengirim</div>
+                            <div class="ic-val" id="modalPengirim"></div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="ic-label">No. Agenda</div>
+                            <div class="ic-val" id="modalAgenda"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div style="font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;margin-bottom:0.75rem;">
+                    <i class="bi bi-clock-history me-1"></i> Riwayat Perjalanan
+                </div>
+                <div class="tl-modal" id="historyTimeline">
+                    <div style="text-align:center;padding:2rem;color:#94a3b8;font-size:0.85rem;">Belum ada riwayat.</div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Tutup</button>
+            </div>
         </div>
-      </div>
     </div>
+</div>
 
 @endsection
 
 @push('scripts')
+<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script>
-    $(document).ready(function() {
-        // Inisialisasi DataTables
-        $('#laporanTable').DataTable({
-            language: {
-                "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
-                "sProcessing":   "Sedang memproses...",
-                "sLengthMenu":   "Tampilkan _MENU_ entri",
-                "sZeroRecords":  "Tidak ditemukan data yang sesuai",
-                "sInfo":         "Menampilkan _START_ sampai _END_ dari _TOTAL_ entri",
-                "sInfoEmpty":    "Menampilkan 0 sampai 0 dari 0 entri",
-                "sInfoFiltered": "(disaring dari _MAX_ entri keseluruhan)",
-                "sInfoPostFix":  "",
-                "sSearch":       "Cari:",
-                "sUrl":          "",
-                "oPaginate": {
-                    "sFirst":    "Pertama",
-                    "sPrevious": "Sebelumnya",
-                    "sNext":     "Selanjutnya",
-                    "sLast":     "Terakhir"
-                }
-            },
-            order: [[0, 'desc']], // Urutkan berdasarkan kolom pertama (Tgl Dibuat) menurun
-            pageLength: 25
-        });
-
-        // Variabel global untuk menyimpan instance DataTables pada modal
-        var historyDataTable = null;
-
-        // Event handler untuk tombol Lihat Disposisi (Gunakan event delegation karena DataTables memodifikasi DOM)
-        $('#laporanTable').on('click', '.btn-lihat-disposisi', function() {
-            var rawData = $(this).attr('data-disposisi');
-            var noSurat = $(this).attr('data-nosurat');
-            var agenda = $(this).attr('data-agenda');
-            var perihal = $(this).attr('data-perihal');
-            var pengirim = $(this).attr('data-pengirim');
-            var disposisi = JSON.parse(rawData);
-            
-            $('#modalDisposisiLabel').text('Lacak Perjalanan: ' + noSurat);
-            $('#modalPerihal').text(perihal);
-            $('#modalPengirim').text(pengirim);
-            if (agenda && agenda !== '-') {
-                $('#modalAgenda').text(agenda).removeClass('bg-secondary text-muted').addClass('bg-primary');
-            } else {
-                $('#modalAgenda').text('Belum diagendakan').removeClass('bg-primary').addClass('bg-secondary text-muted');
-            }
-            
-            // Hancurkan DataTable lama jika ada, sebelum memodifikasi isi tbody
-            if (historyDataTable !== null) {
-                historyDataTable.destroy();
-                historyDataTable = null;
-            }
-            
-            var html = '';
-            if(disposisi.length === 0) {
-                html = '<tr><td colspan="4" class="text-center text-muted py-4">Belum ada riwayat perjalanan untuk surat ini.</td></tr>';
-            } else {
-                disposisi.forEach(function(item) {
-                    var catatan = item.catatan ? item.catatan.replace(/\n/g, '<br>') : '-';
-                    html += `
-                        <tr>
-                            <td><i class="bi bi-person-circle text-muted me-1"></i> <span class="fw-bold">${item.aktor}</span></td>
-                            <td>
-                                <div class="mb-1"><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-start lh-base">${item.aksi}</span></div>
-                                <div class="small text-muted"><i class="bi bi-calendar3 me-1"></i> ${item.tanggal}</div>
-                            </td>
-                            <td><div class="fst-italic text-wrap text-break">${catatan}</div></td>
-                        </tr>
-                    `;
-                });
-            }
-            
-            $('#historyTableBody').html(html);
-            
-            // Inisialisasi DataTables jika ada data
-            if(disposisi.length > 0) {
-                historyDataTable = $('#historyTable').DataTable({
-                    language: {
-                        "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
-                        "sProcessing":   "Sedang memproses...",
-                        "sSearch":       "Cari Riwayat:"
-                    },
-                    order: [], // Tetap pertahankan urutan dari backend (Terbaru di atas)
-                    paging: false, // Tampilkan semua baris tanpa paginasi
-                    info: false, // Sembunyikan teks "Menampilkan X entri" karena tidak ada paginasi
-                    searching: false, // Sembunyikan kotak pencarian
-                    ordering: false, // Nonaktifkan fitur klik sorting pada judul kolom
-                    autoWidth: false // Wajib false agar persentase width pada thead tidak di-override DataTables
-                });
-            }
-            
-            // Tampilkan Modal
-            var myModal = new bootstrap.Modal(document.getElementById('modalDisposisi'));
-            myModal.show();
-        });
+$(document).ready(function() {
+    var dt = $('#laporanTable').DataTable({
+        language: {
+            sLengthMenu:'Tampilkan _MENU_ entri', sSearch:'',
+            sZeroRecords:'Tidak ditemukan data', sInfo:'_START_–_END_ dari _TOTAL_',
+            sInfoEmpty:'0 entri', sInfoFiltered:'(dari _MAX_)',
+            oPaginate:{ sPrevious:'‹', sNext:'›' }
+        },
+        order:[[0,'desc']], pageLength:25,
+        dom: 'lrtip',
+        initComplete: function() {
+            var api = this.api();
+            $('#dtLength').html($('.dataTables_length').detach());
+            $('#dtSearch').html('<div class="dataTables_filter"><input type="search" placeholder="Cari surat…" id="dtSearchInput" style="height:36px;border-radius:0.5rem;border:1.5px solid #e8edf4;font-size:0.85rem;padding:0 0.75rem;outline:none;"></div>');
+            $('#dtInfo').html($('.dataTables_info').detach());
+            $('#dtPaginate').html($('.dataTables_paginate').detach());
+            $('#dtSearchInput').on('keyup', function(){ api.search(this.value).draw(); });
+        }
     });
+
+    // Lacak Perjalanan — delegated click
+    $(document).on('click', '.btn-lihat-disposisi', function() {
+        var rawData  = $(this).attr('data-disposisi');
+        var noSurat  = $(this).attr('data-nosurat');
+        var agenda   = $(this).attr('data-agenda');
+        var perihal  = $(this).attr('data-perihal');
+        var pengirim = $(this).attr('data-pengirim');
+        var disposisi = JSON.parse(rawData);
+
+        $('#modalDisposisiLabel').text('Lacak: ' + noSurat);
+        $('#modalSubLabel').text(perihal);
+        $('#modalPerihal').text(perihal);
+        $('#modalPengirim').text(pengirim);
+        $('#modalAgenda').html(agenda && agenda !== '-'
+            ? '<span style="display:inline-flex;align-items:center;gap:4px;background:#dbeafe;color:#1d4ed8;font-size:0.72rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:100px;"><i class=\"bi bi-hash\"></i>'+agenda+'</span>'
+            : '<span style="color:#94a3b8;font-size:0.82rem;">Belum diagendakan</span>');
+
+        var html = '';
+        if (!disposisi.length) {
+            html = '<div style="text-align:center;padding:2rem;color:#94a3b8;font-size:0.85rem;"><i class=\"bi bi-inbox\" style=\"font-size:2rem;display:block;margin-bottom:0.5rem;\"></i>Belum ada riwayat perjalanan.</div>';
+        } else {
+            disposisi.forEach(function(item) {
+                var catatan = item.catatan && item.catatan !== '-' ? item.catatan.replace(/\n/g,'<br>') : '<span style="color:#cbd5e1;">—</span>';
+                var dotColor = item.aksi === 'Disposisi' ? '#d97706' : (item.aksi === 'Selesai' ? '#16a34a' : '#2563eb');
+                html += `<div class="tl-item" style="--dc:${dotColor};">
+                    <div class="tl-body">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="tl-action">${item.aksi}</span>
+                            <span class="tl-date">${item.tanggal || ''}</span>
+                        </div>
+                        <div class="tl-by"><i class="bi bi-person-fill"></i> Ke: <strong>${item.aktor}</strong>&nbsp;·&nbsp;Oleh: ${item.by || ''}</div>
+                        <div class="tl-note">${catatan}</div>
+                    </div>
+                </div>`;
+            });
+        }
+        $('#historyTimeline').html(html);
+        new bootstrap.Modal(document.getElementById('modalDisposisi')).show();
+    });
+});
 </script>
 @endpush
+@endsection
