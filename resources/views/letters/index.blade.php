@@ -19,7 +19,7 @@
     {{-- Form Filter Tanggal & Status (Backend Filter) --}}
     <div class="card p-4 mb-4 border-0 shadow-sm">
         <form class="row gy-3 gx-3 align-items-end" method="GET">
-            <div class="col-md-2">
+            <div class="col-md-5">
                 <label class="form-label text-muted small fw-bold">Cabang</label>
                 <select name="branch_id" class="form-select">
                     <option value="">Semua Cabang</option>
@@ -28,7 +28,7 @@
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-3">
+            <div class="col-md-5">
                 <label class="form-label text-muted small fw-bold">Unit Kerja</label>
                 <select name="unit_id" class="form-select">
                     <option value="">Semua Unit</option>
@@ -38,15 +38,7 @@
                 </select>
             </div>
             <div class="col-md-2">
-                <label class="form-label text-muted small fw-bold">Dari Tanggal</label>
-                <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
-            </div>
-            <div class="col-md-2">
-                <label class="form-label text-muted small fw-bold">Sampai Tanggal</label>
-                <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
-            </div>
-            <div class="col-md-3">
-                <button class="btn btn-primary fw-bold w-100 mb-2"><i class="bi bi-funnel"></i> Filter</button>
+                <button class="btn btn-primary fw-bold w-100 mb-2 mt-2"><i class="bi bi-funnel"></i> Filter</button>
                 <a href="{{ request()->url() }}" class="btn btn-light border w-100 fw-bold"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
             </div>
         </form>

@@ -49,12 +49,6 @@ class LetterController extends Controller
         if ($st = $request->status) {
             $q->where('status', $st);
         }
-        if ($from = $request->date_from) {
-            $q->whereDate('created_at', '>=', $from);
-        }
-        if ($to = $request->date_to) {
-            $q->whereDate('created_at', '<=', $to);
-        }
 
         if ($branchId = $request->branch_id) {
             $q->where(function($query) use ($branchId) {
