@@ -242,6 +242,9 @@
             @php $role = Auth::user()->role; @endphp
 
             @if($role === 'staf_tu')
+                <a href="{{ route('letters.index') }}" class="sidebar-item {{ request()->routeIs('letters.index') ? 'active' : '' }}">
+                    <i class="bi bi-folder2-open"></i> Semua Surat
+                </a>
                 <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
                     <i class="bi bi-inbox-fill"></i> Antrean Agenda
                 </a>

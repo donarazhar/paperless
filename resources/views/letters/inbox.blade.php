@@ -101,7 +101,7 @@
                                 @endif
                             </td>
                             <td>
-                                <a href="{{ route('letters.show', ['letter' => Hashids::encode($letter->id)]) }}"
+                                <a href="{{ route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
                                     class="btn btn-sm btn-outline-primary border-0 bg-primary bg-opacity-10 fw-bold">
                                     Buka Surat
                                 </a>

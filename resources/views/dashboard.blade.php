@@ -105,7 +105,7 @@
                 @if(count($notifications) > 0)
                     <div class="d-flex flex-column gap-3">
                         @foreach($notifications as $note)
-                            <a href="{{ route('letters.show', ['letter' => Hashids::encode($note->letter_id)]) }}" 
+                            <a href="{{ route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($note->letter_id)]) }}" 
                                class="text-decoration-none p-3 rounded bg-light border border-white hover-shadow transition-all d-block">
                                 <div class="d-flex align-items-start">
                                     <div class="mt-1 me-3">

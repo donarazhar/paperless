@@ -82,11 +82,10 @@
                     </td>
                     <td class="text-capitalize">{{ $letter->status }}</td>
                     <td>
-                        <a href="{{ route('letters.show', ['letter' => Hashids::encode($letter->id)]) }}"
+                        <a href="{{ route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
                             class="btn btn-sm btn-info">Detail</a>
                     </td>
                 </tr>
-            @endforeach
             @endforeach
         </tbody>
     </table>
