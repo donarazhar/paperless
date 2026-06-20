@@ -116,7 +116,7 @@
                                         ->map(function($h) {
                                             $actor = $h->user ? $h->user->name . ' (Unit ' . ($h->user->unit->name ?? '-') . ')' : 'Sistem';
                                             return [
-                                                'tanggal' => $h->created_at->format('d/m/y H:i'),
+                                                'tanggal' => $h->created_at->format('d/m/y'),
                                                 'aksi' => ucfirst(str_replace('_', ' ', $h->action)),
                                                 'aktor' => $actor,
                                                 'catatan' => $h->note,
@@ -232,7 +232,7 @@
                     var catatan = item.catatan ? item.catatan.replace(/\n/g, '<br>') : '-';
                     html += `
                         <tr>
-                            <td class="text-nowrap"><i class="bi bi-clock me-1 text-muted"></i> ${item.tanggal}</td>
+                            <td class="text-nowrap"><i class="bi bi-calendar3 me-1 text-muted"></i> ${item.tanggal}</td>
                             <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">${item.aksi}</span></td>
                             <td><i class="bi bi-person-fill text-muted me-1"></i> ${item.aktor}</td>
                             <td><div class="fst-italic text-wrap" style="max-width: 300px;">${catatan}</div></td>
