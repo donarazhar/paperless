@@ -249,7 +249,12 @@ class LetterController extends Controller
 
     public function create()
     {
-        $units = \App\Models\Unit::all();
+        $userUnitId = Auth::user()->unit_id;
+        
+        $units = \App\Models\Unit::when($userUnitId, function($query) use ($userUnitId) {
+            return $query->where('id', '!=', $userUnitId);
+        })->get();
+
         return view('letters.create', compact('units'));
     }
 
