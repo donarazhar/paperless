@@ -265,7 +265,8 @@
                     order: [], // Tetap pertahankan urutan dari backend (Terbaru di atas)
                     paging: false, // Tampilkan semua baris tanpa paginasi
                     info: false, // Sembunyikan teks "Menampilkan X entri" karena tidak ada paginasi
-                    searching: false // Sembunyikan kotak pencarian
+                    searching: false, // Sembunyikan kotak pencarian
+                    ordering: false // Nonaktifkan fitur klik sorting pada judul kolom
                 });
             }
             
