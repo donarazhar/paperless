@@ -284,6 +284,19 @@
                         if($h->action==='sent') $dc='sent';
                         elseif(str_contains($h->action,'dispos')) $dc='disp';
                         elseif($h->action==='disposition_accepted') $dc='done';
+                        $actionLabel = match($h->action) {
+                            'sent'                    => 'Surat Dikirim',
+                            'created'                 => 'Surat Dibuat',
+                            'read'                    => 'Surat Dibaca',
+                            'agenda_set'              => 'Nomor Agenda Ditetapkan',
+                            'forwarded'               => 'Diteruskan ke Kasubag TU',
+                            'disposed'                => 'Surat Didisposisikan',
+                            'disposition_responded'   => 'Pertimbangan Diberikan',
+                            'disposition_accepted'    => 'Disposisi Diselesaikan',
+                            'completed'               => 'Surat Selesai',
+                            'draft'                   => 'Disimpan sebagai Draft',
+                            default                   => ucfirst(str_replace('_', ' ', $h->action)),
+                        };
                     @endphp
                     <div class="tl-item">
                         <div class="tl-dot {{ $dc }}">
@@ -291,7 +304,7 @@
                         </div>
                         <div class="tl-body">
                             <div class="d-flex justify-content-between">
-                                <span class="tl-action">{{ ucfirst(str_replace('_',' ',$h->action)) }}</span>
+                                <span class="tl-action">{{ $actionLabel }}</span>
                                 <span class="tl-time">{{ $h->created_at->format('d M H:i') }}</span>
                             </div>
                             @if($h->note)<div class="tl-note">"{{ $h->note }}"</div>@endif
