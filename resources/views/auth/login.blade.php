@@ -419,40 +419,89 @@
             .hero h1 { font-size: 2.1rem; }
         }
 
-        /* Tablet portrait (≤768px) — stack vertically */
+        /* Mobile & tablet portrait (≤768px) — form only, full screen */
         @media (max-width: 768px) {
-            .page { grid-template-columns: 1fr; }
+            html, body { height: 100%; }
 
-            .hero {
-                padding: 2.5rem 2rem;
-                min-height: auto;
-                justify-content: flex-start;
+            .page {
+                grid-template-columns: 1fr;
+                min-height: 100vh;
+                min-height: 100dvh;
             }
 
-            .hero h1 { font-size: 1.8rem; }
-            .hero p { font-size: 0.875rem; max-width: 100%; }
-            .hero-features { display: none; }
-            .hero-glass { display: none; }
+            /* Hide hero completely on mobile */
+            .hero { display: none !important; }
+            .brand-wrap { display: none !important; }
 
-            .form-side { padding: 2.5rem 1.5rem; }
+            .form-side {
+                min-height: 100vh;
+                min-height: 100dvh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem 1.5rem;
+                background: #fff;
+            }
+
+            .form-box {
+                width: 100%;
+                max-width: 400px;
+            }
+
+            /* Add logo+brand at top for context on mobile */
+            .mobile-hero-top {
+                display: flex !important;
+                align-items: center;
+                gap: 0.75rem;
+                margin-bottom: 2rem;
+                padding-bottom: 1.25rem;
+                border-bottom: 1px solid var(--border);
+            }
+
+            .mobile-hero-top .mh-logo {
+                width: 42px; height: 42px;
+                object-fit: contain;
+                border-radius: 10px;
+                border: 1px solid var(--border);
+                padding: 5px;
+            }
+
+            .mobile-hero-top .mh-text .mh-name {
+                font-size: 0.9rem;
+                font-weight: 800;
+                color: var(--text);
+                line-height: 1.2;
+            }
+
+            .mobile-hero-top .mh-text .mh-sub {
+                font-size: 0.72rem;
+                color: var(--muted);
+                font-weight: 500;
+            }
+
+            .form-box h2 { font-size: 1.5rem; }
+            .form-box .welcome-sub { font-size: 0.875rem; margin-bottom: 1.5rem; }
+            .btn-submit { height: 50px; }
+            .sep { margin: 1.5rem 0 1.25rem; }
         }
 
-        /* Mobile (≤480px) */
+        /* Smaller mobile (≤480px) */
         @media (max-width: 480px) {
-            .hero { padding: 2rem 1.25rem; }
-            .hero-badge { font-size: 0.65rem; }
-            .hero h1 { font-size: 1.55rem; }
-            .hero p { display: none; }
-
-            .form-side { padding: 2rem 1.25rem; }
-            .form-box h2 { font-size: 1.45rem; }
-            .btn-submit { height: 46px; font-size: 0.9rem; }
+            .form-side { padding: 1.75rem 1.25rem; }
+            .form-box h2 { font-size: 1.35rem; }
+            .f-wrap input { height: 46px; }
+            .btn-submit { height: 48px; font-size: 0.9rem; }
+            .info-pills { display: none; }
         }
 
-        /* Very small (≤360px) */
+        /* Very small phones (≤360px) */
         @media (max-width: 360px) {
-            .hero { padding: 1.5rem 1rem; }
             .form-side { padding: 1.5rem 1rem; }
+            .form-box h2 { font-size: 1.2rem; }
+            .welcome-sub { font-size: 0.8rem; }
+            .f-wrap input { height: 44px; font-size: 0.85rem; }
+            .btn-submit { height: 46px; font-size: 0.85rem; }
+            .footer-copy { font-size: 0.68rem; }
         }
     </style>
 </head>
@@ -500,6 +549,15 @@
     <!-- ── FORM RIGHT ── -->
     <div class="form-side">
         <div class="form-box">
+
+            {{-- Mobile brand header (hidden on desktop) --}}
+            <div class="mobile-hero-top">
+                <img src="{{ asset('img/logo.png') }}" class="mh-logo" alt="Logo">
+                <div class="mh-text">
+                    <div class="mh-name">Paperless Mail</div>
+                    <div class="mh-sub">YPI Al Azhar &mdash; Sistem Persuratan Digital</div>
+                </div>
+            </div>
 
             <div class="brand-wrap">
                 <img src="{{ asset('img/logo.png') }}" class="brand-logo" alt="Logo YPI Al Azhar">
