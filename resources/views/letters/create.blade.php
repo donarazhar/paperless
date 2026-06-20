@@ -1,77 +1,103 @@
 @extends('layouts.app')
-@section('title', 'Buat Surat')
+@section('title', 'Buat Surat Baru')
 
 @section('content')
-    <h1 class="mb-4">Buat Surat Baru</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 fw-bold mb-0">Formulir Pembuatan Surat</h1>
+    <a href="{{ route('letters.outbound') }}" class="btn btn-light border"><i class="bi bi-arrow-left"></i> Kembali</a>
+</div>
 
-    {{-- Tampilkan error validasi --}}
-    @if($errors->any())
-      <div class="alert alert-danger">
-        <ul class="mb-0">
-          @foreach($errors->all() as $err)
-            <li>{{ $err }}</li>
-          @endforeach
-        </ul>
-      </div>
-    @endif
-
-    @if($errors->has('attachments'))
-        <div class="alert alert-danger">
-            {{$errors->first('attachments')}}
+{{-- Alert Error Validasi --}}
+@if($errors->any())
+    <div class="alert alert-danger shadow-sm border-0 mb-4" style="border-radius: 0.75rem;">
+        <div class="d-flex align-items-center mb-2">
+            <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
+            <strong class="mb-0">Terdapat kesalahan pada input Anda:</strong>
         </div>
-    @endif
+        <ul class="mb-0 text-sm">
+            @foreach($errors->all() as $err)
+                <li>{{ $err }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card p-4">
+            <form action="{{ route('letters.store') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                
+                {{-- Field No Surat --}}
+                <div class="mb-4">
+                    <label class="form-label text-muted fw-bold small text-uppercase">Nomor Surat Internal</label>
+                    <input type="text" 
+                           name="letter_number" 
+                           class="form-control form-control-lg bg-light" 
+                           value="{{ old('letter_number') }}" 
+                           placeholder="Kosongkan jika ingin sistem mengisi otomatis (opsional)">
+                    <div class="form-text mt-2"><i class="bi bi-info-circle"></i> Nomor surat akan terisi otomatis saat surat dikirim jika dibiarkan kosong.</div>
+                </div>
+
+                {{-- Field Perihal --}}
+                <div class="mb-4">
+                    <label class="form-label text-muted fw-bold small text-uppercase">Perihal / Judul Surat</label>
+                    <input type="text" 
+                           name="subject" 
+                           class="form-control form-control-lg bg-light" 
+                           value="{{ old('subject') }}" 
+                           placeholder="Contoh: Permohonan Pengajuan Dana Operasional..."
+                           required>
+                </div>
+
+                {{-- Field Isi Surat --}}
+                <div class="mb-4">
+                    <label class="form-label text-muted fw-bold small text-uppercase">Isi Ringkas / Keterangan Tambahan</label>
+                    <textarea name="body" 
+                              class="form-control bg-light" 
+                              rows="6" 
+                              placeholder="Tuliskan keterangan singkat mengenai surat yang dilampirkan..."
+                              required>{{ old('body') }}</textarea>
+                </div>
+
+                {{-- Field File Lampiran --}}
+                <div class="mb-5 p-4 border rounded bg-light border-dashed" style="border-style: dashed !important;">
+                    <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-paperclip me-2"></i>Unggah Lampiran Dokumen</label>
+                    <p class="text-muted small mb-3">Format yang didukung: PDF, DOC, DOCX (Maksimal 5MB per file). Anda dapat memilih beberapa file sekaligus.</p>
+                    <input type="file" 
+                           name="attachments[]" 
+                           class="form-control" 
+                           multiple 
+                           required>
+                </div>
+
+                {{-- Tombol Aksi --}}
+                <div class="d-flex gap-3 justify-content-end pt-3 border-top">
+                    <button type="submit" name="action" value="draft" class="btn btn-outline-secondary px-4 fw-bold">
+                        <i class="bi bi-save me-1"></i> Simpan ke Draft
+                    </button>
+                    <button type="submit" name="action" value="send" class="btn btn-primary px-5 fw-bold">
+                        Kirim ke Sekretariat YPIA <i class="bi bi-send-fill ms-2"></i>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
     
-    <form action="{{ route('letters.store') }}" method="POST" enctype="multipart/form-data">
-      @csrf
-
-      <div class="mb-3">
-        <label class="form-label">No Surat (otomatis saat kirim)</label>
-        <input type="text"
-               name="letter_number"
-               class="form-control"
-               value="{{ old('letter_number') }}">
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Perihal</label>
-        <input type="text"
-               name="subject"
-               class="form-control"
-               value="{{ old('subject') }}"
-               required>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Isi Surat</label>
-        <textarea name="body"
-                  class="form-control"
-                  rows="5"
-                  required>{{ old('body') }}</textarea>
-      </div>
-
-      <div class="mb-3">
-        <label class="form-label">Lampiran (PDF/DOCX max 5MB)</label>
-        <input type="file"
-               name="attachments[]"
-               class="form-control"
-               multiple
-               required>
-      </div>
-
-      <div class="d-flex gap-2">
-        <button type="submit"
-                name="action"
-                value="draft"
-                class="btn btn-secondary">
-          <i class="bi bi-save"></i> Simpan Draft
-        </button>
-        <button type="submit"
-                name="action"
-                value="send"
-                class="btn btn-primary">
-          <i class="bi bi-send"></i> Kirim Surat
-        </button>
-        <a href="{{ route('letters.inbound') }}" class="btn btn-link">Batal</a>
-      </div>
-    </form>
+    {{-- Info Bantuan Panel Kanan --}}
+    <div class="col-lg-4 d-none d-lg-block">
+        <div class="card p-4 bg-primary bg-opacity-10 border-0">
+            <h5 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle-fill me-2"></i> Informasi Pengiriman</h5>
+            <p class="small text-muted mb-3" style="line-height: 1.6;">
+                Sesuai dengan <strong>Sistem Satu Pintu YPI Al Azhar</strong>, seluruh surat keluar yang dibuat oleh unit Anda akan secara otomatis dikirimkan ke <strong>Antrean Sekretariat (Staf TU)</strong> untuk diberikan Nomor Agenda sebelum didisposisikan ke pihak yang berwenang.
+            </p>
+            <hr class="border-primary opacity-25">
+            <ul class="list-unstyled small text-muted">
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Anda <strong>tidak perlu memilih unit tujuan</strong> secara manual.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Nomor surat internal unit Anda bisa diisi, atau dibiarkan kosong.</li>
+                <li><i class="bi bi-check-circle-fill text-success me-2"></i> Lacak perkembangan surat Anda melalui menu <strong>Surat Keluar</strong>.</li>
+            </ul>
+        </div>
+    </div>
+</div>
 @endsection
