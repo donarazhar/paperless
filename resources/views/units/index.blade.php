@@ -93,8 +93,7 @@
         <thead>
             <tr>
                 <th style="width:40px;">#</th>
-                <th style="width:140px;">Cabang</th>
-                <th>Nama Unit</th>
+                <th>Unit & Cabang</th>
                 <th style="width:110px;">Tipe</th>
                 <th>Edit</th>
                 <th style="width:80px;">Aksi</th>
@@ -107,8 +106,10 @@
                 @php $i++; @endphp
                 <tr>
                     <td style="color:#94a3b8;font-size:0.78rem;font-weight:600;">{{ $i }}</td>
-                    <td style="font-size:0.835rem;color:#64748b;">{{ $unit->branch->name ?? '—' }}</td>
-                    <td style="font-weight:700;color:#0f172a;">{{ $unit->name }}</td>
+                    <td>
+                        <div style="font-weight:700;color:#0f172a;">{{ $unit->name }}</div>
+                        <div style="font-size:0.75rem;color:#64748b;margin-top:2px;"><i class="bi bi-building"></i> {{ $unit->branch->name ?? '—' }}</div>
+                    </td>
                     <td>
                         @if($unit->is_sekretariat)
                             <span class="sek-badge"><i class="bi bi-star-fill"></i> Sekretariat</span>
