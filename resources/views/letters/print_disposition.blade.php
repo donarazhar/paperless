@@ -76,11 +76,11 @@
 
     @php
         $pengirimText = $letter->type === 'external' ? $letter->external_sender_name : ($letter->sender->name ?? 'Sistem');
-        $tujuanText   = $letter->type === 'outbound_external' ? $letter->external_recipient_name : ($letter->recipientUser ? $letter->recipientUser->name : 'Unit '.($letter->recipientUnit->name ?? '--'));
+        $tujuanText   = $letter->type === 'outbound_external' ? $letter->external_recipient_name : ($letter->recipientUser ? $letter->recipientUser->name : ($letter->recipientUnit->name ?? '--'));
         
         $dispoHistory = collect();
         foreach($letter->dispositions as $d) {
-            $target = $d->toUser ? $d->toUser->name : ($d->unit ? 'Unit '.$d->unit->name : '--');
+            $target = $d->toUser ? $d->toUser->name : ($d->unit ? $d->unit->name : '--');
             $actor  = $d->fromUser ? $d->fromUser->name : 'Sistem';
             $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d/m/y'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$d->note ?? '-','by'=>$actor]);
             if($d->status !== 'pending') {
