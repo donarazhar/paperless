@@ -276,9 +276,26 @@
             @endif
 
             <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Laporan</div>
-            <a href="{{ route('letters.index') }}" class="sidebar-item {{ request()->routeIs('letters.index') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-bar-graph-fill"></i> Laporan Surat
+            <a class="sidebar-item d-flex justify-content-between align-items-center {{ request()->routeIs('letters.index') ? 'active' : '' }}" data-bs-toggle="collapse" href="#collapseLaporan" role="button" aria-expanded="{{ request()->routeIs('letters.index') ? 'true' : 'false' }}">
+                <div><i class="bi bi-file-earmark-bar-graph-fill"></i> Laporan Surat</div>
+                <i class="bi bi-chevron-down small text-muted"></i>
             </a>
+            <div class="collapse {{ request()->routeIs('letters.index') ? 'show' : '' }}" id="collapseLaporan">
+                <div class="ps-4 ms-2 border-start border-2 border-light my-1">
+                    <a href="{{ route('letters.index', ['category' => 'masuk_internal']) }}" class="sidebar-item {{ request('category') == 'masuk_internal' ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                        Surat Masuk Internal
+                    </a>
+                    <a href="{{ route('letters.index', ['category' => 'masuk_eksternal']) }}" class="sidebar-item {{ request('category') == 'masuk_eksternal' ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                        Surat Masuk Eksternal
+                    </a>
+                    <a href="{{ route('letters.index', ['category' => 'keluar_internal']) }}" class="sidebar-item {{ request('category') == 'keluar_internal' ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                        Surat Keluar Internal
+                    </a>
+                    <a href="{{ route('letters.index', ['category' => 'keluar_eksternal']) }}" class="sidebar-item {{ request('category') == 'keluar_eksternal' ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                        Surat Keluar Eksternal
+                    </a>
+                </div>
+            </div>
 
             @if($role === 'staf_tu')
                 
