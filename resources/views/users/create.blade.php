@@ -1,80 +1,125 @@
 @extends('layouts.app')
-@section('title', 'Tambah User')
+@section('title', 'Tambah Pengguna')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1 class="h3 fw-bold mb-0">Tambah Pengguna Baru</h1>
-    <a href="{{ route('users.index') }}" class="btn btn-light border"><i class="bi bi-arrow-left"></i> Kembali</a>
+<style>
+    .form-panel { background:#fff;border:1px solid #e8edf4;border-radius:1rem;padding:2rem; }
+    .form-label { font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:0.5rem; }
+    .form-control,.form-select { height:48px;border-radius:0.75rem;border:1.5px solid #e8edf4;background:#f8faff;font-size:0.95rem;font-weight:500;color:#0f172a;transition:all .2s; }
+    .form-control:focus,.form-select:focus { border-color:#2563eb;background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,0.08);outline:none; }
+    .form-control::placeholder { color:#94a3b8;font-weight:400; }
+    .err-alert { background:#fef2f2;border:1px solid #fecaca;border-radius:0.75rem;padding:1rem 1.25rem;color:#991b1b;display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.5rem; }
+    .err-alert i { font-size:1.25rem;color:#dc2626; }
+    .err-alert ul { margin:0;padding-left:1.25rem;font-size:0.85rem;margin-top:0.25rem; }
+    .btn-submit { background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border:none;border-radius:0.75rem;font-size:0.9rem;font-weight:700;padding:0 2rem;height:48px;display:inline-flex;align-items:center;gap:0.5rem;transition:all .2s; }
+    .btn-submit:hover { transform:translateY(-2px);box-shadow:0 8px 16px rgba(37,99,235,0.2);color:#fff; }
+    .btn-back { display:inline-flex;align-items:center;gap:0.5rem;background:#f8faff;border:1.5px solid #e8edf4;color:#475569;border-radius:0.6rem;padding:0.45rem 1rem;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all .2s; }
+    .btn-back:hover { background:#eff6ff;color:#2563eb;border-color:#bfdbfe; }
+    .info-box { background:linear-gradient(to bottom right,#eff6ff,#fff);border:1px solid #bfdbfe;border-radius:1rem;padding:1.5rem; }
+    .info-row { display:flex;align-items:flex-start;gap:0.75rem;margin-bottom:0.85rem;font-size:0.85rem;color:#334155;line-height:1.5; }
+    .info-row:last-child { margin-bottom:0; }
+    .info-icon { width:22px;height:22px;border-radius:6px;background:#dbeafe;color:#2563eb;display:flex;align-items:center;justify-content:center;font-size:0.75rem;flex-shrink:0;margin-top:2px; }
+    .page-title { font-size:1.5rem;font-weight:800;color:#0f172a;letter-spacing:-0.03em;margin-bottom:0.25rem; }
+    .page-sub { font-size:0.85rem;color:#64748b; }
+    .warn-text { font-size:0.75rem;color:#dc2626;margin-top:5px;display:flex;gap:4px;align-items:center; }
+</style>
+
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3">
+    <div>
+        <h1 class="page-title">Tambah Pengguna Baru</h1>
+        <p class="page-sub">Buat akun baru dan atur hak aksesnya.</p>
+    </div>
+    <a href="{{ route('users.index') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Kembali ke Daftar</a>
 </div>
 
-{{-- Alert Error Validasi --}}
 @if($errors->any())
-    <div class="alert alert-danger shadow-sm border-0 mb-4" style="border-radius: 0.75rem;">
-        <div class="d-flex align-items-center mb-2">
-            <i class="bi bi-exclamation-triangle-fill fs-5 me-2"></i>
-            <strong class="mb-0">Terdapat kesalahan pada input Anda:</strong>
+    <div class="err-alert">
+        <i class="bi bi-exclamation-octagon-fill"></i>
+        <div>
+            <strong>Gagal membuat akun</strong>
+            <ul>
+                @foreach($errors->all() as $err)
+                    <li>{{ $err }}</li>
+                @endforeach
+            </ul>
         </div>
-        <ul class="mb-0 text-sm">
-            @foreach($errors->all() as $err)
-                <li>{{ $err }}</li>
-            @endforeach
-        </ul>
     </div>
 @endif
 
-<div class="card p-4 col-lg-8">
-    <form action="{{ route('users.store') }}" method="POST">
-        @csrf
-        
-        <div class="mb-4">
-            <label class="form-label text-muted fw-bold small text-uppercase">Nama Lengkap</label>
-            <input type="text" name="name" class="form-control bg-light" value="{{ old('name') }}" required>
-        </div>
+<div class="row g-4">
+    <div class="col-lg-7">
+        <form action="{{ route('users.store') }}" method="POST" class="form-panel shadow-sm">
+            @csrf
 
-        <div class="mb-4">
-            <label class="form-label text-muted fw-bold small text-uppercase">Alamat Email</label>
-            <input type="email" name="email" class="form-control bg-light" value="{{ old('email') }}" required>
-        </div>
-
-        <div class="row">
-            <div class="col-md-6 mb-4">
-                <label class="form-label text-muted fw-bold small text-uppercase">Kata Sandi</label>
-                <input type="password" name="password" class="form-control bg-light" required>
+            <div class="mb-4">
+                <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                <input type="text" name="name" class="form-control" value="{{ old('name') }}" placeholder="Masukkan nama lengkap..." required>
             </div>
-            <div class="col-md-6 mb-4">
-                <label class="form-label text-muted fw-bold small text-uppercase">Konfirmasi Kata Sandi</label>
-                <input type="password" name="password_confirmation" class="form-control bg-light" required>
+
+            <div class="mb-4">
+                <label class="form-label">Alamat Email <span class="text-danger">*</span></label>
+                <input type="email" name="email" class="form-control" value="{{ old('email') }}" placeholder="contoh@email.com" required>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <label class="form-label">Kata Sandi <span class="text-danger">*</span></label>
+                    <input type="password" name="password" class="form-control" placeholder="Min. 8 karakter" required>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">Konfirmasi Kata Sandi <span class="text-danger">*</span></label>
+                    <input type="password" name="password_confirmation" class="form-control" placeholder="Ulangi kata sandi" required>
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Role / Hak Akses <span class="text-danger">*</span></label>
+                <select name="role" class="form-select" required>
+                    <option value="staf_unit" selected>Staf Unit — Pembuat Surat</option>
+                </select>
+                <div style="font-size:0.72rem;color:#94a3b8;margin-top:6px;display:flex;gap:4px;align-items:center;">
+                    <i class="bi bi-info-circle text-primary"></i> Saat ini hanya dapat membuat akun Staf Unit.
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Penempatan Unit <span class="text-danger">*</span></label>
+                <select name="unit_id" class="form-select" required>
+                    <option value="">— Pilih Unit —</option>
+                    @foreach($units as $unit)
+                        @if($unit->name === 'Administrator') @continue @endif
+                        <option value="{{ $unit->id }}">{{ $unit->name }} (Cab. {{ $unit->branch->name ?? '-' }})</option>
+                    @endforeach
+                </select>
+                @if($units->count() <= 1)
+                    <div class="warn-text"><i class="bi bi-exclamation-circle-fill"></i> Semua unit telah terisi. Buat unit baru terlebih dahulu.</div>
+                @endif
+            </div>
+
+            <div class="d-flex justify-content-end pt-3" style="border-top:1px solid #e8edf4;">
+                <button class="btn-submit"><i class="bi bi-person-plus-fill"></i> Buat Akun</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="col-lg-5">
+        <div class="info-box shadow-sm">
+            <div style="font-weight:800;color:#1e3a8a;margin-bottom:1rem;display:flex;align-items:center;gap:0.5rem;">
+                <i class="bi bi-info-circle-fill text-primary"></i> Panduan Pembuatan Akun
+            </div>
+            <div class="info-row">
+                <div class="info-icon"><i class="bi bi-person-fill"></i></div>
+                <div><strong>Staf Unit</strong> — Pengguna yang dapat membuat dan mengirim surat keluar internal dari unitnya.</div>
+            </div>
+            <div class="info-row">
+                <div class="info-icon"><i class="bi bi-building-fill"></i></div>
+                <div>Setiap pengguna harus ditempatkan di salah satu <strong>Unit Kerja</strong> yang sudah terdaftar.</div>
+            </div>
+            <div class="info-row">
+                <div class="info-icon"><i class="bi bi-shield-fill-check"></i></div>
+                <div>Kata sandi minimal <strong>8 karakter</strong>. Pengguna dapat mengubah sendiri setelah login.</div>
             </div>
         </div>
-
-        <div class="mb-4">
-            <label class="form-label text-muted fw-bold small text-uppercase">Role / Hak Akses</label>
-            <select name="role" class="form-select bg-light" required>
-                <option value="staf_unit" selected>Staf Unit (Pembuat Surat)</option>
-            </select>
-        </div>
-
-        <div class="mb-4">
-            <label class="form-label text-muted fw-bold small text-uppercase">Penempatan Unit</label>
-            <select name="unit_id" class="form-select bg-light" required>
-                <option value="">— Pilih Unit —</option>
-                @foreach($units as $unit)
-                    @if ($unit->name == 'Administrator')
-                        @continue
-                    @endif
-                    <option value="{{ $unit->id }}">{{ $unit->name }} (Cab. {{ $unit->branch->name ?? '-' }})</option>
-                @endforeach
-            </select>
-            @if($units->count() <= 1)
-                <div class="form-text text-danger mt-2"><i class="bi bi-info-circle"></i> Semua unit telah terisi oleh pengguna. Buat unit baru terlebih dahulu.</div>
-            @endif
-        </div>
-
-        <div class="d-flex justify-content-end pt-3 border-top">
-            <button class="btn btn-primary px-4 fw-bold">
-                <i class="bi bi-person-plus-fill me-1"></i> Buat Akun
-            </button>
-        </div>
-    </form>
+    </div>
 </div>
 @endsection
