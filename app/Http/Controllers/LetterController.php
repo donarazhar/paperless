@@ -20,12 +20,21 @@ class LetterController extends Controller
 
     public function index(Request $request)
     {
-        if (Auth::user()->role !== 'admin') {
-            abort(403);
-        }
+        $user = Auth::user();
+        
+        $q = Letter::with(['sender', 'dispositions', 'recipientUser', 'recipientUnit']);
 
-        $q = Letter::with(['sender', 'dispositions', 'recipientUser', 'recipientUnit'])
-                   ->where('type', 'internal');
+        // Jika staf unit, hanya tampilkan surat yang berhubungan dengan unitnya
+        if ($user->role === 'staf_unit') {
+            $q->where(function($query) use ($user) {
+                $query->where('from_user_id', $user->id)
+                      ->orWhere('to_unit_id', $user->unit_id)
+                      ->orWhereHas('dispositions', function($d) use ($user) {
+                          $d->where('to_user_id', $user->id)
+                            ->orWhere('to_unit_id', $user->unit_id);
+                      });
+            });
+        }
 
         if ($s = $request->search) {
             $q->where(
@@ -48,9 +57,7 @@ class LetterController extends Controller
             $q->whereDate('created_at', '<=', $to);
         }
 
-        $letters = $q->latest()
-            ->paginate(15)
-            ->withQueryString();
+        $letters = $q->latest()->get();
 
         return view('letters.index', compact('letters'));
     }

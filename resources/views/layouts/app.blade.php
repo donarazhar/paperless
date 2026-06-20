@@ -14,6 +14,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    @stack('styles')
 
     <style>
         :root {
@@ -273,11 +275,12 @@
                 </div>
             @endif
 
+            <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Laporan</div>
+            <a href="{{ route('letters.index') }}" class="sidebar-item {{ request()->routeIs('letters.index') ? 'active' : '' }}">
+                <i class="bi bi-file-earmark-bar-graph-fill"></i> Laporan Surat
+            </a>
+
             @if($role === 'staf_tu')
-                <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Administrasi</div>
-                <a href="{{ route('letters.index') }}" class="sidebar-item {{ request()->routeIs('letters.index') ? 'active' : '' }}">
-                    <i class="bi bi-folder2-open"></i> Semua Surat
-                </a>
                 
                 <a class="sidebar-item d-flex justify-content-between align-items-center mt-2" data-bs-toggle="collapse" href="#collapseMasterData" role="button" aria-expanded="{{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'true' : 'false' }}">
                     <div><i class="bi bi-database-fill"></i> Master Data</div>
