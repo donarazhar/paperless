@@ -111,11 +111,12 @@
                                         $dispoHistory = collect();
                                         foreach($letter->dispositions as $d) {
                                             $target = $d->toUser ? $d->toUser->name : ($d->unit ? 'Unit ' . $d->unit->name : '--');
+                                            $actor = $d->fromUser ? $d->fromUser->name : 'Sistem';
                                             
                                             $dispoHistory->push([
                                                 'sort_date' => $d->created_at->timestamp,
                                                 'tanggal' => $d->created_at->format('d/m/y'),
-                                                'aksi' => 'Disposed',
+                                                'aksi' => 'Disposed <br><small class="text-muted fw-normal"><i class="bi bi-person-fill"></i> Oleh: ' . $actor . '</small>',
                                                 'aktor' => $target,
                                                 'catatan' => $d->note ?? '-',
                                             ]);
@@ -124,8 +125,8 @@
                                                 $dispoHistory->push([
                                                     'sort_date' => $d->updated_at->timestamp,
                                                     'tanggal' => $d->updated_at->format('d/m/y'),
-                                                    'aksi' => 'Disposition Responded (' . ucfirst($d->status) . ')',
-                                                    'aktor' => $target,
+                                                    'aksi' => 'Responded (' . ucfirst($d->status) . ') <br><small class="text-muted fw-normal"><i class="bi bi-person-fill"></i> Oleh: ' . $target . '</small>',
+                                                    'aktor' => $actor,
                                                     'catatan' => $d->response_note ?? '-',
                                                 ]);
                                             }
@@ -242,8 +243,8 @@
                     html += `
                         <tr>
                             <td class="text-nowrap"><i class="bi bi-calendar3 me-1 text-muted"></i> ${item.tanggal}</td>
-                            <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">${item.aksi}</span></td>
-                            <td><i class="bi bi-person-fill text-muted me-1"></i> ${item.aktor}</td>
+                            <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-start lh-base">${item.aksi}</span></td>
+                            <td>${item.aktor}</td>
                             <td><div class="fst-italic text-wrap" style="max-width: 300px;">${catatan}</div></td>
                         </tr>
                     `;
