@@ -133,9 +133,9 @@
     <table class="dispo-table">
         <thead>
             <tr>
+                <th style="width:20%;">Tanggal</th>
                 <th style="width:25%;">Ditujukan Ke</th>
-                <th style="width:30%;">Tanggal</th>
-                <th style="width:45%;">Catatan</th>
+                <th style="width:55%;">Isi Disposisi</th>
             </tr>
         </thead>
         <tbody>
@@ -144,10 +144,8 @@
                     $catatan = $item['catatan'] && $item['catatan'] !== '-' ? nl2br(e($item['catatan'])) : '—';
                 @endphp
                 <tr>
+                    <td>{{ $item['tanggal'] }}</td>
                     <td><strong>{{ $item['aktor'] }}</strong></td>
-                    <td>
-                        {{ $item['tanggal'] }}
-                    </td>
                     <td>{!! $catatan !!}</td>
                 </tr>
             @empty
