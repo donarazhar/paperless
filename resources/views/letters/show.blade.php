@@ -71,17 +71,22 @@
     .action-panel.agenda { background:#eff6ff;border:1.5px solid #bfdbfe; }
 
     /* PDF preview */
-    #pdfInlinePreview { background:#fff;border:1px solid #e8edf4;border-radius:0.75rem;padding:1rem;margin-top:1rem; }
+    #pdfInlinePreview { background:#f8faff;border:1px solid #e8edf4;border-radius:0.75rem;padding:0.5rem;margin-top:1rem; }
 
     /* Back button */
     .btn-back { display:inline-flex;align-items:center;gap:5px;background:#f8faff;border:1.5px solid #e8edf4;color:#475569;border-radius:0.6rem;padding:0.45rem 1rem;font-size:0.85rem;font-weight:600;text-decoration:none;transition:background .15s; }
     .btn-back:hover { background:#eff6ff;color:#2563eb;border-color:#bfdbfe; }
 
-    @media(max-width:900px) { .show-grid { grid-template-columns:1fr !important; } }
+    .top-grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.25rem; align-items: start; margin-bottom: 1.5rem; }
+    .bottom-grid { display: grid; grid-template-columns: 1fr 380px; gap: 1.25rem; align-items: start; }
+    @media(max-width:991px) { 
+        .top-grid { grid-template-columns: 1fr; } 
+        .bottom-grid { grid-template-columns: 1fr; }
+    }
 </style>
 
 {{-- Header --}}
-<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+<div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
     <div>
         <div class="d-flex align-items-center gap-2 mb-1">
             <span class="status-pill {{ $sm['pill'] }}"><i class="bi {{ $sm['icon'] }}"></i> {{ $sm['label'] }}</span>
@@ -95,126 +100,10 @@
     <a href="{{ url()->previous() }}" class="btn-back"><i class="bi bi-arrow-left"></i> Kembali</a>
 </div>
 
-<div class="show-grid" style="display:grid;grid-template-columns:1fr 380px;gap:1rem;align-items:start;">
+{{-- ═══ TOP GRID (30% Inputan - 70% Preview) ═══ --}}
+<div class="top-grid">
 
-    {{-- ═══ LEFT ═══ --}}
-    <div>
-        {{-- Info Surat --}}
-        <div class="panel mb-0">
-            <div class="sec-title">Informasi Surat</div>
-            <div class="meta-row">
-                <div class="meta-key">No. Surat</div>
-                <div class="meta-val">{{ $letter->letter_number ?: '—' }}</div>
-            </div>
-            <div class="meta-row">
-                <div class="meta-key">Jenis</div>
-                <div class="meta-val text-capitalize">{{ str_replace('_',' ',$letter->type) }}</div>
-            </div>
-            <div class="meta-row">
-                <div class="meta-key">Pengirim</div>
-                <div class="meta-val">
-                    @if($letter->type==='external')
-                        <span style="font-weight:700;color:#2563eb;">{{ $letter->external_sender_name }}</span>
-                        <span class="text-muted" style="font-size:0.75rem;"> (Instansi Luar)</span>
-                        <div style="font-size:0.75rem;color:#94a3b8;">Diinput oleh: {{ $letter->creator->name ?? 'Admin' }}</div>
-                    @else
-                        {{ $letter->sender->name ?? 'Sistem' }}
-                        <div style="font-size:0.75rem;color:#94a3b8;">{{ $letter->sender->unit->name ?? '' }}</div>
-                    @endif
-                </div>
-            </div>
-            <div class="meta-row">
-                <div class="meta-key">Tujuan</div>
-                <div class="meta-val">
-                    @if($letter->type==='outbound_external')
-                        <span style="font-weight:700;color:#2563eb;">{{ $letter->external_recipient_name }}</span>
-                        <span class="text-muted" style="font-size:0.75rem;"> (Instansi Luar)</span>
-                    @elseif($letter->recipientUser)
-                        {{ $letter->recipientUser->name }}
-                        <div style="font-size:0.75rem;color:#94a3b8;">{{ $letter->recipientUser->unit->name ?? '' }}</div>
-                    @else
-                        Unit {{ $letter->recipientUnit->name ?? '—' }}
-                    @endif
-                </div>
-            </div>
-        </div>
-
-        {{-- Isi --}}
-        <div class="panel" style="margin-top:1rem;">
-            <div class="sec-title">Isi Surat</div>
-            <div class="body-content">{!! nl2br(e($letter->body)) !!}</div>
-        </div>
-
-        {{-- External Notes --}}
-        @if($letter->type==='outbound_external')
-        <div class="panel" style="margin-top:1rem;background:#fffbeb;border-color:#fde68a;">
-            <div class="sec-title">Keterangan / Status Eksternal</div>
-            <p style="font-size:0.9rem;color:#374151;line-height:1.7;">{!! nl2br(e($letter->external_notes ?: 'Belum ada keterangan.')) !!}</p>
-            @if($letter->from_user_id == Auth::id())
-                <button class="att-btn att-other" data-bs-toggle="collapse" data-bs-target="#extNoteForm" style="font-size:0.78rem;">
-                    <i class="bi bi-pencil-square"></i> Perbarui Keterangan
-                </button>
-                <div class="collapse mt-2" id="extNoteForm">
-                    <form action="{{ route('letters.updateExternalNotes', $letter) }}" method="POST">
-                        @csrf
-                        <textarea name="external_notes" class="form-control mb-2" rows="2">{{ $letter->external_notes }}</textarea>
-                        <button type="submit" class="btn btn-sm btn-warning fw-bold">Simpan</button>
-                    </form>
-                </div>
-            @endif
-        </div>
-        @endif
-
-        {{-- Lampiran --}}
-        @if($letter->attachments->count())
-        <div class="panel" style="margin-top:1rem;">
-            <div class="sec-title">Lampiran Dokumen ({{ $letter->attachments->count() }})</div>
-            <div class="d-flex flex-wrap gap-2" id="attachmentButtons">
-                @foreach($letter->attachments as $att)
-                    @php
-                        $url  = Storage::url($att->file_path);
-                        $ext  = strtolower(pathinfo($att->file_path, PATHINFO_EXTENSION));
-                        $name = basename($att->file_path);
-                    @endphp
-                    @if($ext==='pdf')
-                        <button class="att-btn att-pdf view-pdf" data-src="{{ $url }}" data-name="{{ $name }}">
-                            <i class="bi bi-file-earmark-pdf-fill"></i> {{ $name }}
-                        </button>
-                    @elseif(in_array($ext,['doc','docx']))
-                        <a href="{{ $url }}" download class="att-btn att-doc">
-                            <i class="bi bi-file-earmark-word-fill"></i> {{ $name }}
-                        </a>
-                    @else
-                        <a href="{{ $url }}" download class="att-btn att-other">
-                            <i class="bi bi-file-earmark-fill"></i> {{ $name }}
-                        </a>
-                    @endif
-                @endforeach
-            </div>
-            <div id="pdfInlinePreview" style="display:none;">
-                <div class="d-flex justify-content-between align-items-center mb-2">
-                    <span style="font-size:0.75rem;font-weight:700;color:#94a3b8;"><i class="bi bi-file-earmark-pdf text-danger me-1"></i><span id="pdfPreviewName"></span></span>
-                    <button class="att-btn att-other" id="closePdfPreview" style="padding:0.3rem 0.7rem;font-size:0.75rem;"><i class="bi bi-x-lg"></i> Tutup</button>
-                </div>
-                <iframe id="pdfInlineFrame" style="width:100%;height:500px;border:none;border-radius:0.5rem;"></iframe>
-            </div>
-        </div>
-        @endif
-
-        {{-- Selesaikan --}}
-        @if($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed']))
-        <div style="margin-top:1rem;">
-            <form action="{{ route('letters.complete', $letter) }}" method="POST">
-                @csrf
-                <button class="btn btn-success w-100 fw-bold py-2" onclick="return confirm('Tandai surat ini sebagai Selesai?')">
-                    <i class="bi bi-check-all me-1"></i> Tandai Perjalanan Surat Selesai
-                </button>
-            </form>
-        </div>
-        @endif
-    </div>
-
-    {{-- ═══ RIGHT ═══ --}}
+    {{-- KIRI: INPUTAN (30%) --}}
     <div>
         {{-- Perlu Tindakan --}}
         @if($dispRecv && $dispRecv->status==='pending')
@@ -224,12 +113,12 @@
                 <span style="font-weight:800;font-size:0.9rem;">Tindakan Diperlukan</span>
             </div>
             <p style="font-size:0.82rem;color:#64748b;margin-bottom:0.85rem;">Disposisi dari <strong>{{ $dispRecv->fromUser->name }}</strong>: <em>"{{ $dispRecv->note }}"</em></p>
-            <div class="d-flex gap-2">
-                <button class="btn btn-sm fw-bold flex-fill" style="background:#dbeafe;color:#1d4ed8;border:none;" data-bs-toggle="modal" data-bs-target="#pertimbanganModal">
-                    <i class="bi bi-chat-text"></i> Pertimbangan
+            <div class="d-flex flex-column gap-2">
+                <button class="btn fw-bold w-100" style="background:#dbeafe;color:#1d4ed8;border:none;font-size:0.85rem;" data-bs-toggle="modal" data-bs-target="#pertimbanganModal">
+                    <i class="bi bi-chat-text"></i> Beri Pertimbangan
                 </button>
-                <button class="btn btn-sm btn-success fw-bold flex-fill" data-bs-toggle="modal" data-bs-target="#acceptModal">
-                    <i class="bi bi-check-circle"></i> Selesai
+                <button class="btn btn-success fw-bold w-100" style="font-size:0.85rem;" data-bs-toggle="modal" data-bs-target="#acceptModal">
+                    <i class="bi bi-check-circle"></i> Tandai Selesai
                 </button>
             </div>
         </div>
@@ -296,8 +185,145 @@
         </div>
         @endif
 
-        {{-- Timeline --}}
-        <div class="panel">
+        {{-- Selesaikan --}}
+        @if($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed']))
+        <div>
+            <form action="{{ route('letters.complete', $letter) }}" method="POST">
+                @csrf
+                <button class="btn btn-success w-100 fw-bold py-2" onclick="return confirm('Tandai surat ini sebagai Selesai?')">
+                    <i class="bi bi-check-all me-1"></i> Perjalanan Surat Selesai
+                </button>
+            </form>
+        </div>
+        @endif
+
+        {{-- Pesan Jika Tidak Ada Inputan --}}
+        @if(!($dispRecv && $dispRecv->status==='pending') && !($role==='staf_tu' && $letter->status==='pending_agenda') && !$canDispose && !($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed'])))
+            <div class="panel text-center p-4">
+                <i class="bi bi-shield-check text-success" style="font-size:2.5rem;"></i>
+                <div style="font-size:0.85rem;font-weight:600;color:#64748b;margin-top:0.5rem;">Tidak ada aksi yang diperlukan saat ini.</div>
+            </div>
+        @endif
+    </div>
+
+    {{-- KANAN: PREVIEW DOKUMEN (70%) --}}
+    <div class="panel" style="margin-top:0;">
+        <div class="sec-title">Pratinjau Dokumen Lampiran</div>
+        @if($letter->attachments->count())
+            <div class="d-flex flex-wrap gap-2 mb-2" id="attachmentButtons">
+                @foreach($letter->attachments as $att)
+                    @php
+                        $url  = Storage::url($att->file_path);
+                        $ext  = strtolower(pathinfo($att->file_path, PATHINFO_EXTENSION));
+                        $name = basename($att->file_path);
+                    @endphp
+                    @if($ext==='pdf')
+                        <button class="att-btn att-pdf view-pdf" data-src="{{ $url }}" data-name="{{ $name }}">
+                            <i class="bi bi-file-earmark-pdf-fill"></i> {{ $name }}
+                        </button>
+                    @elseif(in_array($ext,['doc','docx']))
+                        <a href="{{ $url }}" download class="att-btn att-doc">
+                            <i class="bi bi-file-earmark-word-fill"></i> {{ $name }}
+                        </a>
+                    @else
+                        <a href="{{ $url }}" download class="att-btn att-other">
+                            <i class="bi bi-file-earmark-fill"></i> {{ $name }}
+                        </a>
+                    @endif
+                @endforeach
+            </div>
+            <div id="pdfInlinePreview" style="display:none;">
+                <div class="d-flex justify-content-between align-items-center mb-2 px-2 pt-1">
+                    <span style="font-size:0.75rem;font-weight:700;color:#64748b;"><i class="bi bi-file-earmark-pdf text-danger me-1"></i><span id="pdfPreviewName"></span></span>
+                </div>
+                <iframe id="pdfInlineFrame" style="width:100%;height:650px;border:none;border-radius:0.5rem;background:#fff;"></iframe>
+            </div>
+        @else
+            <div class="text-center p-5" style="border:1.5px dashed #e8edf4;border-radius:0.75rem;">
+                <i class="bi bi-file-earmark-x" style="font-size:2.5rem;color:#cbd5e1;"></i>
+                <div style="font-size:0.85rem;color:#94a3b8;font-weight:500;margin-top:0.5rem;">Surat ini tidak memiliki lampiran dokumen.</div>
+            </div>
+        @endif
+    </div>
+
+</div>
+
+{{-- ═══ BOTTOM GRID (Info Tambahan) ═══ --}}
+<h5 class="fw-bold mb-3 mt-5" style="color:var(--text);font-size:1.1rem;"><i class="bi bi-info-square-fill me-2 text-primary"></i>Informasi Tambahan</h5>
+<div class="bottom-grid">
+
+    {{-- KIRI: Detail Surat --}}
+    <div>
+        {{-- Info Surat --}}
+        <div class="panel mb-0">
+            <div class="sec-title">Informasi Surat</div>
+            <div class="meta-row">
+                <div class="meta-key">No. Surat</div>
+                <div class="meta-val">{{ $letter->letter_number ?: '—' }}</div>
+            </div>
+            <div class="meta-row">
+                <div class="meta-key">Jenis</div>
+                <div class="meta-val text-capitalize">{{ str_replace('_',' ',$letter->type) }}</div>
+            </div>
+            <div class="meta-row">
+                <div class="meta-key">Pengirim</div>
+                <div class="meta-val">
+                    @if($letter->type==='external')
+                        <span style="font-weight:700;color:#2563eb;">{{ $letter->external_sender_name }}</span>
+                        <span class="text-muted" style="font-size:0.75rem;"> (Instansi Luar)</span>
+                        <div style="font-size:0.75rem;color:#94a3b8;">Diinput oleh: {{ $letter->creator->name ?? 'Admin' }}</div>
+                    @else
+                        {{ $letter->sender->name ?? 'Sistem' }}
+                        <div style="font-size:0.75rem;color:#94a3b8;">{{ $letter->sender->unit->name ?? '' }}</div>
+                    @endif
+                </div>
+            </div>
+            <div class="meta-row">
+                <div class="meta-key">Tujuan</div>
+                <div class="meta-val">
+                    @if($letter->type==='outbound_external')
+                        <span style="font-weight:700;color:#2563eb;">{{ $letter->external_recipient_name }}</span>
+                        <span class="text-muted" style="font-size:0.75rem;"> (Instansi Luar)</span>
+                    @elseif($letter->recipientUser)
+                        {{ $letter->recipientUser->name }}
+                        <div style="font-size:0.75rem;color:#94a3b8;">{{ $letter->recipientUser->unit->name ?? '' }}</div>
+                    @else
+                        Unit {{ $letter->recipientUnit->name ?? '—' }}
+                    @endif
+                </div>
+            </div>
+        </div>
+
+        {{-- Isi --}}
+        <div class="panel" style="margin-top:1rem;">
+            <div class="sec-title">Isi / Uraian Surat</div>
+            <div class="body-content">{!! nl2br(e($letter->body)) !!}</div>
+        </div>
+
+        {{-- External Notes --}}
+        @if($letter->type==='outbound_external')
+        <div class="panel" style="margin-top:1rem;background:#fffbeb;border-color:#fde68a;">
+            <div class="sec-title">Keterangan / Status Eksternal</div>
+            <p style="font-size:0.9rem;color:#374151;line-height:1.7;">{!! nl2br(e($letter->external_notes ?: 'Belum ada keterangan.')) !!}</p>
+            @if($letter->from_user_id == Auth::id())
+                <button class="att-btn att-other" data-bs-toggle="collapse" data-bs-target="#extNoteForm" style="font-size:0.78rem;">
+                    <i class="bi bi-pencil-square"></i> Perbarui Keterangan
+                </button>
+                <div class="collapse mt-2" id="extNoteForm">
+                    <form action="{{ route('letters.updateExternalNotes', $letter) }}" method="POST">
+                        @csrf
+                        <textarea name="external_notes" class="form-control mb-2" rows="2">{{ $letter->external_notes }}</textarea>
+                        <button type="submit" class="btn btn-sm btn-warning fw-bold">Simpan</button>
+                    </form>
+                </div>
+            @endif
+        </div>
+        @endif
+    </div>
+
+    {{-- KANAN: Timeline --}}
+    <div>
+        <div class="panel" style="margin-top:0;">
             <div class="sec-title">Lacak Perjalanan Surat</div>
             @if($letter->histories->isEmpty())
                 <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:0.85rem;">Belum ada riwayat.</div>
@@ -328,6 +354,7 @@
             @endif
         </div>
     </div>
+
 </div>
 
 {{-- MODALS --}}
@@ -376,7 +403,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // PDF Inline
-    const prev=document.getElementById('pdfInlinePreview'), frame=document.getElementById('pdfInlineFrame'), nameEl=document.getElementById('pdfPreviewName'), closeBtn=document.getElementById('closePdfPreview');
+    const prev=document.getElementById('pdfInlinePreview'), frame=document.getElementById('pdfInlineFrame'), nameEl=document.getElementById('pdfPreviewName');
     const pdfBtns = document.querySelectorAll('.view-pdf');
     pdfBtns.forEach(btn=>btn.addEventListener('click',(e)=>{
         if(!frame||!prev) return;
@@ -384,7 +411,6 @@ document.addEventListener('DOMContentLoaded', function () {
         prev.style.display='block'; 
         if(e.isTrusted) prev.scrollIntoView({behavior:'smooth',block:'start'});
     }));
-    if(closeBtn) closeBtn.addEventListener('click',()=>{ prev.style.display='none'; frame.src=''; });
 
     if(pdfBtns.length > 0) {
         pdfBtns[0].click();
