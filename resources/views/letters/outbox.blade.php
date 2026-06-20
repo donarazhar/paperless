@@ -4,7 +4,7 @@
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="h3 fw-bold mb-0">Daftar Surat Keluar</h1>
-        @if(Auth::user()->role === 'staf_unit')
+        @if(in_array(Auth::user()->role, ['staf_unit', 'staf_tu']))
             <a href="{{ route('letters.create') }}" class="btn btn-primary fw-bold shadow-sm">
                 <i class="bi bi-plus-circle me-1"></i> Buat Surat Baru
             </a>
