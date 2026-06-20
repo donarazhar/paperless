@@ -124,8 +124,8 @@
             <button class="btn btn-primary" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 1rem;">
                 <i class="bi bi-funnel-fill"></i> Filter
             </button>
-            <a href="{{ request()->url() }}" class="btn btn-light border" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 0.9rem;">
-                <i class="bi bi-arrow-counterclockwise"></i>
+            <a href="{{ request()->url() }}" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 1rem;background:#f1f5f9;color:#475569;border:none;display:inline-flex;align-items:center;font-weight:700;text-decoration:none;transition:background 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'" title="Reset Filter">
+                <i class="bi bi-arrow-clockwise me-1"></i> Reset
             </a>
         </div>
     </form>
