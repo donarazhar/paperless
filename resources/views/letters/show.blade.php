@@ -279,6 +279,7 @@
             @else
             <div class="tl">
                 @foreach($letter->histories as $h)
+                    @if(in_array($h->action, ['agenda_set', 'pending_agenda'])) @continue @endif
                     @php
                         $dc = 'blue';
                         if($h->action==='sent') $dc='sent';
