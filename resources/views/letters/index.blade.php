@@ -132,7 +132,7 @@
                                                 ]);
                                             }
                                         }
-                                        $historiesList = $dispoHistory->sortByDesc('sort_date')->values()->toJson();
+                                        $historiesList = $dispoHistory->sortBy('sort_date')->values()->toJson();
                                     @endphp
                                     
                                     <button type="button" class="btn btn-sm btn-outline-info btn-lihat-disposisi" 
