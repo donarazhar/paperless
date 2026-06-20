@@ -22,7 +22,8 @@ class LetterController extends Controller
     {
         $user = Auth::user();
         
-        $q = Letter::with(['sender', 'dispositions.toUser', 'dispositions.unit', 'recipientUser', 'recipientUnit']);
+        $q = Letter::with(['sender', 'dispositions.toUser', 'dispositions.unit', 'recipientUser', 'recipientUnit'])
+                   ->where('type', 'internal');
 
         // Jika staf unit, hanya tampilkan surat yang berhubungan dengan unitnya
         if ($user->role === 'staf_unit') {
@@ -44,9 +45,7 @@ class LetterController extends Controller
                     ->orWhere('subject', 'like', "%{$s}%")
             );
         }
-        if ($t = $request->type) {
-            $q->where('type', $t);
-        }
+
         if ($st = $request->status) {
             $q->where('status', $st);
         }

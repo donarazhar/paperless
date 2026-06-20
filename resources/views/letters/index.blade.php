@@ -19,24 +19,15 @@
     {{-- Form Filter Tanggal & Status (Backend Filter) --}}
     <div class="card p-4 mb-4 border-0 shadow-sm">
         <form class="row gy-3 gx-3 align-items-end" method="GET">
-            <div class="col-md-3">
-                <label class="form-label text-muted small fw-bold">Jenis</label>
-                <select name="type" class="form-select">
-                    <option value="">Semua Jenis</option>
-                    <option value="internal" @selected(request('type') == 'internal')>Internal</option>
-                    <option value="external" @selected(request('type') == 'external')>Masuk Eksternal</option>
-                    <option value="outbound_external" @selected(request('type') == 'outbound_external')>Keluar Eksternal</option>
-                </select>
-            </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label class="form-label text-muted small fw-bold">Dari Tanggal</label>
                 <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <label class="form-label text-muted small fw-bold">Sampai Tanggal</label>
                 <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
             </div>
-            <div class="col-md-3">
+            <div class="col-md-4">
                 <button class="btn btn-primary fw-bold w-100"><i class="bi bi-funnel me-1"></i> Filter Laporan</button>
                 <a href="{{ request()->url() }}" class="btn btn-light border w-100 mt-2 fw-bold"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
             </div>
