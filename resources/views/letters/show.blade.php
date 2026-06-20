@@ -2,574 +2,339 @@
 @section('title', 'Detail Surat')
 
 @section('content')
-        @php
+@php
     $user = Auth::user();
     $role = $user->role;
     $dispRecv = $letter->dispositions->first(fn($d) => $d->to_user_id === $user->id || $d->to_unit_id === $user->unit_id);
     $dispSent = $letter->dispositions->filter(fn($d) => $d->from_user_id === $user->id);
     $allDisp = $letter->dispositions;
     $isAdmin = $role === 'admin';
-        @endphp
+@endphp
 
-        <h1 class="mb-4">Detail Surat</h1>
+<style>
+    /* Timeline CSS */
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+        margin-bottom: 2rem;
+    }
+    .timeline::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 11px;
+        width: 2px;
+        background: #e2e8f0;
+    }
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+    .timeline-icon {
+        position: absolute;
+        left: -2rem;
+        top: 0;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: #fff;
+        border: 2px solid var(--primary-color);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1;
+    }
+    .timeline-icon i { font-size: 0.7rem; }
+    .timeline-content {
+        padding: 1rem;
+        background: #f8fafc;
+        border-radius: 0.5rem;
+        border: 1px solid #f1f5f9;
+    }
+    .letter-label { width: 130px; font-weight: 600; color: var(--text-muted); font-size: 0.85rem; text-transform: uppercase; }
+</style>
 
-        {{-- 1) CARD DISPOSISI PENERIMA --}}
-        @if($dispRecv)
-            <div class="card border-warning mb-4">
-                <div class="card-header bg-warning text-dark">
-                    <i class="bi bi-arrow-repeat"></i> Disposisi
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 fw-bold mb-0">Detail Surat #{{ $letter->letter_number }}</h1>
+    <a href="{{ url()->previous() }}" class="btn btn-light border"><i class="bi bi-arrow-left"></i> Kembali</a>
+</div>
+
+<div class="row g-4">
+    {{-- KOLOM KIRI: Informasi Surat & Lampiran --}}
+    <div class="col-lg-7">
+        <div class="card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-4">
+                <div>
+                    <h5 class="fw-bold mb-1">{{ $letter->subject }}</h5>
+                    <p class="text-muted small mb-0"><i class="bi bi-calendar-event"></i> {{ $letter->created_at->locale('id')->isoFormat('dddd, D MMMM YYYY HH:mm') }}</p>
                 </div>
-                <div class="card-body">
-                    <p>
-                        <strong>Dari:</strong>
-                        {{ $dispRecv->fromUser->name }}
-                        ({{ $roleLabels[$dispRecv->fromUser->role] ?? ucfirst($dispRecv->fromUser->role) }}
-                        – {{ $dispRecv->fromUser->unit->name }})
-                    </p>
-                    <p><strong>Catatan:</strong> {{ $dispRecv->note }}</p>
-
-                    @if($dispRecv->status === 'pending')
-                        <div class="mt-3">
-                            <button class="btn btn-info me-2" data-bs-toggle="modal" data-bs-target="#pertimbanganModal">
-                                <i class="bi bi-chat-text"></i> Beri Pertimbangan
-                            </button>
-                            <button class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#acceptModal">
-                                <i class="bi bi-check-circle"></i> Selesai/Terima
-                            </button>
-                        </div>
-                    @else
-                        <div class="mt-2">
-                            <span class="badge bg-secondary">{{ ucfirst($dispRecv->status) }}</span>
-                            @if($dispRecv->response_note)
-                                <div class="mt-2 p-3 border rounded border-secondary">
-                                    <small class="text-muted">Catatan Respon/Pertimbangan:</small>
-                                    <blockquote class="mb-0">{{ $dispRecv->response_note }}</blockquote>
-                                </div>
-                            @endif
-                        </div>
-                    @endif
-                </div>
+                <span class="badge bg-primary px-3 py-2 text-uppercase">{{ str_replace('_', ' ', $letter->status) }}</span>
             </div>
-        @endif
 
-        {{-- 2) RESPON DISPOSISI ANDA (untuk pengirim) --}}
-        @if($dispSent->isNotEmpty())
-            <div class="card mb-4">
-                @php
-        $first = $dispSent->first();
-        $hdrClass = $first->status === 'accepted'
-            ? 'bg-success text-white'
-            : ($first->status === 'rejected'
-                ? 'bg-danger text-white'
-                : 'bg-warning text-dark');
-                @endphp
-                <div class="card-header {{ $hdrClass }}">
-                    <i class="bi bi-receipt"></i> Respon Disposisi Anda
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-
-                        @foreach($dispSent as $d)
-                            <li class="mb-4">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div>
-                                        <strong>Ke:
-                                            @if($d->to_unit_id)
-                                                Unit {{ $d->unit->name }}
-                                            @else
-                                                {{ $d->toUser->name }}
-                                                ({{ $roleLabels[$d->toUser->role] }} – {{ $d->toUser->unit->name }})
-                                            @endif
-                                        </strong>
-                                    </div>
-                                    <div>
-                                        <span class="badge 
-                                                                                              {{ $d->status === 'accepted' ? 'bg-success'
-                : ($d->status === 'rejected' ? 'bg-danger'
-                    : 'bg-warning text-dark') }}">
-                                            {{ ucfirst($d->status) }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                {{-- Tanggal Respon --}}
-                                <small class="text-muted mb-2 d-block">
-                                    {{ $d->updated_at->locale('id')->isoFormat('D MMMM YYYY HH:mm') }}
-                                </small>
-
-                                {{-- Catatan Disposisi Asli --}}
-                                <p class="mb-1">
-                                    <strong>Catatan Disposisi:</strong> {{ $d->note }}
-                                </p>
-
-                                {{-- Catatan Respon dengan Nama Responden --}}
-                                @if($d->status !== 'pending')
-                                    <div class="mt-2 p-3 border rounded 
-                                                                                                                  {{ $d->status === 'accepted' ? 'border-success'
-                    : ($d->status === 'rejected' ? 'border-danger'
-                        : 'border-warning') }}">
-                                        <small class="text-muted">Catatan Respon:</small>
-                                        <blockquote class="mb-1">{{ $d->response_note }}</blockquote>
-
-                                        {{-- Siapa yang merespon --}}
-                                        <small class="text-muted">
-                                            <i class="bi bi-person-circle me-1"></i>
-                                            @if($d->to_user_id)
-                                                {{ $d->toUser->name }}
-                                                ({{ $roleLabels[$d->toUser->role] }} – {{ $d->toUser->unit->name }})
-                                            @else
-                                                Oleh Manajer/Atasan Unit {{ $d->unit->name }}
-                                            @endif
-                                        </small>
-                                    </div>
-                                @endif
-
-                            </li>
-                        @endforeach
-
-                    </ul>
-                </div>
-            </div>
-        @endif
-
-        {{-- 3) DAFTAR DISPOSISI (khusus Admin) --}}
-        @if($isAdmin && $allDisp->isNotEmpty())
-            <div class="card border-primary mb-4">
-                <div class="card-header bg-primary text-white">
-                    <i class="bi bi-list-ul"></i> Daftar Disposisi (Admin)
-                </div>
-                <div class="card-body">
-                    <ul class="list-unstyled mb-0">
-                        @foreach($allDisp as $d)
-                            <li class="mb-3">
-                                <p class="mb-1">
-                                    <strong>Dari:</strong>
-                                    {{ $d->fromUser->name }}
-                                    ({{ $roleLabels[$d->fromUser->role] }} – {{ $d->fromUser->unit->name }})
-                                </p>
-                                <p class="mb-1">
-                                    <strong>Ke:</strong>
-                                    @if($d->to_unit_id)
-                                        Unit {{ $d->unit->name }}
-                                    @else
-                                        {{ $d->toUser->name }}
-                                        ({{ $roleLabels[$d->toUser->role] }} – {{ $d->toUser->unit->name }})
-                                    @endif
-                                </p>
-                                <p class="mb-1"><strong>Catatan Disposisi:</strong> {{ $d->note }}</p>
-                                <p class="mb-1">
-                                    <strong>Status:</strong>
-                                    <span class="badge 
-                                                                    {{ $d->status === 'accepted' ? 'bg-success'
-                : ($d->status === 'rejected' ? 'bg-danger'
-                    : 'bg-warning text-dark') }}">
-                                        {{ ucfirst($d->status) }}
-                                    </span>
-                                    <small class="text-muted ms-2">
-                                        {{ $d->updated_at->locale('id')->isoFormat('D MMM YYYY HH:mm') }}
-                                    </small>
-                                </p>
-                                @if($d->response_note)
-                                    <div class="ps-3 border-start border-3 
-                                                                                  {{ $d->status === 'accepted' ? 'border-success'
-                    : ($d->status === 'rejected' ? 'border-danger'
-                        : 'border-warning') }}">
-                                        <p class="mb-1"><strong>Catatan Respon:</strong></p>
-                                        <blockquote class="mb-1">{{ $d->response_note }}</blockquote>
-                                        <small class="text-muted">
-                                            Oleh:
-                                            @if($d->to_user_id)
-                                                {{ $d->toUser->name }}
-                                                ({{ $roleLabels[$d->toUser->role] }} – {{ $d->toUser->unit->name }})
-                                            @else
-                                                Anggota Unit {{ $d->unit->name }}
-                                            @endif
-                                        </small>
-                                    </div>
-                                @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                </div>
-            </div>
-        @endif
-
-        {{-- 4) DETAIL SURAT --}}
-        <p class="text-muted mb-2">
-            <i class="bi bi-calendar-event"></i>
-            {{ $letter->created_at->locale('id')->isoFormat('dddd, D MMMM YYYY HH:mm') }}
-        </p>
-        <div class="card mb-4">
-            <div class="card-body">
-                <p>
-                    <strong>No Surat:</strong> {{ $letter->letter_number }}
-                </p>
-                <p>
-                    <strong>Jenis:</strong> {{ ucfirst($letter->type) }}
-                </p>
-                <p>
-                    <strong>Perihal:</strong> {{ $letter->subject }}
-                </p>
-                <p>
-                    <strong>Isi:</strong><br>{!! nl2br(e($letter->body)) !!}
-                </p>
-                <p>
-                    <strong>Dari:</strong>
-                    {{ $letter->sender->name }}
-                    ({{ $roleLabels[$letter->sender->role] ?? ucfirst($letter->sender->role) }}
-                    – {{ $letter->sender->unit->name }})
-                </p>
-                <p>
-                    <strong>Tujuan:</strong>
-                    @if($letter->recipientUser)
-                        {{ $letter->recipientUser->name }}
-                        ({{ $roleLabels[$letter->recipientUser->role] ?? ucfirst($letter->recipientUser->role) }}
-                        – {{ $letter->recipientUser->unit->name }})
-                    @else
-                        Unit {{ $letter->recipientUnit->name }}
-                    @endif
-                </p>
-                @if($letter->agenda_number)
-                <p>
-                    <strong>No Agenda (Sekretariat):</strong> {{ $letter->agenda_number }}
-                </p>
-                @endif
-                <p>
-                    <strong>Status:</strong>
-                    <span class="badge bg-primary">{{ str_replace('_', ' ', strtoupper($letter->status)) }}</span>
-                </p>
-            </div>
-        </div>
-
-        {{-- 5) LAMPIRAN --}}
-        @if($letter->attachments->count())
             <div class="mb-4">
-                <h5><i class="bi bi-paperclip"></i> Lampiran</h5>
-                <ul class="list-unstyled">
+                <table class="table table-borderless table-sm mb-0">
+                    <tbody>
+                        <tr>
+                            <td class="letter-label">Jenis Surat</td>
+                            <td>: <span class="text-capitalize fw-medium">{{ $letter->type }}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="letter-label">Pengirim</td>
+                            <td>: <span class="fw-medium">{{ $letter->sender->name }}</span> ({{ str_replace('_', ' ', $letter->sender->role) }} – {{ $letter->sender->unit->name }})</td>
+                        </tr>
+                        <tr>
+                            <td class="letter-label">Tujuan</td>
+                            <td>: 
+                                <span class="fw-medium">
+                                @if($letter->recipientUser)
+                                    {{ $letter->recipientUser->name }} (Unit {{ $letter->recipientUser->unit->name }})
+                                @else
+                                    Unit {{ $letter->recipientUnit->name }}
+                                @endif
+                                </span>
+                            </td>
+                        </tr>
+                        @if($letter->agenda_number)
+                        <tr>
+                            <td class="letter-label">No Agenda YPIA</td>
+                            <td>: <span class="fw-bold text-primary">{{ $letter->agenda_number }}</span></td>
+                        </tr>
+                        @endif
+                    </tbody>
+                </table>
+            </div>
+
+            <hr class="text-muted">
+
+            <div class="mb-4 mt-4">
+                <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size:0.85rem;">Isi Surat</h6>
+                <div class="p-4 bg-light rounded" style="line-height: 1.8;">
+                    {!! nl2br(e($letter->body)) !!}
+                </div>
+            </div>
+
+            {{-- Lampiran --}}
+            @if($letter->attachments->count())
+                <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size:0.85rem;">Lampiran Dokumen</h6>
+                <div class="d-flex flex-wrap gap-2 mb-4">
                     @foreach($letter->attachments as $att)
                         @php
-            $url = Storage::url($att->file_path);
-            $ext = strtolower(pathinfo($att->file_path, PATHINFO_EXTENSION));
-            $name = basename($att->file_path);
-                          @endphp
-                        <li class="mb-1">
-                            @if($ext === 'pdf')
-                                <button class="btn btn-link p-0 view-pdf" data-src="{{ $url }}">
-                                    <i class="bi bi-file-earmark-pdf-fill text-danger"></i> {{ $name }}
-                                </button>
-                            @else
-                                <a href="{{ $url }}" download class="btn btn-link p-0">
-                                    <i class="bi bi-file-earmark-fill text-secondary"></i> {{ $name }}
-                                </a>
-                            @endif
-                        </li>
+                            $url = Storage::url($att->file_path);
+                            $ext = strtolower(pathinfo($att->file_path, PATHINFO_EXTENSION));
+                            $name = basename($att->file_path);
+                        @endphp
+                        @if($ext === 'pdf')
+                            <button class="btn btn-outline-danger view-pdf" data-src="{{ $url }}">
+                                <i class="bi bi-file-earmark-pdf-fill"></i> {{ $name }}
+                            </button>
+                        @else
+                            <a href="{{ $url }}" download class="btn btn-outline-secondary">
+                                <i class="bi bi-file-earmark-fill"></i> {{ $name }}
+                            </a>
+                        @endif
                     @endforeach
-                </ul>
+                </div>
+            @endif
+
+            {{-- Aksi --}}
+            <div class="mt-auto pt-3 border-top d-flex gap-2">
+                @if($role === 'staf_tu' && !in_array($letter->status, ['draft', 'pending_agenda', 'completed']))
+                    <form action="{{ route('letters.complete', $letter) }}" method="POST" class="w-100">
+                        @csrf
+                        <button class="btn btn-success w-100 py-2" onclick="return confirm('Tandai surat ini sebagai Selesai?')">
+                            <i class="bi bi-check-all"></i> Tandai Perjalanan Surat Selesai
+                        </button>
+                    </form>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- KOLOM KANAN: Aksi Disposisi & Timeline History --}}
+    <div class="col-lg-5">
+        
+        {{-- Form Agenda (Staf TU) --}}
+        @if($role === 'staf_tu' && $letter->status === 'pending_agenda')
+            <div class="card p-4 mb-4 border border-primary shadow-sm">
+                <h5 class="fw-bold mb-3 text-primary"><i class="bi bi-journal-plus"></i> Beri Nomor Agenda</h5>
+                <form action="{{ route('letters.agenda', $letter) }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Nomor Agenda</label>
+                        <input type="text" name="agenda_number" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Catatan Pengantar</label>
+                        <textarea name="note" class="form-control" rows="2" placeholder="Mohon arahan..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-send-fill"></i> Agendakan & Teruskan
+                    </button>
+                </form>
             </div>
         @endif
 
-        {{-- 6) AKSI & NAV --}}
-        {{-- Aksi: Tandai Dibaca, Disposisi, Kembali --}}
-        <div class="d-flex gap-2 mb-4">
-            @if($role === 'staf_tu' && $letter->status === 'pending_agenda')
-                <button class="btn btn-primary" data-bs-toggle="collapse" data-bs-target="#agendaForm">
-                    <i class="bi bi-journal-plus"></i> Beri Nomor Agenda & Teruskan
-                </button>
-            @endif
-
-            @if($role === 'staf_tu' && !in_array($letter->status, ['draft', 'pending_agenda', 'completed']))
-                <form action="{{ route('letters.complete', $letter) }}" method="POST" class="d-inline">
-                    @csrf
-                    <button class="btn btn-success" onclick="return confirm('Tandai surat ini sebagai Selesai?')">
-                        <i class="bi bi-check-all"></i> Selesai
+        {{-- Tindakan Disposisi Penerima --}}
+        @if($dispRecv && $dispRecv->status === 'pending')
+            <div class="card p-4 mb-4 bg-warning bg-opacity-10 border-warning">
+                <h5 class="fw-bold mb-2 text-dark"><i class="bi bi-exclamation-circle-fill text-warning"></i> Tindakan Diperlukan</h5>
+                <p class="small text-muted mb-3">Anda menerima disposisi dari <strong>{{ $dispRecv->fromUser->name }}</strong> dengan pesan: <em>"{{ $dispRecv->note }}"</em></p>
+                <div class="d-grid gap-2">
+                    <button class="btn btn-info text-white" data-bs-toggle="modal" data-bs-target="#pertimbanganModal">
+                        <i class="bi bi-chat-text"></i> Beri Pertimbangan
                     </button>
-                </form>
-            @endif
-
-            @if($role === 'kasubag_tu' && in_array($letter->status, ['in_review_kasubag', 'in_consideration']))
-                <button class="btn btn-warning" data-bs-toggle="collapse" data-bs-target="#newDispoForm">
-                    <i class="bi bi-arrow-repeat"></i> Disposisi ke Unit
-                </button>
-            @endif
-
-            <a href="{{ url()->previous() }}" class="btn btn-secondary">
-                <i class="bi bi-arrow-left"></i> Kembali
-            </a>
-        </div>
-
-        {{-- Form Agenda (Staf TU) --}}
-        @if($role === 'staf_tu' && $letter->status === 'pending_agenda')
-            <div class="collapse mb-4" id="agendaForm">
-                <div class="card card-body border-primary">
-                    <form action="{{ route('letters.agenda', $letter) }}" method="POST">
-                        @csrf
-                        <div class="mb-3">
-                            <label class="form-label">Nomor Agenda</label>
-                            <input type="text" name="agenda_number" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Catatan Pengantar</label>
-                            <textarea name="note" class="form-control" rows="2" placeholder="Mohon arahan/disposisi..."></textarea>
-                        </div>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send-fill"></i> Agendakan & Teruskan ke Kasubag TU
-                        </button>
-                    </form>
+                    <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#acceptModal">
+                        <i class="bi bi-check-circle"></i> Selesai/Terima
+                    </button>
                 </div>
             </div>
         @endif
 
         {{-- Form Disposisi (Kasubag TU) --}}
         @if($role === 'kasubag_tu' && in_array($letter->status, ['in_review_kasubag', 'in_consideration']))
-            <div class="collapse mb-4" id="newDispoForm">
-                <div class="card card-body">
-                    <form action="{{ route('letters.dispositions.store', $letter) }}" method="POST">
-                        @csrf
-
-                        {{-- Pilih Target Type --}}
-                        <div class="mb-3">
-                            <label class="form-label">Kirim Ke</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="recipient_type" id="typeUnit" value="unit"
-                                    checked>
-                                <label class="form-check-label" for="typeUnit">Unit</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" type="radio" name="recipient_type" id="typeUser" value="user">
-                                <label class="form-check-label" for="typeUser">Pengguna</label>
-                            </div>
+            <div class="card p-4 mb-4 border border-warning shadow-sm">
+                <h5 class="fw-bold mb-3 text-warning"><i class="bi bi-arrow-repeat"></i> Buat Disposisi Baru</h5>
+                <form action="{{ route('letters.dispositions.store', $letter) }}" method="POST">
+                    @csrf
+                    <div class="mb-3">
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="recipient_type" id="typeUnit" value="unit" checked>
+                            <label class="form-check-label text-muted small fw-bold" for="typeUnit">Ke Unit</label>
                         </div>
-
-                        {{-- Select Unit --}}
-                        <div class="mb-3" id="selectUnit">
-                            <label class="form-label">Pilih Unit</label>
-                            <select name="to_unit_id" class="form-select">
-                                <option value="">— Pilih Unit —</option>
-                                @foreach(\App\Models\Unit::all() as $unit)
-                                    @if ($unit->name == 'Administrator')
-                                        @continue
-                                    @endif 
-                                    <option value="{{ $unit->id }}">{{ $unit->name }}</option>
-                                @endforeach
-                            </select>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="recipient_type" id="typeUser" value="user">
+                            <label class="form-check-label text-muted small fw-bold" for="typeUser">Ke Personal</label>
                         </div>
-
-                        {{-- Select User --}}
-                        <div class="mb-3" id="selectUser" style="display:none;">
-                            <label class="form-label">Pilih Pengguna</label>
-                            <select name="to_user_id" class="form-select">
-                                <option value="">— Pilih Pengguna —</option>
-                                @foreach(\App\Models\User::where('unit_id', $user->unit_id)->get() as $u)
-                                    @if ($u->role == 'admin')
-                                        @continue
-                                    @endif
-                                    <option value="{{ $u->id }}">{{ $u->name }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-
-                        {{-- Catatan --}}
-                        <div class="mb-3">
-                            <label class="form-label">Catatan</label>
-                            <textarea name="note" class="form-control" rows="3" required></textarea>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send-fill"></i> Kirim Disposisi
-                        </button>
-                    </form>
-                </div>
+                    </div>
+                    <div class="mb-3" id="selectUnit">
+                        <select name="to_unit_id" class="form-select">
+                            <option value="">— Pilih Unit —</option>
+                            @foreach(\App\Models\Unit::all() as $unit)
+                                @if ($unit->name == 'Administrator') @continue @endif 
+                                <option value="{{ $unit->id }}">{{ $unit->name }} (Cab. {{ $unit->branch->name ?? '' }})</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3" id="selectUser" style="display:none;">
+                        <select name="to_user_id" class="form-select">
+                            <option value="">— Pilih Pengguna —</option>
+                            @foreach(\App\Models\User::where('unit_id', $user->unit_id)->get() as $u)
+                                <option value="{{ $u->id }}">{{ $u->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <textarea name="note" class="form-control" rows="2" placeholder="Catatan Disposisi..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-warning w-100 fw-bold">Kirim Disposisi</button>
+                </form>
             </div>
-
-            @push('scripts')
-                <script>
-                    document.addEventListener('DOMContentLoaded', function () {
-                        const selUnit = document.getElementById('selectUnit');
-                        const selUser = document.getElementById('selectUser');
-
-                        document.getElementsByName('recipient_type').forEach(radio => {
-                            radio.addEventListener('change', () => {
-                                if (document.getElementById('typeUser').checked) {
-                                    selUnit.style.display = 'none';
-                                    selUser.style.display = 'block';
-                                } else {
-                                    selUnit.style.display = 'block';
-                                    selUser.style.display = 'none';
-                                }
-                            });
-                        });
-                    });
-                </script>
-            @endpush
         @endif
 
-        {{-- 7) HISTORY --}}
-        <h3 class="mb-3"><i class="bi bi-clock-history"></i> History Surat</h3>
-        @if($letter->histories->isEmpty())
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle"></i> Belum ada riwayat aksi untuk surat ini.
-            </div>
-        @else
-            <ul class="list-unstyled">
-                @foreach($letter->histories as $h)
-                    @php
-            $icons = [
-                'sent' => 'bi-send-fill text-success',
-                'draft' => 'bi-save-fill text-secondary',
-                'read' => 'bi-eye-fill text-primary',
-                'disposed' => 'bi-arrow-repeat text-warning',
-                'disposition_accepted' => 'bi-check-circle-fill text-success',
-                'disposition_rejected' => 'bi-x-circle-fill text-danger',
-                'disposition_followup' => 'bi-arrow-clockwise text-warning',
-            ];
-            $icon = $icons[$h->action] ?? 'bi-info-circle';
-                    @endphp
-                    <li class="d-flex mb-3">
-                        <div class="me-3">
-                            <span class="badge bg-light border rounded-circle p-3">
-                                <i class="bi {{ $icon }} fs-5"></i>
-                            </span>
-                        </div>
-                        <div>
-                            <p class="mb-1">
-                                <strong>{{ ucfirst(str_replace('_', ' ', $h->action)) }}</strong>
+        {{-- TIMELINE HISTORY --}}
+        <div class="card p-4">
+            <h5 class="fw-bold mb-4"><i class="bi bi-clock-history text-muted me-2"></i> Lacak Perjalanan</h5>
+            
+            @if($letter->histories->isEmpty())
+                <div class="text-center text-muted py-3">Belum ada riwayat.</div>
+            @else
+                <div class="timeline">
+                    @foreach($letter->histories as $h)
+                        @php
+                            $iconColor = 'text-primary';
+                            $borderColor = 'var(--primary-color)';
+                            if($h->action == 'sent') { $iconColor = 'text-success'; $borderColor = '#198754'; }
+                            if(str_contains($h->action, 'dispos')) { $iconColor = 'text-warning'; $borderColor = '#ffc107'; }
+                            if($h->action == 'disposition_accepted') { $iconColor = 'text-success'; $borderColor = '#198754'; }
+                        @endphp
+                        <div class="timeline-item">
+                            <div class="timeline-icon" style="border-color: {{ $borderColor }}">
+                                <i class="bi bi-circle-fill {{ $iconColor }}" style="font-size: 8px;"></i>
+                            </div>
+                            <div class="timeline-content">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <strong class="text-dark small">{{ ucfirst(str_replace('_', ' ', $h->action)) }}</strong>
+                                    <small class="text-muted" style="font-size: 0.7rem;">{{ $h->created_at->format('d M H:i') }}</small>
+                                </div>
                                 @if($h->note)
-                                    – “{{ $h->note }}”
+                                    <p class="small text-muted mb-1">"{{ $h->note }}"</p>
                                 @endif
-                            </p>
-                            <small class="text-muted">
-                                oleh
-                                @if($h->user)
-                                    {{ $h->user->name }}
-                                    ({{ ucfirst(str_replace('_', ' ', $h->user->role)) }}
-                                    – {{ $h->user->unit->name }})
-                                @else
-                                    System
-                                @endif
-                                , {{ $h->created_at->locale('id')->isoFormat('dddd, D MMMM YYYY HH:mm') }}
-                            </small>
+                                <small class="text-secondary d-block mt-2" style="font-size: 0.75rem;">
+                                    <i class="bi bi-person-fill"></i> 
+                                    @if($h->user)
+                                        {{ $h->user->name }} (Unit {{ $h->user->unit->name }})
+                                    @else
+                                        System
+                                    @endif
+                                </small>
+                            </div>
                         </div>
-                    </li>
-                @endforeach
-            </ul>
-        @endif
-
-        {{-- 8) MODAL PDF --}}
-        <div class="modal fade" id="pdfModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-fullscreen-sm-down modal-xl modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title">Preview PDF</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                    </div>
-                    <div class="modal-body p-0">
-                        <iframe id="pdfFrame" style="width:100%;height:90vh;" frameborder="0"></iframe>
-                    </div>
+                    @endforeach
                 </div>
+            @endif
+        </div>
+    </div>
+</div>
+
+{{-- MODALS --}}
+<div class="modal fade" id="pdfModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-fullscreen-sm-down modal-xl modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title fw-bold">Preview Dokumen</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-0 bg-secondary">
+                <iframe id="pdfFrame" style="width:100%;height:85vh; border:none;"></iframe>
             </div>
         </div>
+    </div>
+</div>
 
-        {{-- 9) MODAL RESPOND --}}
-        @if($dispRecv)
-            {{-- Pertimbangan --}}
-            <div class="modal fade" id="pertimbanganModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <form action="{{ route('dispositions.respond', $dispRecv) }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="action" value="pertimbangan">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Beri Pertimbangan</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Catatan Pertimbangan</label>
-                                    <textarea name="response_note" class="form-control" rows="4" required placeholder="Tuliskan pertimbangan unit..."></textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-info text-white">Kirim Pertimbangan</button>
-                            </div>
-                        </form>
+@if($dispRecv)
+    <div class="modal fade" id="pertimbanganModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form action="{{ route('dispositions.respond', $dispRecv) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="action" value="pertimbangan">
+                    <div class="modal-header bg-light">
+                        <h5 class="modal-title fw-bold">Beri Pertimbangan</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
-                </div>
-            </div>
-            {{-- Accept --}}
-            <div class="modal fade" id="acceptModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <form action="{{ route('dispositions.respond', $dispRecv) }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="action" value="accepted">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Terima Disposisi</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <p>Anda yakin ingin menerima disposisi ini?</p>
-                            </div>
-                            <div class="modal-footer">
-                                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-success">Terima</button>
-                            </div>
-                        </form>
+                    <div class="modal-body">
+                        <textarea name="response_note" class="form-control" rows="4" required placeholder="Ketik hasil pertimbangan atau respons..."></textarea>
                     </div>
-                </div>
-            </div>
-            {{-- Reject --}}
-            <div class="modal fade" id="rejectModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <form action="{{ route('dispositions.respond', $dispRecv) }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="action" value="rejected">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Tolak Disposisi</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Alasan Penolakan</label>
-                                    <textarea name="response_note" class="form-control" rows="3" required></textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-danger">Kirim Penolakan</button>
-                            </div>
-                        </form>
+                    <div class="modal-footer bg-light">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-info text-white">Kirim Respons</button>
                     </div>
-                </div>
+                </form>
             </div>
-            {{-- Follow-up --}}
-            <div class="modal fade" id="followupModal" tabindex="-1" aria-hidden="true">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content">
-                        <form action="{{ route('dispositions.respond', $dispRecv) }}" method="POST">
-                            @csrf
-                            <input type="hidden" name="action" value="followup">
-                            <div class="modal-header">
-                                <h5 class="modal-title">Tindak Lanjut Disposisi</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                            </div>
-                            <div class="modal-body">
-                                <div class="mb-3">
-                                    <label class="form-label">Catatan Tindak Lanjut</label>
-                                    <textarea name="response_note" class="form-control" rows="3" required></textarea>
-                                </div>
-                            </div>
-                            <div class="modal-footer">
-                                <button class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                                <button type="submit" class="btn btn-warning">Kirim Follow-up</button>
-                            </div>
-                        </form>
+        </div>
+    </div>
+
+    <div class="modal fade" id="acceptModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <form action="{{ route('dispositions.respond', $dispRecv) }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="action" value="accepted">
+                    <div class="modal-body text-center p-5">
+                        <i class="bi bi-check-circle text-success" style="font-size: 4rem;"></i>
+                        <h4 class="mt-3 fw-bold">Selesaikan Disposisi</h4>
+                        <p class="text-muted">Apakah tugas/arahan ini sudah selesai dikerjakan?</p>
+                        <div class="mt-4">
+                            <button type="button" class="btn btn-light me-2" data-bs-dismiss="modal">Batal</button>
+                            <button type="submit" class="btn btn-success px-4">Ya, Selesai</button>
+                        </div>
                     </div>
-                </div>
+                </form>
             </div>
-        @endif
-@endsection
+        </div>
+    </div>
+@endif
 
 @push('scripts')
     <script>
@@ -582,8 +347,23 @@
                     pdfModal.show();
                 });
             });
-            document.getElementById('pdfModal')
-                .addEventListener('hidden.bs.modal', () => document.getElementById('pdfFrame').src = '');
+            document.getElementById('pdfModal').addEventListener('hidden.bs.modal', () => document.getElementById('pdfFrame').src = '');
+
+            // Disposisi Radio Toggle
+            const selUnit = document.getElementById('selectUnit');
+            const selUser = document.getElementById('selectUser');
+            document.getElementsByName('recipient_type').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    if (document.getElementById('typeUser').checked) {
+                        if(selUnit) selUnit.style.display = 'none';
+                        if(selUser) selUser.style.display = 'block';
+                    } else {
+                        if(selUnit) selUnit.style.display = 'block';
+                        if(selUser) selUser.style.display = 'none';
+                    }
+                });
+            });
         });
     </script>
 @endpush
+@endsection

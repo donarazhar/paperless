@@ -1,27 +1,42 @@
 @extends('layouts.app')
 @section('title','Unit')
 @section('content')
-<h1>Manajemen Unit</h1>
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 class="h3 fw-bold mb-0">Manajemen Unit</h1>
+</div>
 
-<form action="{{ route('units.store') }}" method="POST" class="mb-4">
-  @csrf
-  <div class="input-group">
-    <select name="branch_id" class="form-select" required>
-      <option value="">-- Pilih Cabang --</option>
-      @foreach($branches as $b)
-        <option value="{{ $b->id }}">{{ $b->name }}</option>
-      @endforeach
-    </select>
-    <input type="text" name="name" class="form-control w-50" placeholder="Nama Unit" required>
-    <div class="input-group-text">
-        <input class="form-check-input mt-0 me-2" type="checkbox" name="is_sekretariat" value="1" aria-label="Checkbox for following text input"> Sekretariat
-    </div>
-    <button class="btn btn-primary">Tambah Unit</button>
-  </div>
-</form>
+<div class="card p-4 mb-4">
+    <form action="{{ route('units.store') }}" method="POST">
+      @csrf
+      <div class="row g-2 align-items-center">
+        <div class="col-md-3">
+            <select name="branch_id" class="form-select" required>
+              <option value="">-- Pilih Cabang --</option>
+              @foreach($branches as $b)
+                <option value="{{ $b->id }}">{{ $b->name }}</option>
+              @endforeach
+            </select>
+        </div>
+        <div class="col-md-4">
+            <input type="text" name="name" class="form-control" placeholder="Nama Unit" required>
+        </div>
+        <div class="col-auto">
+            <div class="form-check mt-2">
+                <input class="form-check-input" type="checkbox" name="is_sekretariat" value="1" id="is_sekretariat"> 
+                <label class="form-check-label text-muted fw-semibold" for="is_sekretariat">Sekretariat</label>
+            </div>
+        </div>
+        <div class="col-auto">
+            <button class="btn btn-primary">Tambah Unit</button>
+        </div>
+      </div>
+    </form>
+</div>
 
-<table class="table">
-  <thead>
+<div class="card p-4">
+    <div class="table-responsive">
+        <table class="table table-borderless-custom">
+          <thead>
     <tr><th>#</th><th>Cabang</th><th>Nama Unit</th><th>Tipe</th><th>Aksi</th></tr>
   </thead>
   <tbody>
@@ -58,6 +73,8 @@
       </td>
     </tr>
     @endforeach
-  </tbody>
-</table>
+          </tbody>
+        </table>
+    </div>
+</div>
 @endsection

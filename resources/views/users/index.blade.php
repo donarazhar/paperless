@@ -1,12 +1,13 @@
 @extends('layouts.app')
 @section('title', 'Users')
 @section('content')
-    <div class="d-flex justify-content-between align-items-center mb-3">
-        <h1>Manajemen Pengguna</h1>
-        <a href="{{ route('users.create') }}" class="btn btn-primary">Tambah User</a>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0">Manajemen Pengguna</h1>
+        <a href="{{ route('users.create') }}" class="btn btn-primary"><i class="bi bi-person-plus-fill"></i> Tambah User</a>
     </div>
 
-    <form method="GET" action="{{ route('users.index') }}" class="row g-2 mb-4">
+<div class="card p-4 mb-4">
+    <form method="GET" action="{{ route('users.index') }}" class="row g-3 align-items-end">
         <div class="col-md-4">
             <select name="branch_id" class="form-select" onchange="this.form.submit()">
                 <option value="">-- Semua Cabang --</option>
@@ -23,13 +24,17 @@
                 @endforeach
             </select>
         </div>
-        <div class="col-md-4">
-            <a href="{{ route('users.index') }}" class="btn btn-secondary">Reset</a>
+        <div class="col-md-auto">
+            <button type="submit" class="btn btn-primary"><i class="bi bi-funnel"></i> Filter</button>
+            <a href="{{ route('users.index') }}" class="btn btn-light border"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
         </div>
     </form>
+</div>
 
-    <table class="table table-hover">
-        <thead>
+<div class="card p-4">
+    <div class="table-responsive">
+        <table class="table table-borderless-custom">
+            <thead>
             <tr>
                 <th>#</th>
                 <th>Nama</th>
@@ -66,4 +71,6 @@
             @endforeach
         </tbody>
     </table>
+    </div>
+</div>
 @endsection

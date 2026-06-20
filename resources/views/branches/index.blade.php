@@ -6,22 +6,24 @@
     <h1>Manajemen Cabang</h1>
 </div>
 
-<div class="card border-0 shadow-sm mb-4">
-    <div class="card-body">
+<div class="card p-4">
+    <div class="mb-4">
         <form action="{{ route('branches.store') }}" method="POST">
             @csrf
-            <div class="input-group">
-                <input type="text" name="name" class="form-control" placeholder="Nama Cabang Baru" required>
-                <button class="btn btn-primary" type="submit"><i class="bi bi-plus-circle"></i> Tambah Cabang</button>
+            <div class="row g-2 align-items-center">
+                <div class="col-md-4">
+                    <input type="text" name="name" class="form-control" placeholder="Nama Cabang Baru" required>
+                </div>
+                <div class="col-auto">
+                    <button class="btn btn-primary" type="submit"><i class="bi bi-plus-circle"></i> Tambah Cabang</button>
+                </div>
             </div>
         </form>
     </div>
-</div>
 
-<div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-        <table class="table table-hover mb-0">
-            <thead class="table-light">
+    <div class="table-responsive">
+        <table class="table table-borderless-custom mb-0">
+            <thead>
                 <tr>
                     <th>#</th>
                     <th>Nama Cabang</th>

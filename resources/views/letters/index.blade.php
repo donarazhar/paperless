@@ -2,14 +2,17 @@
 @section('title', 'Semua Surat')
 
 @section('content')
-    <h1 class="mb-4">Semua Surat</h1>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 fw-bold mb-0">Daftar Surat</h1>
+    </div>
 
     {{-- Form Pencarian & Filter --}}
-    <form class="row gy-2 gx-3 align-items-end mb-4" method="GET">
-        <div class="col-auto">
-            <label class="form-label">Cari</label>
-            <input type="text" name="search" class="form-control" value="{{ request('search') }}">
-        </div>
+    <div class="card p-4 mb-4">
+        <form class="row gy-3 gx-3 align-items-end" method="GET">
+            <div class="col-md-3">
+                <label class="form-label text-muted small fw-bold">Cari (Perihal/No.Surat)</label>
+                <input type="text" name="search" class="form-control" value="{{ request('search') }}" placeholder="Ketik kata kunci...">
+            </div>
         <div class="col-auto">
             <label class="form-label">Jenis</label>
             <select name="type" class="form-select">
@@ -36,13 +39,17 @@
             <label class="form-label">Sampai</label>
             <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
         </div>
-        <div class="col-auto">
-            <button class="btn btn-primary">Filter</button>
-        </div>
-    </form>
+            <div class="col-md-auto">
+                <button class="btn btn-primary"><i class="bi bi-funnel"></i> Terapkan Filter</button>
+                <a href="{{ request()->url() }}" class="btn btn-light border"><i class="bi bi-arrow-counterclockwise"></i> Reset</a>
+            </div>
+        </form>
+    </div>
 
-    <table class="table table-hover align-middle">
-        <thead>
+<div class="card p-4">
+    <div class="table-responsive">
+        <table class="table table-borderless-custom align-middle">
+            <thead>
             <tr>
                 <th>#</th>
                 <th>Tanggal</th>
@@ -80,8 +87,13 @@
                     </td>
                 </tr>
             @endforeach
+            @endforeach
         </tbody>
     </table>
+    </div>
 
-    {{ $letters->links() }}
+    <div class="mt-4">
+        {{ $letters->links() }}
+    </div>
+</div>
 @endsection
