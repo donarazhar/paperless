@@ -217,28 +217,29 @@
         .brand-wrap {
             display: flex;
             align-items: center;
-            gap: 0.85rem;
-            margin-bottom: 2.5rem;
+            gap: 0.75rem;
+            margin-bottom: 1.75rem;
         }
 
         .brand-logo {
-            width: 44px; height: 44px;
+            width: 36px; height: 36px;
             object-fit: contain;
-            border-radius: 10px;
+            border-radius: 8px;
             border: 1px solid var(--border);
-            padding: 5px;
+            padding: 4px;
             background: #fff;
+            flex-shrink: 0;
         }
 
         .brand-text .b-name {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: 800;
             color: var(--text);
             line-height: 1.2;
         }
 
         .brand-text .b-sub {
-            font-size: 0.72rem;
+            font-size: 0.68rem;
             color: var(--muted);
             font-weight: 500;
         }
