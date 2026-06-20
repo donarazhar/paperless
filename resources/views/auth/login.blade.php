@@ -409,6 +409,9 @@
             color: #b0bad0;
         }
 
+        /* Mobile-only logo header — hidden by default on desktop */
+        .mobile-hero-top { display: none; }
+
         /* ═══════════════════════════════
            RESPONSIVE
         ═══════════════════════════════ */
