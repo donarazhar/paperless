@@ -278,7 +278,7 @@
                 <div style="text-align:center;padding:1.5rem;color:#94a3b8;font-size:0.85rem;">Belum ada riwayat.</div>
             @else
             <div class="tl">
-                @foreach($letter->histories as $h)
+                @foreach($letter->histories->sortBy('created_at') as $h)
                     @if(in_array($h->action, ['agenda_assigned', 'pending_agenda'])) @continue @endif
                     @php
                         $dc = 'blue';
@@ -298,6 +298,11 @@
                             'draft'                   => 'Disimpan sebagai Draft',
                             default                   => ucfirst(str_replace('_', ' ', $h->action)),
                         };
+
+                        $dispMatch = null;
+                        if ($h->action === 'disposed') {
+                            $dispMatch = $letter->dispositions->where('from_user_id', $h->user_id)->where('note', $h->note)->first();
+                        }
                     @endphp
                     <div class="tl-item">
                         <div class="tl-dot {{ $dc }}">
@@ -309,7 +314,11 @@
                                 <span class="tl-time">{{ $h->created_at->format('d M H:i') }}</span>
                             </div>
                             @if($h->note)<div class="tl-note">"{{ $h->note }}"</div>@endif
-                            <div class="tl-by"><i class="bi bi-person-fill me-1"></i>{{ $h->user ? $h->user->name.' ('.$h->user->unit->name.')' : 'System' }}</div>
+                            @if($h->action === 'disposed' && $dispMatch)
+                                <div class="tl-by">Ke: <strong style="color:#334155;">{{ $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—') }}</strong> &middot; Oleh: {{ $h->user->name ?? 'System' }}</div>
+                            @else
+                                <div class="tl-by"><i class="bi bi-person-fill me-1"></i>Oleh: {{ $h->user ? $h->user->name.' ('.$h->user->unit->name.')' : 'System' }}</div>
+                            @endif
                         </div>
                     </div>
                 @endforeach
