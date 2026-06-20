@@ -241,21 +241,28 @@
 
             @php $role = Auth::user()->role; @endphp
 
-            @if($role === 'staf_tu')
-                <a href="{{ route('letters.index') }}" class="sidebar-item {{ request()->routeIs('letters.index') ? 'active' : '' }}">
-                    <i class="bi bi-folder2-open"></i> Semua Surat
-                </a>
-                <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
-                    <i class="bi bi-inbox-fill"></i> Surat Masuk Internal
-                </a>
-                <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
-                    <i class="bi bi-envelope-paper-fill"></i> Surat Masuk Eksternal
-                </a>
+            <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Surat Masuk</div>
+            <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
+                <i class="bi bi-inbox-fill"></i> Internal
+            </a>
+            <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
+                <i class="bi bi-envelope-paper-fill"></i> Eksternal
+            </a>
+
+            @if(in_array($role, ['staf_tu', 'staf_unit']))
+                <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Surat Keluar</div>
                 <a href="{{ route('letters.outbound') }}" class="sidebar-item {{ request()->routeIs('letters.outbound') ? 'active' : '' }}">
-                    <i class="bi bi-send-fill"></i> Surat Keluar Internal
+                    <i class="bi bi-send-fill"></i> Internal
                 </a>
                 <a href="{{ route('letters.outboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.outboundExternal') ? 'active' : '' }}">
-                    <i class="bi bi-send-dash-fill"></i> Surat Keluar Eksternal
+                    <i class="bi bi-send-dash-fill"></i> Eksternal
+                </a>
+            @endif
+
+            @if($role === 'staf_tu')
+                <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Administrasi</div>
+                <a href="{{ route('letters.index') }}" class="sidebar-item {{ request()->routeIs('letters.index') ? 'active' : '' }}">
+                    <i class="bi bi-folder2-open"></i> Semua Surat
                 </a>
                 
                 <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Master Data</div>
@@ -267,28 +274,6 @@
                 </a>
                 <a href="{{ route('units.index') }}" class="sidebar-item {{ request()->routeIs('units.*') ? 'active' : '' }}">
                     <i class="bi bi-diagram-3-fill"></i> Unit Kerja
-                </a>
-                
-            @elseif(in_array($role, ['kasubag_tu', 'kepala_sekretariat']))
-                <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
-                    <i class="bi bi-inbox-fill"></i> Surat Masuk Internal
-                </a>
-                <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
-                    <i class="bi bi-envelope-paper-fill"></i> Surat Masuk Eksternal
-                </a>
-
-            @elseif($role === 'staf_unit')
-                <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
-                    <i class="bi bi-inbox-fill"></i> Surat Masuk Internal
-                </a>
-                <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
-                    <i class="bi bi-envelope-paper-fill"></i> Surat Masuk Eksternal
-                </a>
-                <a href="{{ route('letters.outbound') }}" class="sidebar-item {{ request()->routeIs('letters.outbound') ? 'active' : '' }}">
-                    <i class="bi bi-send-fill"></i> Surat Keluar Internal
-                </a>
-                <a href="{{ route('letters.outboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.outboundExternal') ? 'active' : '' }}">
-                    <i class="bi bi-send-dash-fill"></i> Surat Keluar Eksternal
                 </a>
             @endif
         </div>
