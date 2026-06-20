@@ -397,15 +397,13 @@ $(document).ready(function() {
         if (disposisi.length) {
             $('#tableDisposisi').DataTable({
                 language: {
-                    sLengthMenu:'Tampilkan _MENU_ entri', sSearch:'',
-                    sZeroRecords:'Tidak ditemukan data', sInfo:'_START_–_END_ dari _TOTAL_',
-                    sInfoEmpty:'0 entri', sInfoFiltered:'(dari _MAX_)',
-                    oPaginate:{ sPrevious:'‹', sNext:'›' }
+                    sSearch:'',
+                    sZeroRecords:'Tidak ditemukan data'
                 },
                 ordering: false,
-                pageLength: 10,
-                lengthChange: false,
-                dom: '<"d-flex justify-content-end align-items-center mb-2"f>rt<"d-flex justify-content-between align-items-center mt-2"p>',
+                paging: false,
+                info: false,
+                dom: '<"d-flex justify-content-end align-items-center mb-2"f>rt',
                 initComplete: function() {
                     var api = this.api();
                     $(api.table().container()).find('.dataTables_filter input')
