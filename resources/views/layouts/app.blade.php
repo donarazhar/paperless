@@ -319,7 +319,7 @@
 
     <!-- ═══ MAIN CONTENT ═══ -->
     <main class="main-wrapper">
-        <!-- Optional: We can add page header inside content area if needed, but since titles were moved out, we rely on @yield -->
+        <!-- Optional: We can add page header inside content area if needed, but since titles were moved out, we rely on yield -->
         <div class="w-100">
             @yield('content')
         </div>
