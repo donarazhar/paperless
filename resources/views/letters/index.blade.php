@@ -244,20 +244,11 @@
                     language: {
                         "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
                         "sProcessing":   "Sedang memproses...",
-                        "sLengthMenu":   "Tampilkan _MENU_ entri",
-                        "sZeroRecords":  "Tidak ditemukan data yang sesuai",
-                        "sInfo":         "Tampil _START_ s/d _END_ dari _TOTAL_ entri",
-                        "sInfoEmpty":    "Tampil 0 entri",
-                        "sInfoFiltered": "(disaring dari _MAX_ entri)",
-                        "sSearch":       "Cari Riwayat:",
-                        "oPaginate": {
-                            "sPrevious": "Sebelumnya",
-                            "sNext":     "Selanjutnya"
-                        }
+                        "sSearch":       "Cari Riwayat:"
                     },
                     order: [], // Tetap pertahankan urutan dari backend (Terbaru di atas)
-                    pageLength: 5, // Tampilkan 5 baris per halaman agar popup tidak terlalu panjang
-                    lengthMenu: [5, 10, 25]
+                    paging: false, // Tampilkan semua baris tanpa paginasi
+                    info: false // Sembunyikan teks "Menampilkan X entri" karena tidak ada paginasi
                 });
             }
             
