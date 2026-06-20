@@ -94,10 +94,12 @@
                             <td class="letter-label">Tujuan</td>
                             <td>: 
                                 <span class="fw-medium">
-                                @if($letter->recipientUser)
+                                @if($letter->type === 'outbound_external')
+                                    <span class="fw-bold text-primary">{{ $letter->external_recipient_name }}</span> (Instansi Luar)
+                                @elseif($letter->recipientUser)
                                     {{ $letter->recipientUser->name }} (Unit {{ $letter->recipientUser->unit->name }})
                                 @else
-                                    Unit {{ $letter->recipientUnit->name }}
+                                    Unit {{ $letter->recipientUnit->name ?? '' }}
                                 @endif
                                 </span>
                             </td>
@@ -120,6 +122,30 @@
                     {!! nl2br(e($letter->body)) !!}
                 </div>
             </div>
+
+            @if($letter->type === 'outbound_external')
+            <div class="mb-4 mt-4">
+                <h6 class="fw-bold text-muted text-uppercase mb-3" style="font-size:0.85rem;">Keterangan / Status Eksternal</h6>
+                <div class="p-4 bg-warning bg-opacity-10 border border-warning rounded" style="line-height: 1.8;">
+                    <div class="text-dark fw-medium mb-2">{!! nl2br(e($letter->external_notes ?: 'Belum ada keterangan.')) !!}</div>
+                    
+                    @if($letter->from_user_id == Auth::id())
+                        <div class="mt-3 border-top border-warning border-opacity-25 pt-3">
+                            <button class="btn btn-sm btn-outline-warning fw-bold text-dark" data-bs-toggle="collapse" data-bs-target="#updateNotesForm">
+                                <i class="bi bi-pencil-square"></i> Perbarui Keterangan
+                            </button>
+                            <div class="collapse mt-2" id="updateNotesForm">
+                                <form action="{{ route('letters.updateExternalNotes', $letter) }}" method="POST">
+                                    @csrf
+                                    <textarea name="external_notes" class="form-control mb-2 border-warning" rows="2" placeholder="Masukkan keterangan terbaru...">{{ $letter->external_notes }}</textarea>
+                                    <button type="submit" class="btn btn-sm btn-warning fw-bold">Simpan Keterangan</button>
+                                </form>
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+            @endif
 
             {{-- Lampiran --}}
             @if($letter->attachments->count())

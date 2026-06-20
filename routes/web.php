@@ -33,9 +33,16 @@ Route::middleware('auth')->group(function () {
     Route::get('letters/create-external', [LetterController::class, 'createExternal'])->name('letters.createExternal');
     Route::post('letters/external', [LetterController::class, 'storeExternal'])->name('letters.storeExternal');
 
+    Route::middleware('role:staf_unit,staf_tu')->group(function () {
+        Route::get('letters/create-outbound-external', [LetterController::class, 'createOutboundExternal'])->name('letters.createOutboundExternal');
+        Route::post('letters/outbound-external', [LetterController::class, 'storeOutboundExternal'])->name('letters.storeOutboundExternal');
+        Route::post('letters/{letter}/update-notes', [LetterController::class, 'updateExternalNotes'])->name('letters.updateExternalNotes');
+    });
+
     Route::get('letters/inbox', [LetterController::class, 'inbound'])->name('letters.inbound');
     Route::get('letters/inbox-external', [LetterController::class, 'inboundExternal'])->name('letters.inboundExternal');
     Route::get('letters/outbox', [LetterController::class, 'outbound'])->name('letters.outbound');
+    Route::get('letters/outbox-external', [LetterController::class, 'outboundExternal'])->name('letters.outboundExternal');
     Route::get('letters/{letter}', [LetterController::class, 'show'])->name('letters.show');
     Route::post('letters/{letter}/mark-read', [LetterController::class, 'markRead'])->name('letters.markRead');
 

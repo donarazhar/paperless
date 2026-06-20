@@ -252,7 +252,10 @@
                     <i class="bi bi-envelope-paper-fill"></i> Surat Masuk Eksternal
                 </a>
                 <a href="{{ route('letters.outbound') }}" class="sidebar-item {{ request()->routeIs('letters.outbound') ? 'active' : '' }}">
-                    <i class="bi bi-send-fill"></i> Riwayat Surat Keluar
+                    <i class="bi bi-send-fill"></i> Surat Keluar Internal
+                </a>
+                <a href="{{ route('letters.outboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.outboundExternal') ? 'active' : '' }}">
+                    <i class="bi bi-send-dash-fill"></i> Surat Keluar Eksternal
                 </a>
                 
                 <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Master Data</div>
@@ -282,7 +285,10 @@
                     <i class="bi bi-envelope-paper-fill"></i> Surat Masuk Eksternal
                 </a>
                 <a href="{{ route('letters.outbound') }}" class="sidebar-item {{ request()->routeIs('letters.outbound') ? 'active' : '' }}">
-                    <i class="bi bi-send-fill"></i> Riwayat Surat Keluar
+                    <i class="bi bi-send-fill"></i> Surat Keluar Internal
+                </a>
+                <a href="{{ route('letters.outboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.outboundExternal') ? 'active' : '' }}">
+                    <i class="bi bi-send-dash-fill"></i> Surat Keluar Eksternal
                 </a>
             @endif
         </div>

@@ -15,6 +15,8 @@ class Letter extends Model
         'to_user_id',
         'to_unit_id',
         'external_sender_name',
+        'external_recipient_name',
+        'external_notes',
         'created_by_user_id',
         'status'
     ];
