@@ -107,21 +107,30 @@
                                     </a>
                                     
                                     @php
-                                        // Siapkan data riwayat perjalanan surat (histories) untuk JSON
-                                        $historiesList = $letter->histories
-                                        ->filter(function($h) {
-                                            return !in_array($h->action, ['pending_agenda', 'agenda_assigned']);
-                                        })
-                                        ->values() // Reset index array agar menjadi format array JSON yang valid
-                                        ->map(function($h) {
-                                            $actor = $h->user ? $h->user->name . ' (Unit ' . ($h->user->unit->name ?? '-') . ')' : 'Sistem';
-                                            return [
-                                                'tanggal' => $h->created_at->format('d/m/y'),
-                                                'aksi' => ucfirst(str_replace('_', ' ', $h->action)),
-                                                'aktor' => $actor,
-                                                'catatan' => $h->note,
-                                            ];
-                                        })->toJson();
+                                        // Siapkan data khusus disposisi untuk JSON agar menampilkan Ditujukan Ke
+                                        $dispoHistory = collect();
+                                        foreach($letter->dispositions as $d) {
+                                            $target = $d->recipientUser ? $d->recipientUser->name : ($d->recipientUnit ? 'Unit ' . $d->recipientUnit->name : '--');
+                                            
+                                            $dispoHistory->push([
+                                                'sort_date' => $d->created_at->timestamp,
+                                                'tanggal' => $d->created_at->format('d/m/y'),
+                                                'aksi' => 'Disposed',
+                                                'aktor' => $target,
+                                                'catatan' => $d->note ?? '-',
+                                            ]);
+
+                                            if ($d->status !== 'pending') {
+                                                $dispoHistory->push([
+                                                    'sort_date' => $d->updated_at->timestamp,
+                                                    'tanggal' => $d->updated_at->format('d/m/y'),
+                                                    'aksi' => 'Disposition Responded (' . ucfirst($d->status) . ')',
+                                                    'aktor' => $target,
+                                                    'catatan' => $d->response_note ?? '-',
+                                                ]);
+                                            }
+                                        }
+                                        $historiesList = $dispoHistory->sortByDesc('sort_date')->values()->toJson();
                                     @endphp
                                     
                                     <button type="button" class="btn btn-sm btn-outline-info btn-lihat-disposisi" 
@@ -158,7 +167,7 @@
                           <tr>
                               <th>Waktu</th>
                               <th>Status / Aksi</th>
-                              <th>Dilakukan Oleh</th>
+                              <th>Ditujukan Ke</th>
                               <th>Catatan</th>
                           </tr>
                       </thead>
