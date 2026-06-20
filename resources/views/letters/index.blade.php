@@ -301,8 +301,6 @@
     </div>
 </div>
 
-@endsection
-
 @push('scripts')
 <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
@@ -371,4 +369,5 @@ $(document).ready(function() {
 });
 </script>
 @endpush
+
 @endsection
