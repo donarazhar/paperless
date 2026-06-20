@@ -70,7 +70,7 @@
     </div>
 
     <div class="header">
-        <h3>LEMBAR RIWAYAT PERJALANAN / DISPOSISI SURAT</h3>
+        <h3>DISPOSISI SURAT</h3>
         <p>Aplikasi Persuratan (Paperless)</p>
     </div>
 
