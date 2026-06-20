@@ -116,16 +116,17 @@
                                             $dispoHistory->push([
                                                 'sort_date' => $d->created_at->timestamp,
                                                 'tanggal' => $d->created_at->format('d/m/y'),
-                                                'aksi' => 'Disposed <br><small class="text-muted fw-normal"><i class="bi bi-person-fill"></i> Oleh: ' . $actor . '</small>',
+                                                'aksi' => 'Diteruskan (Disposisi) <br><small class="text-muted fw-normal"><i class="bi bi-person-fill"></i> Oleh: ' . $actor . '</small>',
                                                 'aktor' => $target,
                                                 'catatan' => $d->note ?? '-',
                                             ]);
 
                                             if ($d->status !== 'pending') {
+                                                $statusIndo = $d->status === 'accepted' ? 'Tugas Selesai' : ($d->status === 'pertimbangan' ? 'Memberi Pertimbangan' : ucfirst($d->status));
                                                 $dispoHistory->push([
                                                     'sort_date' => $d->updated_at->timestamp,
                                                     'tanggal' => $d->updated_at->format('d/m/y'),
-                                                    'aksi' => 'Responded (' . ucfirst($d->status) . ') <br><small class="text-muted fw-normal"><i class="bi bi-person-fill"></i> Oleh: ' . $target . '</small>',
+                                                    'aksi' => 'Respons: ' . $statusIndo . ' <br><small class="text-muted fw-normal"><i class="bi bi-person-fill"></i> Oleh: ' . $target . '</small>',
                                                     'aktor' => $actor,
                                                     'catatan' => $d->response_note ?? '-',
                                                 ]);
@@ -263,7 +264,8 @@
                     },
                     order: [], // Tetap pertahankan urutan dari backend (Terbaru di atas)
                     paging: false, // Tampilkan semua baris tanpa paginasi
-                    info: false // Sembunyikan teks "Menampilkan X entri" karena tidak ada paginasi
+                    info: false, // Sembunyikan teks "Menampilkan X entri" karena tidak ada paginasi
+                    searching: false // Sembunyikan kotak pencarian
                 });
             }
             
