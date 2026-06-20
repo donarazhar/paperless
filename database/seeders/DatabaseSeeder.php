@@ -41,8 +41,8 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Staf Unit SD 1', 'password' => Hash::make('123456'), 'role' => 'staf_unit', 'unit_id' => 3]
         );
 
+        $this->call(MassiveDataSeeder::class);
         $this->call(LetterSeeder::class);
         $this->call(OutboundLetterSeeder::class);
-        $this->call(MassiveDataSeeder::class);
     }
 }

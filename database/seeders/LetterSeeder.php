@@ -123,7 +123,7 @@ class LetterSeeder extends Seeder
         LetterHistory::insert([
             'letter_id' => $letter->id,
             'user_id' => $createdBy,
-            'action' => 'Surat dibuat',
+            'action' => 'created',
             'note' => 'Surat baru ditambahkan ke sistem.',
             'created_at' => $createdAt,
             'updated_at' => $createdAt,
@@ -136,7 +136,7 @@ class LetterSeeder extends Seeder
             LetterHistory::insert([
                 'letter_id' => $letter->id,
                 'user_id' => $stafTu->id,
-                'action' => 'Surat diagendakan',
+                'action' => 'agenda_set',
                 'note' => 'Nomor agenda dan nomor surat telah diberikan.',
                 'created_at' => $dispDate1,
                 'updated_at' => $dispDate1,
@@ -145,12 +145,14 @@ class LetterSeeder extends Seeder
             $dispDate2 = clone $dispDate1;
             $dispDate2->addHours(rand(1, 24));
             
+            $dispNote = $faker->sentence;
+
             Disposition::insert([
                 'letter_id' => $letter->id,
                 'from_user_id' => $kasubagTu->id,
                 'to_user_id' => rand(0, 1) === 1 ? $kepalaSekretariat->id : null,
                 'to_unit_id' => $toUnitId,
-                'note' => $faker->sentence,
+                'note' => $dispNote,
                 'created_at' => $dispDate2,
                 'updated_at' => $dispDate2,
             ]);
@@ -158,8 +160,8 @@ class LetterSeeder extends Seeder
             LetterHistory::insert([
                 'letter_id' => $letter->id,
                 'user_id' => $kasubagTu->id,
-                'action' => 'Disposisi Surat',
-                'note' => 'Surat didisposisikan ke unit/pejabat terkait.',
+                'action' => 'disposed',
+                'note' => $dispNote,
                 'created_at' => $dispDate2,
                 'updated_at' => $dispDate2,
             ]);
@@ -170,7 +172,7 @@ class LetterSeeder extends Seeder
                 LetterHistory::insert([
                     'letter_id' => $letter->id,
                     'user_id' => $stafTu->id,
-                    'action' => 'Surat Diselesaikan',
+                    'action' => 'completed',
                     'note' => 'Surat telah selesai diproses dan masuk arsip.',
                     'created_at' => $dispDate3,
                     'updated_at' => $dispDate3,

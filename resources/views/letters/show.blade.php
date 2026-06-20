@@ -260,47 +260,23 @@
         {{-- Timeline --}}
         <div class="modern-panel">
             <div class="panel-title"><i class="bi bi-clock-history"></i> Disposisi Surat</div>
-            @if($letter->histories->isEmpty())
-                <div class="text-center p-3 text-muted" style="font-size:0.85rem;">Belum ada riwayat.</div>
+            @if($letter->histories->where('action', 'disposed')->isEmpty())
+                <div class="text-center p-3 text-muted" style="font-size:0.85rem;">Belum ada disposisi.</div>
             @else
             <div class="tl">
-                @foreach($letter->histories->sortBy('created_at') as $h)
-                    @if(in_array($h->action, ['agenda_assigned', 'pending_agenda'])) @continue @endif
+                @foreach($letter->histories->where('action', 'disposed')->sortBy('created_at') as $h)
                     @php
-                        $dc = 'blue';
-                        if($h->action==='sent') $dc='sent';
-                        elseif(str_contains($h->action,'dispos')) $dc='disp';
-                        elseif($h->action==='disposition_accepted') $dc='done';
-                        $actionLabel = match($h->action) {
-                            'sent'                    => 'Surat Dikirim',
-                            'created'                 => 'Surat Dibuat',
-                            'read'                    => 'Surat Dibaca',
-                            'agenda_set'              => 'Nomor Agenda Ditetapkan',
-                            'forwarded'               => 'Diteruskan ke Kasubag TU',
-                            'disposed'                => 'Disposisi',
-                            'disposition_responded'   => 'Pertimbangan',
-                            'disposition_accepted'    => 'Disposisi Diselesaikan',
-                            'completed'               => 'Surat Selesai',
-                            'draft'                   => 'Disimpan Draft',
-                            default                   => ucfirst(str_replace('_', ' ', $h->action)),
-                        };
-
-                        $dispMatch = null;
-                        if ($h->action === 'disposed') {
-                            $dispMatch = $letter->dispositions->where('from_user_id', $h->user_id)->where('note', $h->note)->first();
-                        }
+                        $dispMatch = $letter->dispositions->where('from_user_id', $h->user_id)->where('note', $h->note)->first();
                     @endphp
                     <div class="tl-item">
-                        <div class="tl-dot {{ $dc }}"><i class="bi bi-circle-fill" style="font-size:6px;color:inherit;"></i></div>
+                        <div class="tl-dot disp"><i class="bi bi-circle-fill" style="font-size:6px;color:inherit;"></i></div>
                         <div class="tl-card">
                             <div class="tl-header">
-                                <span class="tl-title">{{ $actionLabel }}</span>
+                                <span class="tl-title">Disposisi Surat</span>
                                 <span class="tl-time">{{ $h->created_at->format('d/m/Y') }}</span>
                             </div>
-                            @if($h->action === 'disposed' && $dispMatch)
+                            @if($dispMatch)
                                 <div class="tl-user">Ke: <strong style="color:var(--text);">{{ $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—') }}</strong></div>
-                            @else
-                                <div class="tl-user"><i class="bi bi-person-fill"></i> Oleh: {{ $h->user ? $h->user->name : 'System' }}</div>
                             @endif
                             @if($h->note)
                                 @php $cleanNote = preg_replace('/^\[.*?\]\s*/', '', $h->note); @endphp
