@@ -403,6 +403,14 @@ class LetterController extends Controller
         return view('letters.show', compact('letter'));
     }
 
+    public function printDisposition($hashedId)
+    {
+        $id = Hashids::decode($hashedId)[0] ?? abort(404);
+        $letter = Letter::with(['dispositions.toUser', 'dispositions.toUnit', 'dispositions.fromUser'])->findOrFail($id);
+        $this->authorize('view', $letter);
+        return view('letters.print_disposition', compact('letter'));
+    }
+
     public function markRead(Letter $letter)
     {
         $user = Auth::user();
