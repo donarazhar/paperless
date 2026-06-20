@@ -42,30 +42,16 @@
 {{-- Filter --}}
 <div class="filter-card">
     <form method="GET" action="{{ route('users.index') }}" class="row gy-2 gx-2 align-items-end">
-        <div class="col-12 col-sm-5 col-md-4">
-            <label class="f-label">Cabang</label>
-            <select name="branch_id" class="form-select" onchange="this.form.submit()">
-                <option value="">Semua Cabang</option>
-                @foreach($branches as $b)
-                    <option value="{{ $b->id }}" {{ request('branch_id')==$b->id ? 'selected':'' }}>{{ $b->name }}</option>
-                @endforeach
-            </select>
+        <div class="col-12 col-md-9">
+            <label class="f-label">Cari Pengguna</label>
+            <input type="text" name="search" class="form-control" placeholder="Ketik nama atau email..." value="{{ request('search') }}">
         </div>
-        <div class="col-12 col-sm-5 col-md-4">
-            <label class="f-label">Unit Kerja</label>
-            <select name="unit_id" class="form-select" onchange="this.form.submit()">
-                <option value="">Semua Unit</option>
-                @foreach($units as $u)
-                    <option value="{{ $u->id }}" {{ request('unit_id')==$u->id ? 'selected':'' }}>{{ $u->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="col-6 col-sm-auto d-flex gap-2">
-            <button class="btn btn-primary" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 1rem;">
-                <i class="bi bi-funnel-fill"></i>
+        <div class="col-12 col-md-3 d-flex gap-2 align-items-end">
+            <button type="submit" class="btn-filter flex-grow-1 justify-content-center">
+                <i class="bi bi-search"></i> Cari
             </button>
-            <a href="{{ route('users.index') }}" class="btn btn-light border" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 0.9rem;">
-                <i class="bi bi-arrow-counterclockwise"></i>
+            <a href="{{ route('users.index') }}" class="btn-reset flex-grow-1 justify-content-center text-center">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset
             </a>
         </div>
     </form>

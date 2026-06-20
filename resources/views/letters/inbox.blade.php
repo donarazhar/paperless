@@ -33,33 +33,15 @@
 {{-- ── FILTER CARD ── --}}
 <div class="filter-card">
     <form class="row gy-2 gx-2 align-items-end" method="GET">
-        <div class="col-12 col-sm-6 col-md-3">
+        <div class="col-12 col-md-9">
             <label class="f-label">Cari Surat</label>
-            <input type="text" name="search" class="form-control" placeholder="Nomor atau perihal…" value="{{ request('search') }}">
+            <input type="text" name="search" class="form-control" placeholder="Ketik nomor surat atau perihal..." value="{{ request('search') }}">
         </div>
-        <div class="col-6 col-sm-4 col-md-2">
-            <label class="f-label">Status</label>
-            <select name="status" class="form-select">
-                <option value="">Semua Status</option>
-                <option value="pending_agenda"    @selected(request('status')=='pending_agenda')>Antre Agenda</option>
-                <option value="in_review_kasubag" @selected(request('status')=='in_review_kasubag')>Review</option>
-                <option value="in_consideration"  @selected(request('status')=='in_consideration')>Disposisi Aktif</option>
-                <option value="completed"         @selected(request('status')=='completed')>Selesai</option>
-            </select>
-        </div>
-        <div class="col-6 col-sm-4 col-md-2">
-            <label class="f-label">Dari Tanggal</label>
-            <input type="date" name="date_from" class="form-control" value="{{ request('date_from') }}">
-        </div>
-        <div class="col-6 col-sm-4 col-md-2">
-            <label class="f-label">Sampai</label>
-            <input type="date" name="date_to" class="form-control" value="{{ request('date_to') }}">
-        </div>
-        <div class="col-6 col-sm-auto d-flex gap-2 align-items-end">
-            <button type="submit" class="btn-filter">
-                <i class="bi bi-funnel-fill"></i> Filter
+        <div class="col-12 col-md-3 d-flex gap-2 align-items-end">
+            <button type="submit" class="btn-filter flex-grow-1 justify-content-center">
+                <i class="bi bi-search"></i> Cari
             </button>
-            <a href="{{ request()->url() }}" class="btn-reset">
+            <a href="{{ request()->url() }}" class="btn-reset flex-grow-1 justify-content-center text-center">
                 <i class="bi bi-arrow-counterclockwise"></i> Reset
             </a>
         </div>

@@ -31,12 +31,14 @@ class LetterController extends Controller
         }
 
         if ($s = $request->search) {
-            $q->where(
-                fn($q) =>
-                $q->where('letter_number', 'like', "%{$s}%")
-                    ->orWhere('agenda_number', 'like', "%{$s}%")
-                    ->orWhere('subject', 'like', "%{$s}%")
-            );
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%")
+                      ->orWhereHas('sender.unit', function ($sq) use ($s) {
+                          $sq->where('name', 'like', "%{$s}%");
+                      });
+            });
         }
 
         if ($st = $request->status) {
@@ -97,12 +99,14 @@ class LetterController extends Controller
 
         //— pencarian & filter seperti sebelumnya —
         if ($s = $request->search) {
-            $q->where(
-                fn($q) =>
-                $q->where('letter_number', 'like', "%{$s}%")
-                    ->orWhere('agenda_number', 'like', "%{$s}%")
-                    ->orWhere('subject', 'like', "%{$s}%")
-            );
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%")
+                      ->orWhereHas('sender.unit', function ($sq) use ($s) {
+                          $sq->where('name', 'like', "%{$s}%");
+                      });
+            });
         }
         if ($st = $request->status) {
             $q->where('status', $st);
@@ -154,9 +158,12 @@ class LetterController extends Controller
         if ($request->filled('search')) {
             $s = $request->search;
             $q->where(function ($query) use ($s) {
-                $query->where('letter_number', 'like', "%$s%")
-                      ->orWhere('subject', 'like', "%$s%")
-                      ->orWhere('external_sender_name', 'like', "%$s%");
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%")
+                      ->orWhereHas('sender.unit', function ($sq) use ($s) {
+                          $sq->where('name', 'like', "%{$s}%");
+                      });
             });
         }
 
@@ -230,12 +237,14 @@ class LetterController extends Controller
 
         // -- FILTERS --
         if ($s = $request->search) {
-            $q->where(
-                fn($q) =>
-                $q->where('letter_number', 'like', "%{$s}%")
-                    ->orWhere('agenda_number', 'like', "%{$s}%")
-                    ->orWhere('subject', 'like', "%{$s}%")
-            );
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%")
+                      ->orWhereHas('sender.unit', function ($sq) use ($s) {
+                          $sq->where('name', 'like', "%{$s}%");
+                      });
+            });
         }
         if ($st = $request->status) {
             $q->where('status', $st);
@@ -367,10 +376,13 @@ class LetterController extends Controller
 
         if ($request->has('search') && $request->search != '') {
             $s = $request->search;
-            $q->where(function($query) use ($s) {
-                $query->where('subject', 'like', "%$s%")
-                      ->orWhere('external_recipient_name', 'like', "%$s%")
-                      ->orWhere('letter_number', 'like', "%$s%");
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%")
+                      ->orWhereHas('sender.unit', function ($sq) use ($s) {
+                          $sq->where('name', 'like', "%{$s}%");
+                      });
             });
         }
 

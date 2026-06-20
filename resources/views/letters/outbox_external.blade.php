@@ -28,16 +28,16 @@
 {{-- Filter --}}
 <div class="filter-card">
     <form class="row gy-2 gx-2 align-items-end" method="GET">
-        <div class="col-12 col-sm-8 col-md-5">
-            <label class="f-label">Cari</label>
-            <input type="text" name="search" class="form-control" placeholder="Perihal, nomor, atau nama instansi tujuan…" value="{{ request('search') }}">
+        <div class="col-12 col-md-9">
+            <label class="f-label">Cari Surat</label>
+            <input type="text" name="search" class="form-control" placeholder="Ketik nomor surat atau perihal..." value="{{ request('search') }}">
         </div>
-        <div class="col-6 col-sm-auto d-flex gap-2 align-items-end">
-            <button class="btn btn-primary" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 1rem;">
-                <i class="bi bi-funnel-fill"></i> Filter
+        <div class="col-12 col-md-3 d-flex gap-2 align-items-end">
+            <button type="submit" class="btn-filter flex-grow-1 justify-content-center">
+                <i class="bi bi-search"></i> Cari
             </button>
-            <a href="{{ route('letters.outboundExternal') }}" class="btn btn-light border" style="height:40px;border-radius:0.6rem;font-size:0.85rem;padding:0 0.9rem;">
-                <i class="bi bi-arrow-counterclockwise"></i>
+            <a href="{{ request()->url() }}" class="btn-reset flex-grow-1 justify-content-center text-center">
+                <i class="bi bi-arrow-counterclockwise"></i> Reset
             </a>
         </div>
     </form>
