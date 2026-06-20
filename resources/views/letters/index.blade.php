@@ -182,10 +182,10 @@
                   <table id="historyTable" class="table table-hover table-bordered align-middle w-100" style="font-size: 0.9rem;">
                       <thead class="table-light">
                           <tr>
-                              <th style="width: 15%;">Waktu</th>
-                              <th style="width: 20%;">Status / Aksi</th>
-                              <th style="width: 20%;">Ditujukan Ke</th>
-                              <th style="width: 45%;">Catatan</th>
+                              <th style="width: 15%; min-width: 100px;">Waktu</th>
+                              <th style="width: 15%; min-width: 120px;">Status / Aksi</th>
+                              <th style="width: 20%; min-width: 150px;">Ditujukan Ke</th>
+                              <th style="width: 50%; min-width: 300px;">Catatan</th>
                           </tr>
                       </thead>
                       <tbody id="historyTableBody">
@@ -291,7 +291,8 @@
                     paging: false, // Tampilkan semua baris tanpa paginasi
                     info: false, // Sembunyikan teks "Menampilkan X entri" karena tidak ada paginasi
                     searching: false, // Sembunyikan kotak pencarian
-                    ordering: false // Nonaktifkan fitur klik sorting pada judul kolom
+                    ordering: false, // Nonaktifkan fitur klik sorting pada judul kolom
+                    autoWidth: false // Wajib false agar persentase width pada thead tidak di-override DataTables
                 });
             }
             
