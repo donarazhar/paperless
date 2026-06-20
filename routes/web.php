@@ -25,7 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::get('profile/password', [ProfileController::class, 'showPasswordForm'])->name('profile.password');
     Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
-    Route::middleware('role:staf_unit')->group(function () {
+    Route::middleware('role:staf_unit,staf_tu')->group(function () {
         Route::get('letters/create', [LetterController::class, 'create'])->name('letters.create');
         Route::post('letters', [LetterController::class, 'store'])->name('letters.store');
     });

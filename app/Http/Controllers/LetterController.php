@@ -249,15 +249,12 @@ class LetterController extends Controller
 
     public function create()
     {
-        $this->authorizeRole('staf_unit');
         $units = \App\Models\Unit::all();
         return view('letters.create', compact('units'));
     }
 
     public function store(Request $request)
     {
-        $this->authorizeRole('staf_unit');
-
         $data = $request->validate([
             'letter_number' => 'nullable|string',
             'subject' => 'required|string',

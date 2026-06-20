@@ -251,6 +251,9 @@
                 <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
                     <i class="bi bi-envelope-paper-fill"></i> Surat Masuk Eksternal
                 </a>
+                <a href="{{ route('letters.outbound') }}" class="sidebar-item {{ request()->routeIs('letters.outbound') ? 'active' : '' }}">
+                    <i class="bi bi-send-fill"></i> Riwayat Surat Keluar
+                </a>
                 
                 <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Master Data</div>
                 <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
