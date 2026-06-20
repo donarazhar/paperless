@@ -301,10 +301,15 @@
                 <div class="d-flex align-items-center mt-3 mt-lg-0 border-top border-lg-0 pt-3 pt-lg-0 ms-lg-3">
                     <div class="dropdown">
                         <div class="d-flex align-items-center gap-2 profile-btn" data-bs-toggle="dropdown" style="cursor:pointer;">
-                            <div class="sb-avatar">{{ substr(Auth::user()->name ?? 'U', 0, 1) }}</div>
+                            <div class="sb-avatar">{{ substr(Auth::user()->unit->name ?? 'A', 0, 1) }}</div>
                             <div class="d-none d-xl-block" style="line-height:1.2;">
-                                <div style="font-size:0.82rem;font-weight:700;color:var(--text);">{{ Auth::user()->name ?? 'User' }}</div>
-                                <div style="font-size:0.65rem;font-weight:600;color:var(--muted);">{{ ucwords(str_replace('_', ' ', Auth::user()->role ?? '')) }}</div>
+                                <div style="font-size:0.82rem;font-weight:700;color:var(--text);">
+                                    {{ Auth::user()->unit->name ?? 'Administrator' }}
+                                    <span style="font-weight:600; color:var(--blue); font-size:0.7rem; margin-left:2px;">
+                                        &bull; {{ ucwords(str_replace('_', ' ', Auth::user()->role ?? '')) }}
+                                    </span>
+                                </div>
+                                <div style="font-size:0.65rem;font-weight:600;color:var(--muted); margin-top:2px;">{{ Auth::user()->email ?? '' }}</div>
                             </div>
                         </div>
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">

@@ -10,8 +10,7 @@ class UserController extends Controller
 {
     public function __construct()
     {
-        // Hanya staf_tu yang boleh CRUD user
-        $this->middleware(['auth', 'role:staf_tu']);
+        // Middleware sudah diatur di routes/web.php
     }
 
     public function index(Request $request)

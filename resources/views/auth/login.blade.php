@@ -383,6 +383,28 @@
         .btn-submit:hover::before { opacity: 1; }
         .btn-submit:active { transform: translateY(0); }
 
+        /* Google Button */
+        .btn-google {
+            width: 100%;
+            height: 50px;
+            background: #fff;
+            color: var(--text);
+            border: 1.5px solid var(--border);
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 0.6rem;
+            text-decoration: none;
+            transition: all .2s;
+        }
+        .btn-google:hover {
+            background: #f8fafc;
+            border-color: #cbd5e1;
+        }
+        .btn-google i { color: #ea4335; font-size: 1.1rem; }
+
         /* Separator */
         .sep {
             display: flex; align-items: center; gap: 1rem;
@@ -620,7 +642,15 @@
                 </button>
             </form>
 
-            <div class="sep">
+            <div class="sep" style="margin: 1.25rem 0;">
+                <hr><span style="color:var(--muted); font-size:0.75rem; font-weight:600;">ATAU</span><hr>
+            </div>
+
+            <a href="{{ route('google.login') }}" class="btn-google">
+                <i class="bi bi-google"></i> Lanjutkan dengan Google
+            </a>
+
+            <div class="sep" style="margin-top: 2rem;">
                 <hr><span>Sistem Informasi Persuratan Terpusat</span><hr>
             </div>
 
