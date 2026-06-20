@@ -289,9 +289,9 @@
                             <i class="bi bi-database-fill me-2"></i> Master Data
                         </a>
                         <ul class="dropdown-menu border-0">
-                            <li><a class="dropdown-item" href="{{ route('users.index') }}">Pengguna</a></li>
                             <li><a class="dropdown-item" href="{{ route('branches.index') }}">Cabang</a></li>
                             <li><a class="dropdown-item" href="{{ route('units.index') }}">Unit Kerja</a></li>
+                            <li><a class="dropdown-item" href="{{ route('users.index') }}">Pengguna</a></li>
                         </ul>
                     </li>
                     @endif
