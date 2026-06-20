@@ -54,7 +54,10 @@ class DispositionController extends Controller
 
     public function store(Request $request, Letter $letter)
     {
-        $this->authorizeRole('kasubag_tu');
+        $user = Auth::user();
+        if (!in_array($user->role, ['kasubag_tu', 'kepala_sekretariat', 'staf_unit', 'staf_tu'])) {
+            abort(403, 'Anda tidak memiliki akses untuk membuat disposisi.');
+        }
 
         $data = $request->validate([
             'to_unit_id' => 'nullable|exists:units,id|required_without:to_user_id',

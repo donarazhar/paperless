@@ -44,9 +44,7 @@ Route::middleware('auth')->group(function () {
         Route::post('letters/{letter}/complete', [DispositionController::class, 'selesai'])->name('letters.complete');
     });
 
-    Route::middleware('role:kasubag_tu')->group(function () {
-        Route::post('letters/{letter}/dispositions', [DispositionController::class, 'store'])->name('letters.dispositions.store');
-    });
+    Route::post('letters/{letter}/dispositions', [DispositionController::class, 'store'])->name('letters.dispositions.store');
 
     Route::post('dispositions/{disposition}/respond', [DispositionController::class, 'respond'])->name('dispositions.respond');
 

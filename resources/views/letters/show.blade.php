@@ -198,10 +198,25 @@
             </div>
         @endif
 
-        {{-- Form Disposisi (Kasubag TU) --}}
-        @if($role === 'kasubag_tu' && in_array($letter->status, ['in_review_kasubag', 'in_consideration']))
+        {{-- Form Teruskan / Disposisi --}}
+        @php
+            $canDispose = false;
+            if ($role === 'kasubag_tu' && in_array($letter->status, ['in_review_kasubag', 'in_consideration'])) {
+                $canDispose = true;
+            } elseif ($letter->to_unit_id == $user->unit_id && $letter->status !== 'completed') {
+                $canDispose = true;
+            } elseif ($dispRecv && $dispRecv->status === 'pending') {
+                $canDispose = true;
+            }
+            // Staf TU Sekretariat juga bisa mem-forward jika surat ditujukan ke Sekretariat (Administrator)
+            if ($role === 'staf_tu' && $letter->to_unit_id == $user->unit_id && $letter->status !== 'completed') {
+                $canDispose = true;
+            }
+        @endphp
+
+        @if($canDispose)
             <div class="card p-4 mb-4 border border-warning shadow-sm">
-                <h5 class="fw-bold mb-3 text-warning"><i class="bi bi-arrow-repeat"></i> Buat Disposisi Baru</h5>
+                <h5 class="fw-bold mb-3 text-warning"><i class="bi bi-arrow-repeat"></i> Teruskan / Buat Disposisi</h5>
                 <form action="{{ route('letters.dispositions.store', $letter) }}" method="POST">
                     @csrf
                     <div class="mb-3">
@@ -218,7 +233,6 @@
                         <select name="to_unit_id" class="form-select">
                             <option value="">— Pilih Unit —</option>
                             @foreach(\App\Models\Unit::all() as $unit)
-                                @if ($unit->name == 'Administrator') @continue @endif 
                                 <option value="{{ $unit->id }}">{{ $unit->name }} (Cab. {{ $unit->branch->name ?? '' }})</option>
                             @endforeach
                         </select>

@@ -60,6 +60,19 @@
                               required>{{ old('body') }}</textarea>
                 </div>
 
+                {{-- Field Tujuan Unit --}}
+                <div class="mb-4">
+                    <label class="form-label text-muted fw-bold small text-uppercase">Tujuan Unit / Cabang</label>
+                    <select name="to_unit_id" class="form-select form-select-lg bg-light" required>
+                        <option value="">— Pilih Unit Tujuan —</option>
+                        @foreach($units as $unit)
+                            <option value="{{ $unit->id }}" {{ old('to_unit_id') == $unit->id ? 'selected' : '' }}>
+                                {{ $unit->name }} {{ $unit->branch ? '(Cabang '.$unit->branch->name.')' : '' }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+
                 {{-- Field File Lampiran --}}
                 <div class="mb-5 p-4 border rounded bg-light border-dashed" style="border-style: dashed !important;">
                     <label class="form-label fw-bold text-dark mb-2"><i class="bi bi-paperclip me-2"></i>Unggah Lampiran Dokumen</label>
@@ -77,7 +90,7 @@
                         <i class="bi bi-save me-1"></i> Simpan ke Draft
                     </button>
                     <button type="submit" name="action" value="send" class="btn btn-primary px-5 fw-bold">
-                        Kirim ke Sekretariat YPIA <i class="bi bi-send-fill ms-2"></i>
+                        Kirim Surat <i class="bi bi-send-fill ms-2"></i>
                     </button>
                 </div>
             </form>
@@ -87,14 +100,14 @@
     {{-- Info Bantuan Panel Kanan --}}
     <div class="col-lg-4 d-none d-lg-block">
         <div class="card p-4 bg-primary bg-opacity-10 border-0">
-            <h5 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle-fill me-2"></i> Informasi Pengiriman</h5>
+            <h5 class="fw-bold text-primary mb-3"><i class="bi bi-info-circle-fill me-2"></i> Panduan Pengiriman Surat</h5>
             <p class="small text-muted mb-3" style="line-height: 1.6;">
-                Sesuai dengan <strong>Sistem Satu Pintu YPI Al Azhar</strong>, seluruh surat keluar yang dibuat oleh unit Anda akan secara otomatis dikirimkan ke <strong>Antrean Sekretariat (Staf TU)</strong> untuk diberikan Nomor Agenda sebelum didisposisikan ke pihak yang berwenang.
+                Anda kini dapat mengirimkan surat secara langsung (Peer-to-Peer) ke unit manapun di lingkungan YPI Al Azhar.
             </p>
             <hr class="border-primary opacity-25">
             <ul class="list-unstyled small text-muted">
-                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Anda <strong>tidak perlu memilih unit tujuan</strong> secara manual.</li>
-                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> Nomor surat internal unit Anda bisa diisi, atau dibiarkan kosong.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Tujuan Langsung:</strong> Jika urusan spesifik antar dua unit, pilih unit yang dituju.</li>
+                <li class="mb-2"><i class="bi bi-check-circle-fill text-success me-2"></i> <strong>Tujuan Sekretariat:</strong> Jika membutuhkan keputusan/kebijakan pusat, pilih unit Administrator/Sekretariat.</li>
                 <li><i class="bi bi-check-circle-fill text-success me-2"></i> Lacak perkembangan surat Anda melalui menu <strong>Surat Keluar</strong>.</li>
             </ul>
         </div>

@@ -130,11 +130,13 @@ class LetterController extends Controller
         } elseif ($user->role === 'staf_tu') {
             $q->where(function ($query) use ($user) {
                   $query->whereIn('status', ['pending_agenda', 'in_consideration', 'completed'])
+                        ->orWhere('to_unit_id', $user->unit_id)
                         ->orWhere('created_by_user_id', $user->id);
               });
         } elseif ($user->role === 'kasubag_tu' || $user->role === 'kepala_sekretariat') {
             $q->where(function ($query) use ($user) {
                   $query->whereIn('status', ['in_review_kasubag', 'in_consideration', 'completed'])
+                        ->orWhere('to_unit_id', $user->unit_id)
                         ->orWhere('created_by_user_id', $user->id)
                         ->orWhereHas('dispositions', function ($sq) use ($user) {
                             $sq->where('to_user_id', $user->id);
