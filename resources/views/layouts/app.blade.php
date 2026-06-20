@@ -241,22 +241,36 @@
 
             @php $role = Auth::user()->role; @endphp
 
-            <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Surat Masuk</div>
-            <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }}">
-                <i class="bi bi-inbox-fill"></i> Internal
+            <a class="sidebar-item d-flex justify-content-between align-items-center" data-bs-toggle="collapse" href="#collapseSuratMasuk" role="button" aria-expanded="{{ request()->routeIs('letters.inbound', 'letters.inboundExternal') ? 'true' : 'false' }}">
+                <div><i class="bi bi-inbox-fill"></i> Surat Masuk</div>
+                <i class="bi bi-chevron-down small text-muted"></i>
             </a>
-            <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }}">
-                <i class="bi bi-envelope-paper-fill"></i> Eksternal
-            </a>
+            <div class="collapse {{ request()->routeIs('letters.inbound', 'letters.inboundExternal') ? 'show' : '' }}" id="collapseSuratMasuk">
+                <div class="ps-4 ms-2 border-start border-2 border-light my-1">
+                    <a href="{{ route('letters.inbound') }}" class="sidebar-item {{ request()->routeIs('letters.inbound') ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                        Internal
+                    </a>
+                    <a href="{{ route('letters.inboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.inboundExternal') ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                        Eksternal
+                    </a>
+                </div>
+            </div>
 
             @if(in_array($role, ['staf_tu', 'staf_unit']))
-                <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Surat Keluar</div>
-                <a href="{{ route('letters.outbound') }}" class="sidebar-item {{ request()->routeIs('letters.outbound') ? 'active' : '' }}">
-                    <i class="bi bi-send-fill"></i> Internal
+                <a class="sidebar-item d-flex justify-content-between align-items-center mt-2" data-bs-toggle="collapse" href="#collapseSuratKeluar" role="button" aria-expanded="{{ request()->routeIs('letters.outbound', 'letters.outboundExternal') ? 'true' : 'false' }}">
+                    <div><i class="bi bi-send-fill"></i> Surat Keluar</div>
+                    <i class="bi bi-chevron-down small text-muted"></i>
                 </a>
-                <a href="{{ route('letters.outboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.outboundExternal') ? 'active' : '' }}">
-                    <i class="bi bi-send-dash-fill"></i> Eksternal
-                </a>
+                <div class="collapse {{ request()->routeIs('letters.outbound', 'letters.outboundExternal') ? 'show' : '' }}" id="collapseSuratKeluar">
+                    <div class="ps-4 ms-2 border-start border-2 border-light my-1">
+                        <a href="{{ route('letters.outbound') }}" class="sidebar-item {{ request()->routeIs('letters.outbound') ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                            Internal
+                        </a>
+                        <a href="{{ route('letters.outboundExternal') }}" class="sidebar-item {{ request()->routeIs('letters.outboundExternal') ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                            Eksternal
+                        </a>
+                    </div>
+                </div>
             @endif
 
             @if($role === 'staf_tu')
@@ -265,16 +279,23 @@
                     <i class="bi bi-folder2-open"></i> Semua Surat
                 </a>
                 
-                <div class="text-uppercase text-muted small fw-bold mb-2 mt-4 px-3">Master Data</div>
-                <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                    <i class="bi bi-people-fill"></i> Pengguna
+                <a class="sidebar-item d-flex justify-content-between align-items-center mt-2" data-bs-toggle="collapse" href="#collapseMasterData" role="button" aria-expanded="{{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'true' : 'false' }}">
+                    <div><i class="bi bi-database-fill"></i> Master Data</div>
+                    <i class="bi bi-chevron-down small text-muted"></i>
                 </a>
-                <a href="{{ route('branches.index') }}" class="sidebar-item {{ request()->routeIs('branches.*') ? 'active' : '' }}">
-                    <i class="bi bi-building"></i> Cabang
-                </a>
-                <a href="{{ route('units.index') }}" class="sidebar-item {{ request()->routeIs('units.*') ? 'active' : '' }}">
-                    <i class="bi bi-diagram-3-fill"></i> Unit Kerja
-                </a>
+                <div class="collapse {{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'show' : '' }}" id="collapseMasterData">
+                    <div class="ps-4 ms-2 border-start border-2 border-light my-1">
+                        <a href="{{ route('users.index') }}" class="sidebar-item {{ request()->routeIs('users.*') ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                            Pengguna
+                        </a>
+                        <a href="{{ route('branches.index') }}" class="sidebar-item {{ request()->routeIs('branches.*') ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                            Cabang
+                        </a>
+                        <a href="{{ route('units.index') }}" class="sidebar-item {{ request()->routeIs('units.*') ? 'active' : '' }} py-2 mb-1" style="font-size: 0.9rem;">
+                            Unit Kerja
+                        </a>
+                    </div>
+                </div>
             @endif
         </div>
 
