@@ -182,10 +182,6 @@
                     </td>
                     <td style="text-align:center;">
                         <div class="d-flex gap-1 justify-content-center">
-                            <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
-                               class="btn-act btn-act-view" title="Lihat Detail">
-                                <i class="bi bi-eye-fill"></i>
-                            </a>
                             <a href="{{ route('letters.printDisposition', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}" target="_blank"
                                class="btn-act btn-act-disp"
                                title="Lacak Perjalanan (Print)">
@@ -220,10 +216,6 @@
                 @endif
             </div>
             <div class="d-flex gap-2">
-                <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
-                   style="display:inline-flex;align-items:center;gap:5px;background:#eff6ff;color:#2563eb;border:none;border-radius:0.5rem;font-size:0.78rem;font-weight:700;padding:0.4rem 0.85rem;text-decoration:none;">
-                    <i class="bi bi-eye-fill"></i> Lihat
-                </a>
                 <a href="{{ route('letters.printDisposition', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}" target="_blank"
                    style="display:inline-flex;align-items:center;gap:5px;background:#fdf4ff;color:#7e22ce;border:none;border-radius:0.5rem;font-size:0.78rem;font-weight:700;padding:0.4rem 0.85rem;text-decoration:none;cursor:pointer;">
                     <i class="bi bi-printer-fill"></i> Cetak Lacak
