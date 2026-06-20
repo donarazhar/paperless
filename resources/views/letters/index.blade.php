@@ -147,8 +147,20 @@
                   <strong>No Surat:</strong> <span id="modalNoSurat"></span>
               </div>
               
-              <div id="disposisiContainer">
-                  <!-- Konten disposisi akan dirender via JS -->
+              <div class="table-responsive">
+                  <table id="historyTable" class="table table-hover table-bordered align-middle w-100" style="font-size: 0.9rem;">
+                      <thead class="table-light">
+                          <tr>
+                              <th>Waktu</th>
+                              <th>Status / Aksi</th>
+                              <th>Dilakukan Oleh</th>
+                              <th>Catatan</th>
+                          </tr>
+                      </thead>
+                      <tbody id="historyTableBody">
+                          <!-- Konten riwayat akan dirender via JS -->
+                      </tbody>
+                  </table>
               </div>
           </div>
           <div class="modal-footer">
@@ -190,6 +202,9 @@
             pageLength: 25
         });
 
+        // Variabel global untuk menyimpan instance DataTables pada modal
+        var historyDataTable = null;
+
         // Event handler untuk tombol Lihat Disposisi (Gunakan event delegation karena DataTables memodifikasi DOM)
         $('#laporanTable').on('click', '.btn-lihat-disposisi', function() {
             var rawData = $(this).attr('data-disposisi');
@@ -198,36 +213,53 @@
             
             $('#modalNoSurat').text(noSurat);
             
-            var html = '';
-            if(disposisi.length === 0) {
-                html = '<div class="text-center text-muted my-4"><i class="bi bi-inbox fs-1 d-block mb-2"></i>Belum ada riwayat disposisi untuk surat ini.</div>';
-            } else {
-                html += '<div class="timeline-container">';
-                disposisi.forEach(function(item, index) {
-                    html += `
-                        <div class="card mb-3 border-0 bg-light">
-                            <div class="card-body p-3">
-                                <div class="d-flex justify-content-between align-items-center border-bottom pb-2 mb-2">
-                                    <span class="badge bg-primary">${item.aksi}</span>
-                                    <span class="small text-muted"><i class="bi bi-clock me-1"></i> ${item.tanggal}</span>
-                                </div>
-                                <div class="mt-2">
-                                    <div class="small text-muted mb-1"><i class="bi bi-person-fill"></i> Oleh:</div>
-                                    <div class="fw-bold text-dark">${item.aktor}</div>
-                                </div>
-                                ${item.catatan ? `
-                                <div class="mt-3 p-3 bg-white rounded border">
-                                    <div class="small text-muted mb-1 fw-bold">Catatan:</div>
-                                    <div class="fst-italic">"${item.catatan.replace(/\n/g, '<br>')}"</div>
-                                </div>` : ''}
-                            </div>
-                        </div>
-                    `;
-                });
-                html += '</div>';
+            // Hancurkan DataTable lama jika ada, sebelum memodifikasi isi tbody
+            if (historyDataTable !== null) {
+                historyDataTable.destroy();
+                historyDataTable = null;
             }
             
-            $('#disposisiContainer').html(html);
+            var html = '';
+            if(disposisi.length === 0) {
+                html = '<tr><td colspan="4" class="text-center text-muted py-4">Belum ada riwayat perjalanan untuk surat ini.</td></tr>';
+            } else {
+                disposisi.forEach(function(item) {
+                    var catatan = item.catatan ? item.catatan.replace(/\n/g, '<br>') : '-';
+                    html += `
+                        <tr>
+                            <td class="text-nowrap"><i class="bi bi-clock me-1 text-muted"></i> ${item.tanggal}</td>
+                            <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle">${item.aksi}</span></td>
+                            <td><i class="bi bi-person-fill text-muted me-1"></i> ${item.aktor}</td>
+                            <td><div class="fst-italic text-wrap" style="max-width: 300px;">${catatan}</div></td>
+                        </tr>
+                    `;
+                });
+            }
+            
+            $('#historyTableBody').html(html);
+            
+            // Inisialisasi DataTables jika ada data
+            if(disposisi.length > 0) {
+                historyDataTable = $('#historyTable').DataTable({
+                    language: {
+                        "sEmptyTable":   "Tidak ada data yang tersedia pada tabel ini",
+                        "sProcessing":   "Sedang memproses...",
+                        "sLengthMenu":   "Tampilkan _MENU_ entri",
+                        "sZeroRecords":  "Tidak ditemukan data yang sesuai",
+                        "sInfo":         "Tampil _START_ s/d _END_ dari _TOTAL_ entri",
+                        "sInfoEmpty":    "Tampil 0 entri",
+                        "sInfoFiltered": "(disaring dari _MAX_ entri)",
+                        "sSearch":       "Cari Riwayat:",
+                        "oPaginate": {
+                            "sPrevious": "Sebelumnya",
+                            "sNext":     "Selanjutnya"
+                        }
+                    },
+                    order: [], // Tetap pertahankan urutan dari backend (Terbaru di atas)
+                    pageLength: 5, // Tampilkan 5 baris per halaman agar popup tidak terlalu panjang
+                    lengthMenu: [5, 10, 25]
+                });
+            }
             
             // Tampilkan Modal
             var myModal = new bootstrap.Modal(document.getElementById('modalDisposisi'));
