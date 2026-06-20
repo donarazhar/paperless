@@ -377,12 +377,18 @@
 document.addEventListener('DOMContentLoaded', function () {
     // PDF Inline
     const prev=document.getElementById('pdfInlinePreview'), frame=document.getElementById('pdfInlineFrame'), nameEl=document.getElementById('pdfPreviewName'), closeBtn=document.getElementById('closePdfPreview');
-    document.querySelectorAll('.view-pdf').forEach(btn=>btn.addEventListener('click',()=>{
+    const pdfBtns = document.querySelectorAll('.view-pdf');
+    pdfBtns.forEach(btn=>btn.addEventListener('click',(e)=>{
         if(!frame||!prev) return;
         frame.src=btn.dataset.src; nameEl.textContent=btn.dataset.name;
-        prev.style.display='block'; prev.scrollIntoView({behavior:'smooth',block:'start'});
+        prev.style.display='block'; 
+        if(e.isTrusted) prev.scrollIntoView({behavior:'smooth',block:'start'});
     }));
     if(closeBtn) closeBtn.addEventListener('click',()=>{ prev.style.display='none'; frame.src=''; });
+
+    if(pdfBtns.length > 0) {
+        pdfBtns[0].click();
+    }
 
     // Disposisi toggle
     const sU=document.getElementById('selectUnit'), sP=document.getElementById('selectUser');
