@@ -131,18 +131,18 @@
                 <label class="form-label">Tindakan Selanjutnya <span class="text-danger">*</span></label>
                 
                 <label class="radio-card active">
-                    <input type="radio" name="action" value="draft" checked onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('active')); this.parentElement.classList.add('active');">
+                    <input type="radio" name="action_type" value="archive" checked onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('active')); this.parentElement.classList.add('active');">
                     <div class="radio-info">
-                        <strong>Simpan sebagai Draft</strong>
-                        <span>Saya masih perlu memeriksa lampiran sebelum diproses.</span>
+                        <strong>Simpan sebagai Arsip Unit (Selesai)</strong>
+                        <span>Pilih opsi ini jika surat sudah dieksekusi langsung oleh unit Anda dan hanya butuh diarsipkan.</span>
                     </div>
                 </label>
                 
                 <label class="radio-card">
-                    <input type="radio" name="action" value="send" onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('active')); this.parentElement.classList.add('active');">
+                    <input type="radio" name="action_type" value="forward" onclick="document.querySelectorAll('.radio-card').forEach(c=>c.classList.remove('active')); this.parentElement.classList.add('active');">
                     <div class="radio-info">
-                        <strong>Lanjutkan ke Kasubag TU</strong>
-                        <span>Surat masuk ini sudah siap untuk direview/didisposisi Kasubag.</span>
+                        <strong>Teruskan ke Sekretariat YPIA</strong>
+                        <span>Pilih jika membutuhkan pertimbangan, arahan, atau disposisi Sekretariat Yayasan ke unit lain.</span>
                     </div>
                 </label>
             </div>
