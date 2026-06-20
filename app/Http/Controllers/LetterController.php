@@ -307,6 +307,79 @@ class LetterController extends Controller
                 : 'Draft berhasil disimpan.');
     }
 
+    public function createOutboundExternal()
+    {
+        return view('letters.create_outbound_external');
+    }
+
+    public function storeOutboundExternal(Request $request)
+    {
+        $data = $request->validate([
+            'external_recipient_name' => 'required|string|max:255',
+            'letter_number' => 'nullable|string|max:255',
+            'subject' => 'required|string|max:255',
+            'body' => 'nullable|string',
+            'external_notes' => 'nullable|string',
+            'attachments.*' => 'file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
+        ]);
+
+        $letter = Letter::create([
+            'type' => 'outbound_external',
+            'letter_number' => $data['letter_number'] ?? '-',
+            'subject' => $data['subject'],
+            'body' => $data['body'] ?? '-',
+            'external_recipient_name' => $data['external_recipient_name'],
+            'external_notes' => $data['external_notes'],
+            'from_user_id' => Auth::id(),
+            'status' => 'completed',
+        ]);
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $path = $file->store('attachments', 'public');
+                $letter->attachments()->create([
+                    'file_path' => $path,
+                    'file_name' => $file->getClientOriginalName(),
+                ]);
+            }
+        }
+
+        return redirect()->route('letters.outboundExternal')->with('success', 'Surat keluar eksternal berhasil dicatat.');
+    }
+
+    public function outboundExternal(Request $request)
+    {
+        $user = Auth::user();
+        $q = Letter::where('from_user_id', $user->id)
+            ->where('type', 'outbound_external');
+
+        if ($request->has('search') && $request->search != '') {
+            $s = $request->search;
+            $q->where(function($query) use ($s) {
+                $query->where('subject', 'like', "%$s%")
+                      ->orWhere('external_recipient_name', 'like', "%$s%")
+                      ->orWhere('letter_number', 'like', "%$s%");
+            });
+        }
+
+        $letters = $q->latest()->paginate(15)->withQueryString();
+
+        return view('letters.outbox_external', compact('letters'));
+    }
+
+    public function updateExternalNotes(Request $request, Letter $letter)
+    {
+        $request->validate([
+            'external_notes' => 'required|string'
+        ]);
+
+        $letter->update([
+            'external_notes' => $request->external_notes
+        ]);
+
+        return back()->with('success', 'Keterangan hasil surat keluar eksternal berhasil diperbarui.');
+    }
+
     /**
      * Detail Surat (bisa diakses semua role sesuai izin)
      */
