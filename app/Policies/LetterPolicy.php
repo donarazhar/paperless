@@ -15,36 +15,36 @@ class LetterPolicy
      */
     public function view(User $user, Letter $letter): bool
     {
-        // Admin boleh lihat apapun
-        if ($user->role === 'admin') {
+        // Staf TU Sekretariat berfungsi sebagai Super Admin / Admin Surat Sentral
+        // sehingga memiliki akses penuh untuk melihat semua surat demi keperluan agenda & arsip.
+        if ($user->role === 'staf_tu') {
             return true;
         }
 
-        // STAFF
-        // - Surat langsung ke dia (to_user_id)
-//      - Surat yang ia kirim (from_user_id)
-//      - Surat yang dideposisikan ke dia (dispositions.to_user_id)
-        if ($user->role === 'staff') {
-            return $letter->to_user_id === $user->id
-                || $letter->from_user_id === $user->id
-                || $letter->dispositions()
-                    ->where('to_user_id', $user->id)
-                    ->exists();
-        }
-
-        // MANAGER
-        // - Surat ke unit mereka (to_unit_id)
-//      - Surat personal ke mereka (to_user_id)
-//      - Surat yang dideposisikan ke unit mereka atau ke personal mereka
-        if ($user->role === 'manager') {
+        // Pimpinan Sekretariat & Kasubag TU
+        // Bisa melihat surat yang ditujukan ke unit Sekretariat, 
+        // atau surat yang dideposisikan ke personal mereka.
+        if (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
             return $letter->to_unit_id === $user->unit_id
                 || $letter->to_user_id === $user->id
-                || $letter->dispositions()
-                    ->where(function ($q) use ($user) {
+                || $letter->from_user_id === $user->id
+                || $letter->dispositions()->where(function ($q) use ($user) {
                         $q->where('to_unit_id', $user->unit_id)
-                            ->orWhere('to_user_id', $user->id);
-                    })
-                    ->exists();
+                          ->orWhere('to_user_id', $user->id);
+                    })->exists();
+        }
+
+        // Staf Unit Biasa
+        // Bisa melihat surat yang ia kirim sendiri (outbox),
+        // atau surat yang didisposisikan ke unitnya / ke dirinya secara personal.
+        if ($user->role === 'staf_unit') {
+            return $letter->from_user_id === $user->id
+                || $letter->to_user_id === $user->id
+                || $letter->to_unit_id === $user->unit_id
+                || $letter->dispositions()->where(function ($q) use ($user) {
+                        $q->where('to_unit_id', $user->unit_id)
+                          ->orWhere('to_user_id', $user->id);
+                    })->exists();
         }
 
         return false;
