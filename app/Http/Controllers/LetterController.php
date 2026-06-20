@@ -25,15 +25,19 @@ class LetterController extends Controller
         $q = Letter::with(['sender', 'dispositions.toUser', 'dispositions.unit', 'recipientUser', 'recipientUnit'])
                    ->where('type', 'internal');
 
-        // Jika staf unit, hanya tampilkan surat yang berhubungan dengan unitnya
+        // Jika staf unit, hanya tampilkan surat yang berhubungan dengan unitnya secara keseluruhan
         if ($user->role === 'staf_unit') {
             $q->where(function($query) use ($user) {
-                $query->where('from_user_id', $user->id)
-                      ->orWhere('to_unit_id', $user->unit_id)
-                      ->orWhereHas('dispositions', function($d) use ($user) {
-                          $d->where('to_user_id', $user->id)
-                            ->orWhere('to_unit_id', $user->unit_id);
+                $query->whereHas('sender', function($sq) use ($user) {
+                    $sq->where('unit_id', $user->unit_id);
+                })
+                ->orWhere('to_unit_id', $user->unit_id)
+                ->orWhereHas('dispositions', function($d) use ($user) {
+                    $d->where('to_unit_id', $user->unit_id)
+                      ->orWhereHas('toUser', function($sq2) use ($user) {
+                          $sq2->where('unit_id', $user->unit_id);
                       });
+                });
             });
         }
 
