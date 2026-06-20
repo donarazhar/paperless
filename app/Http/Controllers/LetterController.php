@@ -406,7 +406,7 @@ class LetterController extends Controller
     public function printDisposition($hashedId)
     {
         $id = Hashids::decode($hashedId)[0] ?? abort(404);
-        $letter = Letter::with(['dispositions.toUser', 'dispositions.toUnit', 'dispositions.fromUser'])->findOrFail($id);
+        $letter = Letter::with(['dispositions.toUser', 'dispositions.unit', 'dispositions.fromUser'])->findOrFail($id);
         $this->authorize('view', $letter);
         return view('letters.print_disposition', compact('letter'));
     }
