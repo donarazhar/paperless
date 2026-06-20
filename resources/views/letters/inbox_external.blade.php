@@ -2,87 +2,31 @@
 @section('title', 'Surat Masuk Eksternal')
 
 @section('content')
-<style>
-    .filter-bar { background:#fff;border:1px solid #e8edf4;border-radius:1rem;padding:1.1rem 1.35rem;margin-bottom:1.25rem; }
-    .filter-bar .f-label { font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;color:#94a3b8;margin-bottom:0.35rem;display:block; }
-    .filter-bar .form-control, .filter-bar .form-select { height:40px;font-size:0.865rem;border-radius:0.6rem;border:1.5px solid #e8edf4;background:#fafbfd;padding:0 0.9rem; }
-    .filter-bar .form-control:focus, .filter-bar .form-select:focus { border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,0.09) !important; }
 
-    .ext-badge { display:inline-flex;align-items:center;gap:4px;background:#fdf4ff;color:#7e22ce;font-size:0.68rem;font-weight:700;padding:0.2rem 0.6rem;border-radius:100px;letter-spacing:0.04em; }
-
-    .letter-card { background:#fff;border:1px solid #e8edf4;border-radius:0.9rem;padding:1rem 1.1rem;margin-bottom:0.65rem;text-decoration:none;color:inherit;display:block;transition:border-color .15s,box-shadow .15s,transform .12s; }
-    .letter-card:hover { border-color:#bfdbfe;box-shadow:0 4px 16px rgba(37,99,235,0.08);transform:translateY(-1px);color:inherit; }
-    .letter-card.has-disp { border-left:3px solid #f59e0b; }
-    .letter-card .lc-no { font-size:0.68rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:#94a3b8;margin-bottom:0.25rem; }
-    .letter-card .lc-subject { font-size:0.9rem;font-weight:700;color:#0f172a;margin-bottom:0.35rem;line-height:1.35; }
-    .letter-card .lc-meta { font-size:0.75rem;color:#64748b;display:flex;flex-wrap:wrap;gap:0.65rem;align-items:center; }
-    .lc-meta i { font-size:0.7rem; }
-
-    .status-pill { display:inline-flex;align-items:center;gap:4px;font-size:0.7rem;font-weight:700;padding:0.25rem 0.65rem;border-radius:100px; }
-    .sp-pending { background:#fef9c3;color:#92400e; }
-    .sp-review  { background:#dbeafe;color:#1d4ed8; }
-    .sp-active  { background:#ede9fe;color:#7c3aed; }
-    .sp-done    { background:#dcfce7;color:#166534; }
-    .sp-disp    { background:#fef3c7;color:#b45309; }
-    .sp-default { background:#f1f5f9;color:#475569; }
-
-    .letters-table { width:100%;border-collapse:separate;border-spacing:0; }
-    .letters-table thead th { font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#94a3b8;padding:0.6rem 0.85rem;border-bottom:1px solid #e8edf4;white-space:nowrap;background:#fafbfd; }
-    .letters-table thead th:first-child { border-radius:0.75rem 0 0 0;padding-left:1.25rem; }
-    .letters-table thead th:last-child  { border-radius:0 0.75rem 0 0;padding-right:1.25rem; }
-    .letters-table tbody tr { transition:background .12s; }
-    .letters-table tbody tr:hover td { background:#f8faff; }
-    .letters-table tbody td { padding:0.85rem 0.85rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;font-size:0.865rem;color:#334155; }
-    .letters-table tbody td:first-child { padding-left:1.25rem; }
-    .letters-table tbody td:last-child  { padding-right:1.25rem; }
-    .letters-table tbody tr:last-child td { border-bottom:none; }
-
-    .subject-cell .s-title { font-size:0.875rem;font-weight:700;color:#0f172a;margin-bottom:3px; }
-    .subject-cell .s-num   { font-size:0.7rem;font-weight:600;color:#94a3b8;letter-spacing:0.03em; }
-    .sender-cell .s-name   { font-weight:700;color:#7e22ce;font-size:0.85rem; }
-    .sender-cell .s-input  { font-size:0.72rem;color:#94a3b8;margin-top:1px; }
-    .date-cell .d-date     { font-weight:600;font-size:0.835rem;color:#334155; }
-    .date-cell .d-by       { font-size:0.72rem;color:#94a3b8;margin-top:1px; }
-
-    .btn-open { display:inline-flex;align-items:center;gap:5px;background:#eff6ff;color:#2563eb;border:none;border-radius:0.5rem;font-size:0.78rem;font-weight:700;padding:0.4rem 0.85rem;text-decoration:none;transition:background .15s;white-space:nowrap; }
-    .btn-open:hover { background:#dbeafe;color:#1d4ed8; }
-    .btn-new  { display:inline-flex;align-items:center;gap:6px;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border:none;border-radius:0.65rem;font-size:0.85rem;font-weight:700;padding:0.55rem 1.1rem;text-decoration:none;transition:opacity .15s,transform .12s; }
-    .btn-new:hover { opacity:0.9;transform:translateY(-1px);color:#fff; }
-
-    .empty-state { text-align:center;padding:4rem 1rem;color:#94a3b8; }
-    .empty-state i { font-size:3rem;display:block;margin-bottom:0.75rem;color:#cbd5e1; }
-    .empty-state p { font-size:0.9rem; }
-
-    .pagination .page-link { border-radius:0.5rem !important;font-size:0.85rem;border-color:#e8edf4;color:#475569;margin:0 2px; }
-    .pagination .page-item.active .page-link { background:#2563eb;border-color:#2563eb; }
-
-    .table-wrap { display:block; }
-    .cards-wrap { display:none; }
-    @media(max-width:900px) { .table-wrap{display:none;} .cards-wrap{display:block;} }
-    @media(max-width:600px) { .filter-bar{padding:0.9rem 1rem;} }
-</style>
 
 {{-- Page Header --}}
-<div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-    <div>
-        <div class="d-flex align-items-center gap-2 mb-1">
-            <h1 class="h5 fw-bold mb-0" style="letter-spacing:-0.03em;">Surat Masuk Eksternal</h1>
-            <span class="ext-badge"><i class="bi bi-building"></i> Instansi Luar</span>
+<div class="inbox-hero" style="background: linear-gradient(135deg, #1e3a8a 0%, #4c1d95 45%, #7e22ce 100%);">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3" style="position:relative;z-index:1;">
+        <div>
+            <div class="d-flex align-items-center gap-2 mb-1">
+                <div class="hero-title mb-0">Surat Masuk Eksternal</div>
+                <span class="ext-badge" style="background: rgba(255,255,255,0.2); color: #fff;"><i class="bi bi-building"></i> Instansi Luar</span>
+            </div>
+            <div class="hero-sub">Surat dari instansi luar yang telah diinput &amp; diarsipkan</div>
         </div>
-        <p class="text-muted mb-0" style="font-size:0.82rem;">Surat dari instansi luar yang telah diinput &amp; diarsipkan</p>
-    </div>
-    <div class="d-flex align-items-center gap-2">
-        <span class="badge" style="background:#fdf4ff;color:#7e22ce;font-size:0.78rem;padding:0.45rem 0.9rem;border-radius:100px;">
-            <i class="bi bi-envelope-exclamation-fill me-1"></i>{{ $letters->total() }} surat
-        </span>
-        <a href="{{ route('letters.createExternal') }}" class="btn-new">
-            <i class="bi bi-plus-lg"></i> Buat Surat Eksternal
-        </a>
+        <div class="d-flex align-items-center gap-3">
+            <div class="stat-chip">
+                <i class="bi bi-envelope-exclamation-fill"></i> {{ $letters->total() }} surat
+            </div>
+            <a href="{{ route('letters.createExternal') }}" class="btn-custom success" style="width: auto;">
+                <i class="bi bi-plus-lg"></i> Buat Surat Eksternal
+            </a>
+        </div>
     </div>
 </div>
 
 {{-- Filter Bar --}}
-<div class="filter-bar">
+<div class="filter-card">
     <form class="row gy-2 gx-2 align-items-end" method="GET">
         <div class="col-12 col-sm-6 col-md-4">
             <label class="f-label">Cari</label>
@@ -111,7 +55,7 @@
 
 {{-- DESKTOP TABLE --}}
 <div class="table-wrap" style="background:#fff;border:1px solid #e8edf4;border-radius:1rem;overflow:hidden;">
-    <table class="letters-table">
+    <table class="inbox-table">
         <thead>
             <tr>
                 <th style="width:40px;">#</th>
@@ -159,8 +103,7 @@
                     </td>
                     <td>
                         <div class="date-cell">
-                            <div class="d-date">{{ $letter->created_at->format('d M Y') }}</div>
-                            <div class="d-by">Oleh: {{ $letter->creator->name ?? 'Admin' }}</div>
+                            <div class="d-date">{{ $letter->created_at->format('d/m/Y') }}</div>
                         </div>
                     </td>
                     <td>
@@ -243,7 +186,7 @@
             <div class="lc-subject">{{ $letter->subject }}</div>
             <div class="lc-meta">
                 <span><i class="bi bi-building-fill" style="color:#7e22ce;"></i> {{ $letter->external_sender_name }}</span>
-                <span><i class="bi bi-clock"></i> {{ $letter->created_at->format('d M Y') }}</span>
+                <span><i class="bi bi-clock"></i> {{ $letter->created_at->format('d/m/Y') }}</span>
             </div>
             <div class="mt-2">
                 @if($disp)
