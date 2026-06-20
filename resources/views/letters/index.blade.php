@@ -108,10 +108,15 @@
                                     
                                     @php
                                         // Siapkan data riwayat perjalanan surat (histories) untuk JSON
-                                        $historiesList = $letter->histories->map(function($h) {
+                                        $historiesList = $letter->histories
+                                        ->filter(function($h) {
+                                            return !in_array($h->action, ['pending_agenda', 'agenda_assigned']);
+                                        })
+                                        ->values() // Reset index array agar menjadi format array JSON yang valid
+                                        ->map(function($h) {
                                             $actor = $h->user ? $h->user->name . ' (Unit ' . ($h->user->unit->name ?? '-') . ')' : 'Sistem';
                                             return [
-                                                'tanggal' => $h->created_at->locale('id')->isoFormat('D MMM YYYY HH:mm'),
+                                                'tanggal' => $h->created_at->format('d/m/y H:i'),
                                                 'aksi' => ucfirst(str_replace('_', ' ', $h->action)),
                                                 'aktor' => $actor,
                                                 'catatan' => $h->note,
