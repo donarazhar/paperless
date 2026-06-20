@@ -182,9 +182,8 @@
                   <table id="historyTable" class="table table-hover table-bordered align-middle w-100" style="font-size: 0.9rem;">
                       <thead class="table-light">
                           <tr>
-                              <th style="width: 15%; min-width: 100px;">Waktu</th>
-                              <th style="width: 15%; min-width: 120px;">Status / Aksi</th>
-                              <th style="width: 20%; min-width: 150px;">Ditujukan Ke</th>
+                              <th style="width: 25%; min-width: 150px;">Ditujukan Ke</th>
+                              <th style="width: 25%; min-width: 180px;">Status & Waktu</th>
                               <th style="width: 50%; min-width: 300px;">Catatan</th>
                           </tr>
                       </thead>
@@ -268,9 +267,11 @@
                     var catatan = item.catatan ? item.catatan.replace(/\n/g, '<br>') : '-';
                     html += `
                         <tr>
-                            <td class="text-nowrap"><i class="bi bi-calendar3 me-1 text-muted"></i> ${item.tanggal}</td>
-                            <td><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-start lh-base">${item.aksi}</span></td>
-                            <td>${item.aktor}</td>
+                            <td><i class="bi bi-person-circle text-muted me-1"></i> <span class="fw-bold">${item.aktor}</span></td>
+                            <td>
+                                <div class="mb-1"><span class="badge bg-primary bg-opacity-10 text-primary border border-primary-subtle text-start lh-base">${item.aksi}</span></div>
+                                <div class="small text-muted"><i class="bi bi-calendar3 me-1"></i> ${item.tanggal}</div>
+                            </td>
                             <td><div class="fst-italic text-wrap text-break">${catatan}</div></td>
                         </tr>
                     `;
