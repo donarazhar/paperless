@@ -10,7 +10,7 @@
         <h1 class="h5 fw-bold mb-0" style="letter-spacing:-0.03em;">Manajemen Unit</h1>
         <p class="text-muted mb-0" style="font-size:0.82rem;">Kelola unit kerja dan pengelompokan cabangnya</p>
     </div>
-    <span class="badge" style="background:#eff6ff;color:#2563eb;font-size:0.78rem;padding:0.45rem 0.9rem;border-radius:100px;">
+    <span class="badge" style="background:#eef2ff;color:#6366f1;font-size:0.78rem;padding:0.45rem 0.9rem;border-radius:100px;">
         <i class="bi bi-diagram-3-fill me-1"></i>{{ $units->where('name','!=','Administrator')->count() }} unit
     </span>
 </div>

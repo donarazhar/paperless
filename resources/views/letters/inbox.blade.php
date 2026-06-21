@@ -1,15 +1,148 @@
 @extends('layouts.app')
 @section('title', 'Surat Masuk Internal')
 
-@section('content')
+@push('styles')
+<style>
+    /* ── Enhanced Inbox Styles ── */
+    .inbox-hero{
+        background:linear-gradient(135deg,#312e81 0%,#6366f1 50%,#8b5cf6 100%);
+        border-radius:1.25rem;margin-bottom:1.25rem;padding:1.75rem 2rem;
+        position:relative;overflow:hidden;
+        box-shadow:0 8px 32px rgba(99,102,241,0.22);
+    }
+    .inbox-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.06)}
+    .inbox-hero::after{content:'';position:absolute;bottom:-60px;left:30%;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.04)}
 
+    .hero-icon{
+        width:42px;height:42px;border-radius:12px;flex-shrink:0;
+        background:rgba(255,255,255,0.15);backdrop-filter:blur(4px);
+        display:flex;align-items:center;justify-content:center;
+        font-size:1.15rem;color:#fff;
+    }
+    .hero-title{font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1.2}
+    .hero-sub{font-size:.82rem;color:rgba(255,255,255,0.7);font-weight:500;margin-top:.25rem}
+    .stat-chip{
+        display:inline-flex;align-items:center;gap:6px;
+        background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);
+        border:1px solid rgba(255,255,255,0.25);border-radius:100px;
+        padding:.4rem 1rem;font-size:.82rem;font-weight:700;color:#fff;
+    }
+    .filter-chip{background:rgba(245,158,11,0.25);border-color:rgba(245,158,11,0.4)}
+
+    /* Filter */
+    .filter-card{
+        background:#fff;border:1px solid #e2e8f0;border-radius:1rem;
+        padding:1.15rem 1.35rem;margin-bottom:1.25rem;box-shadow:0 1px 8px rgba(15,23,42,0.04);
+    }
+    .f-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:.35rem;display:block}
+
+    /* Summary bar */
+    .inbox-summary{
+        display:flex;align-items:center;justify-content:space-between;
+        padding:.65rem 1.25rem;background:#f8fafc;border:1px solid #f1f5f9;
+        border-radius:.75rem;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem;
+    }
+    .inbox-summary-text{font-size:.78rem;font-weight:600;color:#64748b}
+    .inbox-summary-text strong{color:#0f172a}
+
+    /* Desktop table */
+    .table-container{background:#fff;border:1px solid #e2e8f0;border-radius:1.15rem;overflow:hidden;box-shadow:0 2px 12px rgba(15,23,42,0.05)}
+    .inbox-table{width:100%;border-collapse:separate;border-spacing:0;table-layout:fixed}
+    .inbox-table thead tr{background:#f8fafc}
+    .inbox-table thead th{
+        font-size:.62rem;font-weight:800;text-transform:uppercase;letter-spacing:.05em;
+        color:#64748b;padding:.65rem .75rem;border-bottom:1.5px solid #e2e8f0;white-space:nowrap;
+    }
+    .inbox-table thead th:first-child{padding-left:1.25rem}
+    .inbox-table thead th:last-child{padding-right:1.25rem}
+    .inbox-table tbody tr{transition:background .15s;position:relative}
+    .inbox-table tbody tr:hover td{background:#f8fafc}
+    .inbox-table tbody td{
+        padding:.65rem .75rem;border-bottom:1px solid #f1f5f9;
+        vertical-align:top;font-size:.8rem;color:#334155;
+    }
+    .inbox-table tbody td:first-child{padding-left:1.25rem}
+    .inbox-table tbody td:last-child{padding-right:1.25rem}
+    .inbox-table tbody tr:last-child td{border-bottom:none}
+
+    .row-num{
+        width:24px;height:24px;background:#f1f5f9;border-radius:6px;
+        display:flex;align-items:center;justify-content:center;
+        font-size:.7rem;font-weight:700;color:#64748b;
+    }
+    .subject-cell .s-title{font-size:.78rem;font-weight:700;color:#0f172a;margin-bottom:2px;line-height:1.4;white-space:normal;word-break:break-word}
+    .subject-cell .s-num{font-size:.65rem;font-weight:600;color:#64748b;letter-spacing:.02em;font-family:'SFMono-Regular',Consolas,monospace;white-space:normal;word-break:break-word}
+    .agenda-pill{display:inline-flex;align-items:center;justify-content:center;padding:.2rem .4rem;border-radius:.3rem;background:#f1f5f9;color:#0f172a;font-size:.7rem;font-weight:700;font-family:'SFMono-Regular',Consolas,monospace;min-width:45px;white-space:nowrap}
+    .date-cell .d-date{font-weight:600;font-size:.8rem;color:#334155;white-space:nowrap}
+    .btn-open{display:inline-flex;align-items:center;justify-content:center;background:#eef2ff;color:#4f46e5;border:1px solid #e0e7ff;border-radius:.45rem;width:30px;height:30px;text-decoration:none;transition:all .15s;}
+    .btn-open:hover{background:#4f46e5;color:#fff;border-color:#4f46e5;transform:translateY(-1px);box-shadow:0 2px 8px rgba(79,70,229,0.25)}
+
+    /* Mobile cards */
+    .letter-card{
+        background:#fff;border:1.5px solid #e2e8f0;border-radius:1rem;
+        padding:1rem 1.15rem;margin-bottom:.7rem;text-decoration:none;
+        color:inherit;display:block;transition:all .18s;position:relative;overflow:hidden;
+    }
+    .letter-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:#e2e8f0;border-radius:4px 0 0 4px;transition:background .18s}
+    .letter-card:hover{border-color:#e0e7ff;box-shadow:0 6px 20px rgba(99,102,241,0.10);transform:translateY(-2px);color:inherit}
+    .letter-card:hover::before{background:#6366f1}
+    .letter-card.has-disp::before{background:#f59e0b}
+    .letter-card.has-disp{border-color:#fde68a}
+    .lc-no{font-size:.67rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#94a3b8;margin-bottom:.25rem;font-family:monospace}
+    .lc-subject{font-size:.9rem;font-weight:700;color:#0f172a;margin-bottom:.4rem;line-height:1.35}
+    .lc-meta{font-size:.75rem;color:#64748b;display:flex;flex-wrap:wrap;gap:.6rem;align-items:center}
+    .lc-meta i{font-size:.7rem}
+    .lc-open{font-size:.75rem;font-weight:700;color:#6366f1;display:flex;align-items:center;gap:4px}
+
+    /* Status pills */
+    .status-pill{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:.25rem .6rem;border-radius:100px;white-space:nowrap}
+    .sp-pending{background:#fef9c3;color:#92400e}
+    .sp-review{background:#e0e7ff;color:#4f46e5}
+    .sp-active{background:#f5f3ff;color:#8b5cf6}
+    .sp-done{background:#d1fae5;color:#065f46}
+    .sp-disp{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+    .disp-note{font-size:.7rem;color:#92400e;font-style:italic;line-height:1.3;margin-top:2px;max-width:180px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+    /* Empty */
+    .empty-state{text-align:center;padding:4rem 1rem}
+    .empty-icon-wrap{
+        width:80px;height:80px;background:#eef2ff;border-radius:1.25rem;
+        display:flex;align-items:center;justify-content:center;
+        margin:0 auto 1rem;font-size:2rem;color:#6366f1;
+    }
+    .e-title{font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:.3rem}
+    .e-sub{font-size:.84rem;color:#64748b}
+
+    /* Responsive */
+    .table-wrap{display:block}
+    .cards-wrap{display:none}
+    @media(max-width:900px){
+        .table-wrap{display:none}
+        .cards-wrap{display:block}
+        .inbox-hero{padding:1.35rem 1.25rem}
+        .hero-title{font-size:1.15rem}
+        .filter-card{padding:1rem}
+    }
+    @media(max-width:576px){
+        .inbox-hero{padding:1.15rem 1rem;border-radius:1rem;margin-bottom:1rem}
+        .hero-title{font-size:1.05rem}
+        .hero-sub{font-size:.75rem}
+        .stat-chip{font-size:.75rem;padding:.3rem .75rem}
+        .filter-card{padding:.85rem;border-radius:.85rem}
+        .letter-card{padding:.85rem 1rem;border-radius:.85rem}
+        .inbox-summary{padding:.5rem .85rem;border-radius:.6rem}
+    }
+</style>
+@endpush
+
+@section('content')
 
 {{-- ── HERO HEADER ── --}}
 <div class="inbox-hero">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3" style="position:relative;z-index:1;">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">
-                <div style="width:36px;height:36px;background:rgba(255,255,255,0.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.15rem;color:#fff;backdrop-filter:blur(4px);">
+                <div class="hero-icon">
                     <i class="bi bi-envelope-arrow-down-fill"></i>
                 </div>
                 <div class="hero-title">Surat Masuk Internal</div>
@@ -22,7 +155,7 @@
                 {{ $letters->total() }} Surat
             </div>
             @if(request('search') || request('status') || request('date_from'))
-            <div class="stat-chip" style="background:rgba(245,158,11,0.25);border-color:rgba(245,158,11,0.4);">
+            <div class="stat-chip filter-chip">
                 <i class="bi bi-funnel-fill"></i> Difilter
             </div>
             @endif
@@ -48,16 +181,32 @@
     </form>
 </div>
 
+{{-- ── SUMMARY BAR ── --}}
+@if($letters->total() > 0)
+<div class="inbox-summary">
+    <div class="inbox-summary-text">
+        Menampilkan <strong>{{ $letters->firstItem() }}–{{ $letters->lastItem() }}</strong> dari <strong>{{ $letters->total() }}</strong> surat
+    </div>
+    @if($letters->hasPages())
+    <div class="inbox-summary-text">
+        Halaman <strong>{{ $letters->currentPage() }}</strong> dari <strong>{{ $letters->lastPage() }}</strong>
+    </div>
+    @endif
+</div>
+@endif
+
 {{-- ── DESKTOP TABLE ── --}}
 <div class="table-wrap table-container">
     <table class="inbox-table">
         <thead>
             <tr>
-                <th style="width:50px;">#</th>
-                <th style="width:110px;">Tanggal</th>
-                <th>Perihal Surat</th>
-                <th style="width:280px;">Pengirim & Status</th>
-                <th style="width:110px;">Aksi</th>
+                <th style="width:105px;">No. Agenda</th>
+                <th style="width:100px;">Tgl. Terima</th>
+                <th style="width:180px;">Asal Surat</th>
+                <th>No. Surat & Perihal</th>
+                <th style="width:105px;">Tgl. Disposisi</th>
+                <th style="width:160px;">Tujuan Disposisi</th>
+                <th style="width:55px;text-align:center;">Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -92,11 +241,16 @@
                     $showUrl = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
                     $senderInitial = strtoupper(substr($letter->sender->name ?? 'A', 0, 1));
                 @endphp
+                @php
+                    $latestDisp = $letter->dispositions->sortByDesc('created_at')->first();
+                @endphp
                 <tr>
                     <td>
-                        <div class="row-num">
-                            {{ $loop->iteration + ($letters->currentPage() - 1) * $letters->perPage() }}
-                        </div>
+                        @if($letter->agenda_number)
+                            <span class="agenda-pill">{{ $letter->agenda_number }}</span>
+                        @else
+                            <span style="color:#cbd5e1;font-size:0.8rem;">—</span>
+                        @endif
                     </td>
                     <td>
                         <div class="date-cell">
@@ -104,23 +258,14 @@
                         </div>
                     </td>
                     <td>
-                        <div class="subject-cell">
-                            <div class="s-title">{{ $letter->subject }}</div>
-                            <div class="s-num" style="margin-bottom:0.25rem;">{{ $letter->letter_number ?: '— Belum ada nomor' }}</div>
-                            @if($letter->agenda_number)
-                                <div><span class="agenda-pill" style="display:inline-flex; align-items:center; gap:0.25rem; padding:0.2rem 0.5rem; border-radius:0.4rem; background:rgba(219,234,254,0.5); color:#1e40af; font-size:0.7rem; font-weight:600;"><i class="bi bi-hash"></i>Agenda: {{ $letter->agenda_number }}</span></div>
-                            @endif
-                        </div>
-                    </td>
-                    <td>
-                        <div class="d-flex flex-column gap-2 align-items-start">
-                            <div class="s-name fw-bold text-dark">{{ $letter->sender->unit->name ?? '—' }}</div>
+                        <div class="d-flex flex-column gap-1 align-items-start">
+                            <div class="fw-bold" style="font-size:0.8rem;color:#0f172a;">{{ $letter->sender->unit->name ?? '—' }}</div>
                             <div>
                                 @if($disp && $letter->status !== 'in_review_kasubag')
-                                    <span class="status-pill sp-disp m-0" style="display:inline-flex;margin-bottom:0.25rem !important;">
+                                    <span class="status-pill sp-disp m-0" style="display:inline-flex;margin-bottom:0.15rem !important;">
                                         <i class="bi bi-exclamation-circle-fill"></i> Disposisi dr. {{ $disp->fromUser->unit->name ?? $disp->fromUser->name }}
                                     </span>
-                                    <div class="disp-note mt-1" style="font-size:0.75rem;">"{{ \Illuminate\Support\Str::limit($disp->note, 50) }}"</div>
+                                    <div class="disp-note" title="{{ $disp->note }}">"{{ \Illuminate\Support\Str::limit($disp->note, 40) }}"</div>
                                 @else
                                     <span class="status-pill {{ $pillClass }} m-0">
                                         <i class="bi {{ $pillIcon }}"></i> {{ $pillText }}
@@ -130,14 +275,38 @@
                         </div>
                     </td>
                     <td>
-                        <a href="{{ $showUrl }}" class="btn-open">
-                            <i class="bi bi-eye-fill"></i> Buka
+                        <div class="subject-cell">
+                            <div class="s-num" style="margin-bottom:3px;color:#4f46e5;"><i class="bi bi-hash"></i> {{ $letter->letter_number ?: 'Belum ada nomor' }}</div>
+                            <div class="s-title" title="{{ $letter->subject }}">{{ $letter->subject }}</div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="date-cell">
+                            @if($latestDisp)
+                                <div class="d-date">{{ $latestDisp->created_at->format('d/m/Y') }}</div>
+                            @else
+                                <span style="font-size:0.8rem;color:#cbd5e1;">—</span>
+                            @endif
+                        </div>
+                    </td>
+                    <td>
+                        <div class="subject-cell">
+                            @if($latestDisp)
+                                <div class="fw-bold" style="font-size:0.75rem;color:#0f172a;"><i class="bi bi-geo-alt-fill" style="color:#ef4444;font-size:0.65rem;"></i> {{ $latestDisp->toUnit->name ?? $latestDisp->toUser->name ?? '—' }}</div>
+                            @else
+                                <span style="font-size:0.75rem;color:#64748b;">Belum didisposisi</span>
+                            @endif
+                        </div>
+                    </td>
+                    <td style="text-align:center;">
+                        <a href="{{ $showUrl }}" class="btn-open" title="Buka Detail">
+                            <i class="bi bi-chevron-right" style="font-size:0.9rem;margin:0;"></i>
                         </a>
                     </td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="5">
+                    <td colspan="7">
                         <div class="empty-state">
                             <div class="empty-icon-wrap"><i class="bi bi-inbox"></i></div>
                             <div class="e-title">Tidak ada surat masuk</div>
@@ -195,7 +364,7 @@
                 @else
                     <span class="status-pill {{ $pillClass }}"><i class="bi {{ $pillIcon }}"></i> {{ $pillText }}</span>
                 @endif
-                <span style="font-size:0.75rem;font-weight:700;color:var(--primary);display:flex;align-items:center;gap:4px;">
+                <span class="lc-open">
                     Buka <i class="bi bi-arrow-right-short" style="font-size:1rem;"></i>
                 </span>
             </div>

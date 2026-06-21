@@ -8,12 +8,12 @@
     .form-label { font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:0.5rem; }
     .form-control, .form-select { height:48px;border-radius:0.75rem;border:1.5px solid #e8edf4;background:#f8faff;font-size:0.95rem;font-weight:500;color:#0f172a;transition:all .2s; }
     textarea.form-control { height:auto;padding-top:0.75rem; }
-    .form-control:focus, .form-select:focus { border-color:#2563eb;background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,0.08);outline:none; }
+    .form-control:focus, .form-select:focus { border-color:#6366f1;background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,0.08);outline:none; }
     .form-control::placeholder { color:#94a3b8;font-weight:400; }
     
     /* Upload Box */
     .upload-box { background:#f8faff;border:2px dashed #cbd5e1;border-radius:1rem;padding:2rem 1.5rem;text-align:center;transition:all .2s;position:relative; }
-    .upload-box:hover { border-color:#93c5fd;background:#eff6ff; }
+    .upload-box:hover { border-color:#93c5fd;background:#eef2ff; }
     .upload-box .ub-icon { font-size:2.5rem;color:#94a3b8;margin-bottom:0.5rem;display:block;transition:color .2s; }
     .upload-box:hover .ub-icon { color:#3b82f6; }
     .upload-box .ub-title { font-weight:700;color:#334155;margin-bottom:0.25rem;font-size:1rem; }
@@ -21,7 +21,7 @@
     .upload-input { position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer; }
     
     /* Buttons */
-    .btn-submit { background:linear-gradient(135deg,#7e22ce,#2563eb);color:#fff;border:none;border-radius:0.75rem;font-size:0.9rem;font-weight:700;padding:0 2rem;height:48px;transition:all .2s;display:inline-flex;align-items:center;gap:0.5rem; }
+    .btn-submit { background:linear-gradient(135deg,#7e22ce,#6366f1);color:#fff;border:none;border-radius:0.75rem;font-size:0.9rem;font-weight:700;padding:0 2rem;height:48px;transition:all .2s;display:inline-flex;align-items:center;gap:0.5rem; }
     .btn-submit:hover { transform:translateY(-2px);box-shadow:0 8px 16px rgba(126,34,206,0.2);color:#fff; }
     
     /* Guide Panel */
@@ -37,7 +37,7 @@
     .page-title { font-size:1.5rem;font-weight:800;color:#0f172a;letter-spacing:-0.03em;margin-bottom:0.25rem; }
     .page-sub { font-size:0.85rem;color:#64748b; }
     .btn-back { display:inline-flex;align-items:center;gap:0.5rem;background:#f8faff;border:1.5px solid #e8edf4;color:#475569;border-radius:0.6rem;padding:0.45rem 1rem;font-size:0.85rem;font-weight:600;text-decoration:none;transition:all .2s; }
-    .btn-back:hover { background:#eff6ff;color:#2563eb;border-color:#bfdbfe; }
+    .btn-back:hover { background:#eef2ff;color:#6366f1;border-color:#c7d2fe; }
     
     /* Error Alert */
     .err-alert { background:#fef2f2;border:1px solid #fecaca;border-radius:0.75rem;padding:1rem 1.25rem;color:#991b1b;display:flex;gap:1rem;align-items:flex-start;margin-bottom:1.5rem; }
@@ -48,7 +48,7 @@
     .file-preview-item { background:#fff;border:1px solid #e8edf4;border-radius:0.75rem;padding:0.75rem 1rem;display:flex;align-items:center;gap:1rem;margin-bottom:0.5rem; }
     .fpi-icon { width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem; }
     .fpi-icon.pdf { background:#fef2f2;color:#dc2626; }
-    .fpi-icon.doc { background:#eff6ff;color:#2563eb; }
+    .fpi-icon.doc { background:#eef2ff;color:#6366f1; }
     .fpi-icon.other { background:#f8fafc;color:#64748b; }
     .fpi-info { flex-grow:1;overflow:hidden; }
     .fpi-name { font-weight:600;font-size:0.85rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
@@ -58,9 +58,9 @@
     .action-box { background:#f8faff;border:1px solid #e8edf4;border-radius:1rem;padding:1.5rem;margin-bottom:2rem; }
     .radio-card { display:flex;gap:1rem;padding:1rem;border-radius:0.75rem;border:1.5px solid #e8edf4;background:#fff;margin-bottom:0.75rem;cursor:pointer;transition:all .2s; }
     .radio-card:last-child { margin-bottom:0; }
-    .radio-card:hover { border-color:#bfdbfe;background:#eff6ff; }
-    .radio-card.active { border-color:#2563eb;background:#eff6ff;box-shadow:0 4px 12px rgba(37,99,235,0.08); }
-    .radio-card input { margin-top:3px;accent-color:#2563eb;width:1.1rem;height:1.1rem; }
+    .radio-card:hover { border-color:#c7d2fe;background:#eef2ff; }
+    .radio-card.active { border-color:#6366f1;background:#eef2ff;box-shadow:0 4px 12px rgba(99,102,241,0.08); }
+    .radio-card input { margin-top:3px;accent-color:#6366f1;width:1.1rem;height:1.1rem; }
     .radio-info strong { display:block;font-size:0.9rem;color:#0f172a;margin-bottom:2px; }
     .radio-info span { font-size:0.8rem;color:#64748b;line-height:1.4;display:block; }
 </style>

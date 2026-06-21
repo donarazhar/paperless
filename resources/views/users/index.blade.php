@@ -16,7 +16,7 @@
         };
     }
     function avatarColor($name) {
-        $colors = [['#dbeafe','#2563eb'],['#ede9fe','#7c3aed'],['#dcfce7','#16a34a'],['#fce7f3','#db2777'],['#fef9c3','#ca8a04'],['#ffedd5','#ea580c']];
+        $colors = [['#e0e7ff','#6366f1'],['#ede9fe','#8b5cf6'],['#dcfce7','#16a34a'],['#fce7f3','#db2777'],['#fef9c3','#ca8a04'],['#ffedd5','#ea580c']];
         return $colors[abs(crc32($name)) % count($colors)];
     }
 @endphp

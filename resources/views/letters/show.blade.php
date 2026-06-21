@@ -7,8 +7,8 @@
     $dispRecv = $letter->dispositions->sortByDesc('created_at')->first(fn($d) => $d->to_user_id === $user->id || $d->to_unit_id === $user->unit_id);
     $statusMap = [
         'pending_agenda'    => ['bg'=>'#fef9c3', 'color'=>'#92400e', 'border'=>'#fde68a', 'label'=>'Antre Agenda',    'icon'=>'bi-hourglass-split'],
-        'in_review_kasubag' => ['bg'=>'#dbeafe', 'color'=>'#1d4ed8', 'border'=>'#bfdbfe', 'label'=>'Review Kasubag',  'icon'=>'bi-eye-fill'],
-        'in_consideration'  => ['bg'=>'#ede9fe', 'color'=>'#7c3aed', 'border'=>'#ddd6fe', 'label'=>'Disposisi Aktif', 'icon'=>'bi-arrow-repeat'],
+        'in_review_kasubag' => ['bg'=>'#e0e7ff', 'color'=>'#4f46e5', 'border'=>'#c7d2fe', 'label'=>'Review Kasubag',  'icon'=>'bi-eye-fill'],
+        'in_consideration'  => ['bg'=>'#ede9fe', 'color'=>'#8b5cf6', 'border'=>'#ddd6fe', 'label'=>'Disposisi Aktif', 'icon'=>'bi-arrow-repeat'],
         'completed'         => ['bg'=>'#dcfce7', 'color'=>'#166534', 'border'=>'#bbf7d0', 'label'=>'Selesai',         'icon'=>'bi-check-circle-fill'],
         'draft'             => ['bg'=>'#f1f5f9', 'color'=>'#475569', 'border'=>'#e2e8f0', 'label'=>'Draft',           'icon'=>'bi-pencil'],
     ];

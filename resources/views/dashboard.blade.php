@@ -32,8 +32,8 @@
 <div class="row g-3 mb-4">
     <div class="col-6 col-lg-3">
         <a href="{{ route('letters.inbound') }}" class="stat-card d-block">
-            <div class="stat-icon" style="background:#eff6ff;">
-                <i class="bi bi-envelope-arrow-down-fill" style="color:#2563eb;"></i>
+            <div class="stat-icon" style="background:#eef2ff;">
+                <i class="bi bi-envelope-arrow-down-fill" style="color:#6366f1;"></i>
             </div>
             <div>
                 <div class="stat-label">Masuk Hari Ini</div>
@@ -115,8 +115,8 @@
             @forelse($notifications as $note)
                 <a href="{{ route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($note->letter_id)]) }}"
                    class="notif-item">
-                    <div class="notif-icon-wrap" style="background:#eff6ff;">
-                        <i class="bi {{ $note->icon }}" style="color:#2563eb;"></i>
+                    <div class="notif-icon-wrap" style="background:#eef2ff;">
+                        <i class="bi {{ $note->icon }}" style="color:#6366f1;"></i>
                     </div>
                     <div style="flex:1; overflow:hidden;">
                         <div class="notif-title text-truncate">{{ $note->letter_number }}</div>
@@ -165,13 +165,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 {
                     label: 'Surat Masuk',
                     data: @json($dataInbound),
-                    borderColor: '#2563eb',
+                    borderColor: '#6366f1',
                     backgroundColor: gradIn,
                     borderWidth: 2.5,
                     tension: 0.4,
                     fill: true,
                     pointBackgroundColor: '#fff',
-                    pointBorderColor: '#2563eb',
+                    pointBorderColor: '#6366f1',
                     pointBorderWidth: 2,
                     pointRadius: 4,
                 },

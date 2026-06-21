@@ -14,350 +14,437 @@
     @stack('styles')
     <style>
         :root {
-            --blue:        #2563eb;
-            --blue-dark:   #1d4ed8;
-            --blue-soft:   #eff6ff;
-            --blue-mid:    #dbeafe;
-            --bg:          #f4f6fb;
-            --text:        #0f172a;
-            --muted:       #64748b;
-            --border:      #e8edf4;
-            --white:       #ffffff;
-            --header-h:    72px;
+            --primary:#6366f1;--primary-dark:#4f46e5;--primary-light:#e0e7ff;
+            --accent:#06b6d4;--accent2:#8b5cf6;
+            --bg:#f4f6fb;--text:#0f172a;--muted:#64748b;
+            --border:#e8edf4;--white:#ffffff;--header-h:64px;
         }
+        *,*::before,*::after{box-sizing:border-box}
+        html{font-size:90%}
+        html,body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);overflow-x:hidden;min-height:100vh}
+        body{padding-top:var(--header-h)}
+        a{text-decoration:none;color:inherit}
 
-        *, *::before, *::after { box-sizing: border-box; }
-
-        html {
-            font-size: 90%;
+        /* ══ NAVBAR ══ */
+        .top-nav{
+            position:fixed;top:0;left:0;right:0;z-index:1030;
+            height:var(--header-h);
+            background:rgba(255,255,255,0.85);
+            backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+            border-bottom:1px solid rgba(0,0,0,0.06);
+            box-shadow:0 1px 8px rgba(15,23,42,0.04);
+            display:flex;align-items:center;
+            padding:0 1.25rem;
+            transition:box-shadow .3s;
         }
+        .top-nav.scrolled{box-shadow:0 4px 20px rgba(15,23,42,0.08)}
+        .nav-inner{display:flex;align-items:center;width:100%;max-width:1440px;margin:0 auto;gap:.5rem}
 
-        html, body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            overflow-x: hidden;
-            min-height: 100vh;
-        }
-        
-        body {
-            padding-top: var(--header-h);
-        }
+        /* Brand */
+        .nav-brand{display:flex;align-items:center;gap:.6rem;margin-right:1.5rem;flex-shrink:0}
+        .nav-brand img{width:34px;height:34px;object-fit:contain;border-radius:9px;border:1px solid var(--border);padding:3px;background:#fff}
+        .nav-brand-name{font-size:.88rem;font-weight:800;color:var(--text);line-height:1.15;letter-spacing:-.02em}
+        .nav-brand-sub{font-size:.62rem;font-weight:600;color:var(--muted)}
 
-        a { text-decoration: none; color: inherit; }
-
-        /* ═══════════════════════════
-           TOP NAVBAR
-        ═══════════════════════════ */
-        .top-navbar {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--border);
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            z-index: 1030;
-            min-height: var(--header-h);
-            box-shadow: 0 1px 12px rgba(15,23,42,0.03);
-            padding: 0.5rem 0;
+        /* Desktop nav links */
+        .nav-links{display:flex;align-items:center;gap:.25rem;flex:1}
+        .nav-link-item{
+            font-size:.8rem;font-weight:600;color:var(--muted);
+            padding:.45rem .75rem;border-radius:.55rem;
+            display:inline-flex;align-items:center;gap:.4rem;
+            transition:all .2s;cursor:pointer;position:relative;
+            white-space:nowrap;border:none;background:none;
         }
+        .nav-link-item:hover,.nav-link-item.active{color:var(--primary);background:var(--primary-light)}
+        .nav-link-item i{font-size:.85rem}
 
-        .navbar-brand img {
-            width: 38px; height: 38px;
-            object-fit: contain;
-            border-radius: 10px;
-            border: 1px solid var(--border);
-            padding: 4px;
-            background: #fff;
+        /* Dropdown */
+        .nav-dropdown{position:relative}
+        .nav-dd-menu{
+            position:absolute;top:calc(100% + 6px);left:0;min-width:180px;
+            background:#fff;border:1px solid var(--border);border-radius:.75rem;
+            box-shadow:0 10px 30px rgba(15,23,42,0.1);padding:.35rem;
+            opacity:0;visibility:hidden;transform:translateY(6px);
+            transition:all .2s cubic-bezier(.16,1,.3,1);z-index:100;
         }
-
-        .nav-link {
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--muted);
-            padding: 0.6rem 0.85rem !important;
-            border-radius: 0.6rem;
-            transition: all .2s;
-            display: inline-flex;
-            align-items: center;
+        .nav-dropdown:hover .nav-dd-menu,.nav-dropdown.open .nav-dd-menu{opacity:1;visibility:visible;transform:translateY(0)}
+        .nav-dd-item{
+            display:block;font-size:.8rem;font-weight:500;color:var(--text);
+            padding:.5rem .75rem;border-radius:.5rem;transition:all .15s;
         }
-
-        .nav-link:hover, .nav-link:focus {
-            color: var(--blue);
-            background: var(--blue-soft);
-        }
-
-        .nav-link.active {
-            color: var(--blue);
-            background: var(--blue-soft);
-        }
-
-        .dropdown-menu {
-            border: 1px solid var(--border);
-            box-shadow: 0 4px 20px rgba(15,23,42,0.06) !important;
-            border-radius: 0.85rem !important;
-            padding: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        .dropdown-item {
-            font-size: 0.85rem;
-            font-weight: 500;
-            color: var(--text);
-            border-radius: 0.5rem;
-            padding: 0.45rem 0.85rem;
-            transition: all .15s;
-        }
-
-        .dropdown-item:hover {
-            background: var(--blue-soft);
-            color: var(--blue);
-        }
+        .nav-dd-item:hover{background:var(--primary-light);color:var(--primary)}
 
         /* Profile */
-        .sb-avatar {
-            width: 36px; height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--blue), #7c3aed);
-            color: #fff;
-            font-size: 0.9rem;
-            font-weight: 700;
-            display: flex; align-items: center; justify-content: center;
-            flex-shrink: 0;
+        .nav-profile{margin-left:auto;position:relative;flex-shrink:0}
+        .profile-trigger{
+            display:flex;align-items:center;gap:.55rem;
+            padding:.3rem .5rem;border-radius:.6rem;cursor:pointer;
+            transition:background .2s;border:none;background:none;
+        }
+        .profile-trigger:hover{background:var(--primary-light)}
+        .profile-avatar{
+            width:32px;height:32px;border-radius:9px;
+            background:linear-gradient(135deg,var(--primary),var(--accent2));
+            color:#fff;font-size:.8rem;font-weight:700;
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        }
+        .profile-info{line-height:1.15;display:none}
+        .profile-name{font-size:.78rem;font-weight:700;color:var(--text)}
+        .profile-role{font-size:.62rem;font-weight:600;color:var(--muted)}
+        @media(min-width:1200px){.profile-info{display:block}}
+        .profile-dd{
+            position:absolute;top:calc(100% + 6px);right:0;min-width:200px;
+            background:#fff;border:1px solid var(--border);border-radius:.75rem;
+            box-shadow:0 10px 30px rgba(15,23,42,0.1);padding:.35rem;
+            opacity:0;visibility:hidden;transform:translateY(6px);
+            transition:all .2s cubic-bezier(.16,1,.3,1);z-index:100;
+        }
+        .nav-profile.open .profile-dd{opacity:1;visibility:visible;transform:translateY(0)}
+
+        /* Hamburger */
+        .hamburger{
+            display:none;width:36px;height:36px;border:none;background:none;
+            cursor:pointer;padding:0;margin-left:auto;border-radius:.5rem;
+            position:relative;flex-shrink:0;
+            transition:background .2s;
+        }
+        .hamburger:hover{background:var(--primary-light)}
+        .hamburger span{
+            display:block;width:20px;height:2px;background:var(--text);
+            position:absolute;left:8px;border-radius:2px;
+            transition:all .3s cubic-bezier(.68,-.55,.27,1.55);
+        }
+        .hamburger span:nth-child(1){top:10px}
+        .hamburger span:nth-child(2){top:17px}
+        .hamburger span:nth-child(3){top:24px}
+        .hamburger.active span:nth-child(1){top:17px;transform:rotate(45deg)}
+        .hamburger.active span:nth-child(2){opacity:0;transform:translateX(-8px)}
+        .hamburger.active span:nth-child(3){top:17px;transform:rotate(-45deg)}
+
+        /* Mobile overlay */
+        .mobile-overlay{
+            display:none;position:fixed;inset:0;background:rgba(15,23,42,0.4);
+            backdrop-filter:blur(4px);z-index:1028;
+            opacity:0;pointer-events:none;transition:opacity .3s;
+        }
+        .mobile-overlay.show{opacity:1;pointer-events:auto}
+
+        /* Mobile menu */
+        .mobile-menu{
+            display:none;position:fixed;
+            top:var(--header-h);left:0;right:0;bottom:0;
+            background:#fff;z-index:1029;
+            overflow-y:auto;padding:1rem;
+            transform:translateY(-10px);opacity:0;pointer-events:none;
+            transition:all .3s cubic-bezier(.16,1,.3,1);
+        }
+        .mobile-menu.show{transform:translateY(0);opacity:1;pointer-events:auto}
+        .mobile-menu .mm-section{margin-bottom:.35rem}
+        .mobile-menu .mm-link{
+            display:flex;align-items:center;gap:.6rem;
+            font-size:.88rem;font-weight:600;color:var(--text);
+            padding:.65rem .75rem;border-radius:.6rem;transition:all .15s;
+        }
+        .mobile-menu .mm-link:hover,.mobile-menu .mm-link.active{background:var(--primary-light);color:var(--primary)}
+        .mobile-menu .mm-link i{font-size:.95rem;width:1.25rem;text-align:center}
+        .mobile-menu .mm-divider{border-top:1px solid var(--border);margin:.75rem 0}
+        .mobile-menu .mm-profile{
+            display:flex;align-items:center;gap:.65rem;
+            padding:.75rem;background:#f8fafc;border-radius:.75rem;margin-bottom:.75rem;
+        }
+        .mobile-menu .mm-profile-avatar{
+            width:40px;height:40px;border-radius:10px;
+            background:linear-gradient(135deg,var(--primary),var(--accent2));
+            color:#fff;font-size:.95rem;font-weight:700;
+            display:flex;align-items:center;justify-content:center;flex-shrink:0;
+        }
+        .mobile-menu .mm-profile-name{font-size:.85rem;font-weight:700;color:var(--text)}
+        .mobile-menu .mm-profile-email{font-size:.7rem;color:var(--muted)}
+
+        /* Collapsible accordion */
+        .mm-accordion{}
+        .mm-acc-trigger{
+            display:flex;align-items:center;gap:.6rem;width:100%;
+            font-size:.85rem;font-weight:700;color:var(--text);
+            padding:.65rem .75rem;border-radius:.6rem;transition:all .2s;
+            border:none;background:none;cursor:pointer;text-align:left;
+        }
+        .mm-acc-trigger:hover{background:var(--primary-light);color:var(--primary)}
+        .mm-acc-trigger i.acc-icon{font-size:.95rem;width:1.25rem;text-align:center;flex-shrink:0}
+        .mm-acc-trigger .acc-chevron{
+            margin-left:auto;font-size:.65rem;color:var(--muted);
+            transition:transform .3s cubic-bezier(.4,0,.2,1);
+        }
+        .mm-acc-trigger.open .acc-chevron{transform:rotate(180deg)}
+        .mm-acc-trigger.open{color:var(--primary);background:var(--primary-light)}
+        .mm-acc-body{
+            max-height:0;overflow:hidden;
+            transition:max-height .35s cubic-bezier(.4,0,.2,1),padding .3s;
+            padding-left:2.25rem;
+        }
+        .mm-acc-body.open{max-height:300px}
+        .mm-acc-body .mm-link{font-size:.82rem;font-weight:500;padding:.5rem .75rem}
+
+        @media(max-width:991px){
+            .nav-links,.nav-profile{display:none!important}
+            .hamburger{display:flex;align-items:center;justify-content:center}
+            .mobile-overlay,.mobile-menu{display:block}
         }
 
-        .profile-btn {
-            padding: 0.35rem 0.6rem;
-            border-radius: 0.65rem;
-            transition: background .2s;
-        }
-        .profile-btn:hover { background: var(--blue-soft); }
-
-        /* ═══════════════════════════
-           MAIN WRAPPER
-        ═══════════════════════════ */
-        .main-wrapper {
-            max-width: 1440px;
-            margin: 0 auto;
-            padding: 1.5rem;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* ═══════════════════════════
-           GLOBAL COMPONENTS
-        ═══════════════════════════ */
-        .card {
-            border: 1px solid var(--border);
-            border-radius: 1rem;
-            box-shadow: 0 1px 6px rgba(15,23,42,0.04);
-            background: var(--white);
-            margin-bottom: 1.5rem;
-        }
-
-        .btn-primary {
-            background: var(--blue);
-            border-color: var(--blue);
-            font-weight: 600;
-            border-radius: 0.5rem;
-            padding: 0.5rem 1.25rem;
-            transition: background .15s, transform .1s, box-shadow .15s;
-        }
-
-        .btn-primary:hover {
-            background: var(--blue-dark);
-            border-color: var(--blue-dark);
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(37,99,235,0.25);
-        }
-
-        .form-control, .form-select {
-            border-radius: 0.5rem;
-            border: 1.5px solid var(--border);
-            padding: 0.6rem 1rem;
-            box-shadow: none !important;
-            font-size: 0.9rem;
-        }
-
-        .form-control:focus, .form-select:focus {
-            border-color: var(--blue);
-            box-shadow: 0 0 0 3px rgba(37,99,235,0.1) !important;
-        }
-
-        .table-borderless-custom th {
-            border-bottom: 1px solid var(--border);
-            color: var(--muted);
-            font-weight: 700;
-            text-transform: uppercase;
-            font-size: 0.72rem;
-            letter-spacing: 0.06em;
-            padding-bottom: 0.85rem;
-        }
-
-        .table-borderless-custom td {
-            border-bottom: 1px solid #f4f6fb;
-            vertical-align: middle;
-            padding: 0.85rem 0.5rem;
-        }
-
-        .badge {
-            font-weight: 600;
-            padding: 0.35em 0.75em;
-            border-radius: 6px;
-            font-size: 0.75rem;
-        }
-
-        @media (max-width: 991px) {
-            .navbar-collapse {
-                background: #fff;
-                padding: 1rem;
-                border-radius: 1rem;
-                box-shadow: 0 10px 25px rgba(15,23,42,0.05);
-                border: 1px solid var(--border);
-                margin-top: 1rem;
-            }
-            .nav-link { margin-bottom: 0.25rem; }
-        }
-
-        @media (max-width: 768px) {
-            .main-wrapper { padding: 1.25rem 1rem; }
-        }
+        /* ══ MAIN ══ */
+        .main-wrapper{max-width:1440px;margin:0 auto;padding:1.5rem;display:flex;flex-direction:column}
+        .card{border:1px solid var(--border);border-radius:1rem;box-shadow:0 1px 6px rgba(15,23,42,0.04);background:var(--white);margin-bottom:1.5rem}
+        .btn-primary{background:var(--primary);border-color:var(--primary);font-weight:600;border-radius:.5rem;padding:.5rem 1.25rem;transition:all .15s}
+        .btn-primary:hover{background:var(--primary-dark);border-color:var(--primary-dark);transform:translateY(-1px);box-shadow:0 4px 12px rgba(99,102,241,0.3)}
+        .form-control,.form-select{border-radius:.5rem;border:1.5px solid var(--border);padding:.6rem 1rem;box-shadow:none!important;font-size:.9rem}
+        .form-control:focus,.form-select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(99,102,241,0.1)!important}
+        .table-borderless-custom th{border-bottom:1px solid var(--border);color:var(--muted);font-weight:700;text-transform:uppercase;font-size:.72rem;letter-spacing:.06em;padding-bottom:.85rem}
+        .table-borderless-custom td{border-bottom:1px solid #f4f6fb;vertical-align:middle;padding:.85rem .5rem}
+        .badge{font-weight:600;padding:.35em .75em;border-radius:6px;font-size:.75rem}
+        .dropdown-menu{border:1px solid var(--border);box-shadow:0 4px 20px rgba(15,23,42,0.06)!important;border-radius:.85rem!important;padding:.5rem;margin-top:.5rem}
+        .dropdown-item{font-size:.85rem;font-weight:500;color:var(--text);border-radius:.5rem;padding:.45rem .85rem;transition:all .15s}
+        .dropdown-item:hover{background:var(--primary-light);color:var(--primary)}
+        @media(max-width:768px){.main-wrapper{padding:1.25rem 1rem}}
     </style>
 </head>
-
 <body>
     @php $role = Auth::user()->role ?? ''; @endphp
 
-    <!-- ═══ TOP NAVBAR ═══ -->
-    <nav class="navbar navbar-expand-lg top-navbar">
-        <div class="container-fluid px-3 px-xl-4">
+    <!-- ══ TOP NAVBAR ══ -->
+    <nav class="top-nav" id="topNav">
+        <div class="nav-inner">
             <!-- Brand -->
-            <a class="navbar-brand d-flex align-items-center gap-2 me-lg-4" href="{{ route('dashboard') }}">
+            <a class="nav-brand" href="{{ route('dashboard') }}">
                 <img src="{{ asset('img/logo.png') }}" alt="Logo">
                 <div>
-                    <div style="font-size:0.95rem;font-weight:800;line-height:1.2;color:var(--text);letter-spacing:-0.03em;">Paperless Mail</div>
-                    <div style="font-size:0.68rem;font-weight:600;color:var(--muted);">YPI Al Azhar</div>
+                    <div class="nav-brand-name">Paperless Mail</div>
+                    <div class="nav-brand-sub">YPI Al Azhar</div>
                 </div>
             </a>
 
-            <!-- Mobile Toggle -->
-            <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav" style="box-shadow:none;">
-                <i class="bi bi-list fs-2" style="color:var(--text);"></i>
-            </button>
+            <!-- Desktop Links -->
+            <div class="nav-links">
+                <a class="nav-link-item {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                    <i class="bi bi-grid-1x2-fill"></i> Dashboard
+                </a>
 
-            <!-- Nav Items -->
-            <div class="collapse navbar-collapse" id="mainNav">
-                <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-lg-2">
-                    <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                            <i class="bi bi-grid-1x2-fill me-2"></i> Dashboard
-                        </a>
-                    </li>
-                    
-                    <!-- Dropdown Surat Masuk -->
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {{ request()->routeIs('letters.inbound*') ? 'active' : '' }}" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-envelope-arrow-down-fill me-2"></i> Surat Masuk
-                        </a>
-                        <ul class="dropdown-menu border-0">
-                            <li><a class="dropdown-item" href="{{ route('letters.inbound') }}">Masuk Internal</a></li>
-                            <li><a class="dropdown-item" href="{{ route('letters.inboundExternal') }}">Masuk Eksternal</a></li>
-                        </ul>
-                    </li>
-
-                    <!-- Dropdown Surat Keluar -->
-                    @if(in_array($role, ['staf_tu', 'staf_unit']))
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {{ request()->routeIs('letters.outbound*') ? 'active' : '' }}" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-send-fill me-2"></i> Surat Keluar
-                        </a>
-                        <ul class="dropdown-menu border-0">
-                            <li><a class="dropdown-item" href="{{ route('letters.outbound') }}">Keluar Internal</a></li>
-                            <li><a class="dropdown-item" href="{{ route('letters.outboundExternal') }}">Keluar Eksternal</a></li>
-                        </ul>
-                    </li>
-                    @endif
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') ? 'active' : '' }}" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-bar-chart-line-fill me-2"></i> Laporan
-                        </a>
-                        <ul class="dropdown-menu border-0">
-                            <li><a class="dropdown-item" href="{{ route('letters.index') }}">Laporan Surat</a></li>
-                            <li><a class="dropdown-item" href="{{ route('letters.arsip') }}">Arsip Surat</a></li>
-                        </ul>
-                    </li>
-
-                    <!-- Dropdown Master Data -->
-                    @if($role === 'staf_tu')
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle {{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'active' : '' }}" href="#" data-bs-toggle="dropdown">
-                            <i class="bi bi-database-fill me-2"></i> Master Data
-                        </a>
-                        <ul class="dropdown-menu border-0">
-                            <li><a class="dropdown-item" href="{{ route('branches.index') }}">Cabang</a></li>
-                            <li><a class="dropdown-item" href="{{ route('units.index') }}">Unit Kerja</a></li>
-                            <li><a class="dropdown-item" href="{{ route('users.index') }}">Pengguna</a></li>
-                        </ul>
-                    </li>
-                    @endif
-                </ul>
-
-                <!-- Profile -->
-                <div class="d-flex align-items-center mt-3 mt-lg-0 border-top border-lg-0 pt-3 pt-lg-0 ms-lg-3">
-                    <div class="dropdown">
-                        <div class="d-flex align-items-center gap-2 profile-btn" data-bs-toggle="dropdown" style="cursor:pointer;">
-                            <div class="sb-avatar">{{ substr(Auth::user()->unit->name ?? 'A', 0, 1) }}</div>
-                            <div class="d-none d-xl-block" style="line-height:1.2;">
-                                <div style="font-size:0.82rem;font-weight:700;color:var(--text);">
-                                    {{ Auth::user()->unit->name ?? 'Administrator' }}
-                                    <span style="font-weight:600; color:var(--blue); font-size:0.7rem; margin-left:2px;">
-                                        &bull; {{ ucwords(str_replace('_', ' ', Auth::user()->role ?? '')) }}
-                                    </span>
-                                </div>
-                                <div style="font-size:0.65rem;font-weight:600;color:var(--muted); margin-top:2px;">{{ Auth::user()->email ?? '' }}</div>
-                            </div>
-                        </div>
-                        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
-                            <li><a class="dropdown-item py-2" href="{{ route('profile.edit') }}"><i class="bi bi-person-fill me-2 text-primary"></i>Profil Akun</a></li>
-                            <li><hr class="dropdown-divider my-1"></li>
-                            <li>
-                                <form method="POST" action="{{ route('logout') }}">
-                                    @csrf
-                                    <button class="dropdown-item py-2 text-danger"><i class="bi bi-box-arrow-right me-2"></i>Keluar</button>
-                                </form>
-                            </li>
-                        </ul>
+                <div class="nav-dropdown">
+                    <button class="nav-link-item {{ request()->routeIs('letters.inbound*') ? 'active' : '' }}">
+                        <i class="bi bi-envelope-arrow-down-fill"></i> Surat Masuk <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
+                    </button>
+                    <div class="nav-dd-menu">
+                        <a class="nav-dd-item" href="{{ route('letters.inbound') }}">Masuk Internal</a>
+                        <a class="nav-dd-item" href="{{ route('letters.inboundExternal') }}">Masuk Eksternal</a>
                     </div>
                 </div>
+
+                @if(in_array($role, ['staf_tu', 'staf_unit']))
+                <div class="nav-dropdown">
+                    <button class="nav-link-item {{ request()->routeIs('letters.outbound*') ? 'active' : '' }}">
+                        <i class="bi bi-send-fill"></i> Surat Keluar <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
+                    </button>
+                    <div class="nav-dd-menu">
+                        <a class="nav-dd-item" href="{{ route('letters.outbound') }}">Keluar Internal</a>
+                        <a class="nav-dd-item" href="{{ route('letters.outboundExternal') }}">Keluar Eksternal</a>
+                    </div>
+                </div>
+                @endif
+
+                <div class="nav-dropdown">
+                    <button class="nav-link-item {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') ? 'active' : '' }}">
+                        <i class="bi bi-bar-chart-line-fill"></i> Laporan <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
+                    </button>
+                    <div class="nav-dd-menu">
+                        <a class="nav-dd-item" href="{{ route('letters.index') }}">Laporan Surat</a>
+                        <a class="nav-dd-item" href="{{ route('letters.arsip') }}">Arsip Surat</a>
+                    </div>
+                </div>
+
+                @if($role === 'staf_tu')
+                <div class="nav-dropdown">
+                    <button class="nav-link-item {{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'active' : '' }}">
+                        <i class="bi bi-database-fill"></i> Master Data <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
+                    </button>
+                    <div class="nav-dd-menu">
+                        <a class="nav-dd-item" href="{{ route('branches.index') }}">Cabang</a>
+                        <a class="nav-dd-item" href="{{ route('units.index') }}">Unit Kerja</a>
+                        <a class="nav-dd-item" href="{{ route('users.index') }}">Pengguna</a>
+                    </div>
+                </div>
+                @endif
             </div>
+
+            <!-- Profile Desktop -->
+            <div class="nav-profile" id="navProfile">
+                <button class="profile-trigger" id="profileTrigger">
+                    <div class="profile-avatar">{{ substr(Auth::user()->unit->name ?? 'A', 0, 1) }}</div>
+                    <div class="profile-info">
+                        <div class="profile-name">{{ Auth::user()->unit->name ?? 'Administrator' }}</div>
+                        <div class="profile-role">{{ ucwords(str_replace('_', ' ', $role)) }}</div>
+                    </div>
+                    <i class="bi bi-chevron-down" style="font-size:.6rem;color:var(--muted)"></i>
+                </button>
+                <div class="profile-dd">
+                    <a class="nav-dd-item" href="{{ route('profile.edit') }}"><i class="bi bi-person-fill me-2" style="color:var(--primary)"></i>Profil Akun</a>
+                    <div style="border-top:1px solid var(--border);margin:.3rem 0"></div>
+                    <form method="POST" action="{{ route('logout') }}">@csrf
+                        <button class="nav-dd-item w-100 text-start border-0 bg-transparent" style="color:var(--error)">
+                            <i class="bi bi-box-arrow-right me-2"></i>Keluar
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Hamburger -->
+            <button class="hamburger" id="hamburger" aria-label="Menu">
+                <span></span><span></span><span></span>
+            </button>
         </div>
     </nav>
 
-    <!-- ═══ MAIN CONTENT ═══ -->
-    <main class="main-wrapper">
-        <!-- Optional: We can add page header inside content area if needed, but since titles were moved out, we rely on yield -->
-        <div class="w-100">
-            @yield('content')
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+
+    <!-- Mobile Menu -->
+    <div class="mobile-menu" id="mobileMenu">
+        <div class="mm-profile">
+            <div class="mm-profile-avatar">{{ substr(Auth::user()->unit->name ?? 'A', 0, 1) }}</div>
+            <div>
+                <div class="mm-profile-name">{{ Auth::user()->unit->name ?? 'Administrator' }}</div>
+                <div class="mm-profile-email">{{ Auth::user()->email ?? '' }}</div>
+            </div>
         </div>
+
+        {{-- Dashboard (no accordion needed) --}}
+        <div class="mm-section">
+            <a class="mm-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
+                <i class="bi bi-grid-1x2-fill"></i> Dashboard
+            </a>
+        </div>
+
+        {{-- Surat Masuk — collapsible --}}
+        <div class="mm-section mm-accordion">
+            <button class="mm-acc-trigger {{ request()->routeIs('letters.inbound*') ? 'open' : '' }}" data-acc="accInbound">
+                <i class="bi bi-envelope-arrow-down-fill acc-icon"></i> Surat Masuk
+                <i class="bi bi-chevron-down acc-chevron"></i>
+            </button>
+            <div class="mm-acc-body {{ request()->routeIs('letters.inbound*') ? 'open' : '' }}" id="accInbound">
+                <a class="mm-link" href="{{ route('letters.inbound') }}"><i class="bi bi-envelope-fill"></i> Internal</a>
+                <a class="mm-link" href="{{ route('letters.inboundExternal') }}"><i class="bi bi-envelope-open-fill"></i> Eksternal</a>
+            </div>
+        </div>
+
+        {{-- Surat Keluar — collapsible --}}
+        @if(in_array($role, ['staf_tu', 'staf_unit']))
+        <div class="mm-section mm-accordion">
+            <button class="mm-acc-trigger {{ request()->routeIs('letters.outbound*') ? 'open' : '' }}" data-acc="accOutbound">
+                <i class="bi bi-send-fill acc-icon"></i> Surat Keluar
+                <i class="bi bi-chevron-down acc-chevron"></i>
+            </button>
+            <div class="mm-acc-body {{ request()->routeIs('letters.outbound*') ? 'open' : '' }}" id="accOutbound">
+                <a class="mm-link" href="{{ route('letters.outbound') }}"><i class="bi bi-send-fill"></i> Internal</a>
+                <a class="mm-link" href="{{ route('letters.outboundExternal') }}"><i class="bi bi-send-check-fill"></i> Eksternal</a>
+            </div>
+        </div>
+        @endif
+
+        {{-- Laporan — collapsible --}}
+        <div class="mm-section mm-accordion">
+            <button class="mm-acc-trigger {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') ? 'open' : '' }}" data-acc="accLaporan">
+                <i class="bi bi-bar-chart-line-fill acc-icon"></i> Laporan
+                <i class="bi bi-chevron-down acc-chevron"></i>
+            </button>
+            <div class="mm-acc-body {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') ? 'open' : '' }}" id="accLaporan">
+                <a class="mm-link" href="{{ route('letters.index') }}"><i class="bi bi-bar-chart-line-fill"></i> Laporan Surat</a>
+                <a class="mm-link" href="{{ route('letters.arsip') }}"><i class="bi bi-archive-fill"></i> Arsip Surat</a>
+            </div>
+        </div>
+
+        {{-- Master Data — collapsible --}}
+        @if($role === 'staf_tu')
+        <div class="mm-section mm-accordion">
+            <button class="mm-acc-trigger {{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'open' : '' }}" data-acc="accMaster">
+                <i class="bi bi-database-fill acc-icon"></i> Master Data
+                <i class="bi bi-chevron-down acc-chevron"></i>
+            </button>
+            <div class="mm-acc-body {{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'open' : '' }}" id="accMaster">
+                <a class="mm-link" href="{{ route('branches.index') }}"><i class="bi bi-building-fill"></i> Cabang</a>
+                <a class="mm-link" href="{{ route('units.index') }}"><i class="bi bi-diagram-3-fill"></i> Unit Kerja</a>
+                <a class="mm-link" href="{{ route('users.index') }}"><i class="bi bi-people-fill"></i> Pengguna</a>
+            </div>
+        </div>
+        @endif
+
+        <div class="mm-divider"></div>
+        <a class="mm-link" href="{{ route('profile.edit') }}"><i class="bi bi-person-fill"></i> Profil Akun</a>
+        <form method="POST" action="{{ route('logout') }}">@csrf
+            <button class="mm-link w-100 text-start border-0 bg-transparent" style="color:#ef4444">
+                <i class="bi bi-box-arrow-right"></i> Keluar
+            </button>
+        </form>
+    </div>
+
+    <!-- ══ MAIN CONTENT ══ -->
+    <main class="main-wrapper">
+        <div class="w-100">@yield('content')</div>
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            // SweetAlert Notifications
-            @if(session('success'))
-                Swal.fire({ toast:true, icon:'success', title:'{{ session("success") }}', position:'top-end', showConfirmButton:false, timer:3000, timerProgressBar:true });
-            @endif
-            @if(session('error'))
-                Swal.fire({ toast:true, icon:'error', title:'{{ session("error") }}', position:'top-end', showConfirmButton:false, timer:3000, timerProgressBar:true });
-            @endif
-        });
-    </script>
+    document.addEventListener('DOMContentLoaded', function(){
+        const hamburger=document.getElementById('hamburger');
+        const menu=document.getElementById('mobileMenu');
+        const overlay=document.getElementById('mobileOverlay');
+        const profile=document.getElementById('navProfile');
+        const profileTrigger=document.getElementById('profileTrigger');
 
+        function toggleMenu(){
+            const isOpen=hamburger.classList.toggle('active');
+            if(isOpen){menu.classList.add('show');overlay.classList.add('show');document.body.style.overflow='hidden'}
+            else{menu.classList.remove('show');overlay.classList.remove('show');document.body.style.overflow=''}
+        }
+        hamburger.addEventListener('click',toggleMenu);
+        overlay.addEventListener('click',toggleMenu);
+
+        // Close on link click
+        menu.querySelectorAll('a.mm-link').forEach(function(a){a.addEventListener('click',function(){if(hamburger.classList.contains('active'))toggleMenu()})});
+
+        // Collapsible accordion toggles
+        menu.querySelectorAll('.mm-acc-trigger').forEach(function(trigger){
+            trigger.addEventListener('click', function(){
+                var targetId = this.getAttribute('data-acc');
+                var body = document.getElementById(targetId);
+                var isOpen = this.classList.contains('open');
+                // Close all other accordions
+                menu.querySelectorAll('.mm-acc-trigger').forEach(function(t){
+                    if(t !== trigger){ t.classList.remove('open'); }
+                });
+                menu.querySelectorAll('.mm-acc-body').forEach(function(b){
+                    if(b !== body){ b.classList.remove('open'); }
+                });
+                // Toggle current
+                this.classList.toggle('open', !isOpen);
+                body.classList.toggle('open', !isOpen);
+            });
+        });
+
+        // Profile dropdown toggle
+        if(profileTrigger){profileTrigger.addEventListener('click',function(e){e.stopPropagation();profile.classList.toggle('open')})}
+        document.addEventListener('click',function(){if(profile)profile.classList.remove('open')});
+
+        // Scroll shadow
+        window.addEventListener('scroll',function(){document.getElementById('topNav').classList.toggle('scrolled',window.scrollY>10)});
+
+        // SweetAlert
+        @if(session('success'))
+            Swal.fire({toast:true,icon:'success',title:'{{ session("success") }}',position:'top-end',showConfirmButton:false,timer:3000,timerProgressBar:true});
+        @endif
+        @if(session('error'))
+            Swal.fire({toast:true,icon:'error',title:'{{ session("error") }}',position:'top-end',showConfirmButton:false,timer:3000,timerProgressBar:true});
+        @endif
+    });
+    </script>
     @stack('scripts')
 </body>
 </html>

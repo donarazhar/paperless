@@ -7,7 +7,7 @@
     .add-panel { background:#fff;border:1px solid #e8edf4;border-radius:1rem;padding:1.35rem 1.5rem;margin-bottom:1.25rem; }
     .add-panel .ap-title { font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.07em;color:#64748b;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem; }
     .add-panel .form-control { height:44px;border-radius:0.65rem;border:1.5px solid #e8edf4;background:#f8faff;font-size:0.9rem;font-weight:500;color:#0f172a;transition:all .2s; }
-    .add-panel .form-control:focus { border-color:#2563eb;background:#fff;box-shadow:0 0 0 4px rgba(37,99,235,0.08);outline:none; }
+    .add-panel .form-control:focus { border-color:#6366f1;background:#fff;box-shadow:0 0 0 4px rgba(99,102,241,0.08);outline:none; }
     .add-panel .form-control::placeholder { color:#94a3b8;font-weight:400; }
 
     /* Table */
@@ -23,10 +23,10 @@
 
     /* Inline edit input */
     .edit-input { height:38px;border-radius:0.55rem;border:1.5px solid #e8edf4;background:#f8faff;font-size:0.875rem;padding:0 0.75rem;min-width:160px;transition:all .2s; }
-    .edit-input:focus { border-color:#2563eb;background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,0.09);outline:none; }
+    .edit-input:focus { border-color:#6366f1;background:#fff;box-shadow:0 0 0 3px rgba(99,102,241,0.09);outline:none; }
 
     /* Buttons */
-    .btn-add  { display:inline-flex;align-items:center;gap:0.45rem;background:linear-gradient(135deg,#2563eb,#7c3aed);color:#fff;border:none;border-radius:0.65rem;font-size:0.875rem;font-weight:700;height:44px;padding:0 1.25rem;cursor:pointer;transition:all .15s;text-decoration:none; }
+    .btn-add  { display:inline-flex;align-items:center;gap:0.45rem;background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;border:none;border-radius:0.65rem;font-size:0.875rem;font-weight:700;height:44px;padding:0 1.25rem;cursor:pointer;transition:all .15s;text-decoration:none; }
     .btn-add:hover { opacity:0.88;transform:translateY(-1px);color:#fff; }
     .btn-save { display:inline-flex;align-items:center;gap:4px;background:#dcfce7;color:#166534;border:none;border-radius:0.5rem;font-size:0.76rem;font-weight:700;padding:0.35rem 0.75rem;cursor:pointer;transition:background .15s; }
     .btn-save:hover { background:#bbf7d0; }
@@ -34,7 +34,7 @@
     .btn-del:hover { background:#fee2e2; }
 
     /* Unit count badge */
-    .unit-badge { display:inline-flex;align-items:center;gap:4px;background:#eff6ff;color:#2563eb;font-size:0.72rem;font-weight:700;padding:0.25rem 0.65rem;border-radius:100px; }
+    .unit-badge { display:inline-flex;align-items:center;gap:4px;background:#eef2ff;color:#6366f1;font-size:0.72rem;font-weight:700;padding:0.25rem 0.65rem;border-radius:100px; }
 
     /* Mobile cards */
     .br-card { background:#fff;border:1px solid #e8edf4;border-radius:0.9rem;padding:1rem 1.1rem;margin-bottom:0.65rem; }
@@ -55,7 +55,7 @@
         <h1 class="h5 fw-bold mb-0" style="letter-spacing:-0.03em;">Manajemen Cabang</h1>
         <p class="text-muted mb-0" style="font-size:0.82rem;">Kelola data cabang dan unit di bawahnya</p>
     </div>
-    <span class="badge" style="background:#eff6ff;color:#2563eb;font-size:0.78rem;padding:0.45rem 0.9rem;border-radius:100px;">
+    <span class="badge" style="background:#eef2ff;color:#6366f1;font-size:0.78rem;padding:0.45rem 0.9rem;border-radius:100px;">
         <i class="bi bi-building me-1"></i>{{ $branches->count() }} cabang
     </span>
 </div>
