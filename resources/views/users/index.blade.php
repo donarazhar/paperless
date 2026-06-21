@@ -7,11 +7,14 @@
 @php
     function rolePill($role) {
         return match($role) {
-            'admin'              => ['class'=>'rp-admin',   'label'=>'Admin',           'icon'=>'bi-shield-fill-check'],
-            'kasubag_tu'         => ['class'=>'rp-kasubag', 'label'=>'Kasubag TU',      'icon'=>'bi-person-badge-fill'],
-            'staf_tu'            => ['class'=>'rp-staftu',  'label'=>'Staf TU',         'icon'=>'bi-person-fill'],
-            'staf_unit'          => ['class'=>'rp-stafunit','label'=>'Staf Unit',        'icon'=>'bi-person-fill'],
+            'admin'              => ['class'=>'rp-admin',   'label'=>'Admin',             'icon'=>'bi-shield-fill-check'],
+            'admin_sekretariat'  => ['class'=>'rp-staftu',  'label'=>'Admin Sekretariat', 'icon'=>'bi-calendar-plus'],
+            'subag_persuratan'   => ['class'=>'rp-staftu',  'label'=>'Subag Persuratan',  'icon'=>'bi-envelope-paper'],
+            'bagian_tu'          => ['class'=>'rp-kasubag', 'label'=>'Bagian TU',         'icon'=>'bi-diagram-3-fill'],
             'kepala_sekretariat' => ['class'=>'rp-kepala',  'label'=>'Kepala Sekretariat','icon'=>'bi-star-fill'],
+            'admin_unit'         => ['class'=>'rp-stafunit','label'=>'Admin Unit',        'icon'=>'bi-person-gear'],
+            'kepala_unit'        => ['class'=>'rp-kasubag', 'label'=>'Kepala Unit',       'icon'=>'bi-person-badge-fill'],
+            'sub_unit'           => ['class'=>'rp-stafunit','label'=>'Sub Unit',          'icon'=>'bi-person-check-fill'],
             default              => ['class'=>'rp-default', 'label'=>ucfirst($role),    'icon'=>'bi-person'],
         };
     }
@@ -65,8 +68,8 @@
                 <th style="width:40px;">#</th>
                 <th>Pengguna</th>
                 <th style="width:130px;">Role</th>
-                <th style="width:140px;">Cabang</th>
-                <th style="width:160px;">Unit</th>
+                <th style="width:130px;">Cabang</th>
+                <th style="width:180px;">Unit & Organ</th>
                 <th style="width:110px;">Aksi</th>
             </tr>
         </thead>
@@ -94,7 +97,10 @@
                         </span>
                     </td>
                     <td style="font-size:0.845rem;">{{ $user->unit->branch->name ?? '—' }}</td>
-                    <td style="font-size:0.845rem;">{{ $user->unit->name ?? '—' }}</td>
+                    <td style="font-size:0.845rem;">
+                        <strong>{{ $user->organ->name ?? '—' }}</strong><br>
+                        <span style="color:#64748b;">{{ $user->unit->name ?? '—' }}</span>
+                    </td>
                     <td>
                         @if($user->role === 'admin')
                             <span class="btn-lock"><i class="bi bi-lock-fill"></i> Dikunci</span>
@@ -103,12 +109,14 @@
                                 <a href="{{ route('users.edit', $user) }}" class="btn-edit">
                                     <i class="bi bi-pencil-fill"></i> Edit
                                 </a>
+                                @if(!in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu']))
                                 <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
                                     @csrf @method('DELETE')
                                     <button class="btn-del" onclick="return confirm('Yakin hapus pengguna ini?')">
                                         <i class="bi bi-trash3-fill"></i>
                                     </button>
                                 </form>
+                                @endif
                             </div>
                         @endif
                     </td>
@@ -146,15 +154,17 @@
             </div>
             <div class="uc-meta">
                 <span><i class="bi bi-building"></i> {{ $user->unit->branch->name ?? '—' }}</span>
-                <span><i class="bi bi-diagram-3-fill"></i> {{ $user->unit->name ?? '—' }}</span>
+                <span><i class="bi bi-diagram-3-fill"></i> {{ $user->unit->name ?? '—' }} ({{ $user->organ->name ?? '—' }})</span>
             </div>
             @if($user->role !== 'admin')
                 <div class="d-flex gap-2">
                     <a href="{{ route('users.edit', $user) }}" class="btn-edit"><i class="bi bi-pencil-fill"></i> Edit</a>
+                    @if(!in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu']))
                     <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline">
                         @csrf @method('DELETE')
                         <button class="btn-del" onclick="return confirm('Yakin hapus?')"><i class="bi bi-trash3-fill"></i> Hapus</button>
                     </form>
+                    @endif
                 </div>
             @else
                 <span class="btn-lock"><i class="bi bi-lock-fill"></i> Akun terlindungi</span>

@@ -6,38 +6,46 @@
     $user = Auth::user(); $role = $user->role;
     $dispRecv = $letter->dispositions->sortByDesc('created_at')->first(fn($d) => $d->to_user_id === $user->id || $d->to_unit_id === $user->unit_id);
     $statusMap = [
-        'pending_agenda'    => ['bg'=>'#fef9c3', 'color'=>'#92400e', 'border'=>'#fde68a', 'label'=>'Antre Agenda',    'icon'=>'bi-hourglass-split'],
-        'in_review_kasubag' => ['bg'=>'#e0e7ff', 'color'=>'#4f46e5', 'border'=>'#c7d2fe', 'label'=>'Review Kasubag',  'icon'=>'bi-eye-fill'],
-        'in_consideration'  => ['bg'=>'#ede9fe', 'color'=>'#8b5cf6', 'border'=>'#ddd6fe', 'label'=>'Disposisi Aktif', 'icon'=>'bi-arrow-repeat'],
-        'completed'         => ['bg'=>'#dcfce7', 'color'=>'#166534', 'border'=>'#bbf7d0', 'label'=>'Selesai',         'icon'=>'bi-check-circle-fill'],
-        'draft'             => ['bg'=>'#f1f5f9', 'color'=>'#475569', 'border'=>'#e2e8f0', 'label'=>'Draft',           'icon'=>'bi-pencil'],
+        'pending_approval'      => ['bg'=>'#ffedd5', 'color'=>'#c2410c', 'border'=>'#fed7aa', 'label'=>'Menunggu ACC Kepala', 'icon'=>'bi-clock'],
+        'pending_sending'       => ['bg'=>'#e0f2fe', 'color'=>'#0369a1', 'border'=>'#bae6fd', 'label'=>'Menunggu Dikirim',    'icon'=>'bi-send'],
+        'pending_agenda'        => ['bg'=>'#fef9c3', 'color'=>'#92400e', 'border'=>'#fde68a', 'label'=>'Antre Agenda',        'icon'=>'bi-journal-plus'],
+        'in_review_subag'       => ['bg'=>'#e0e7ff', 'color'=>'#4338ca', 'border'=>'#c7d2fe', 'label'=>'Review Subag',        'icon'=>'bi-envelope-paper'],
+        'in_review_bagian_tu'   => ['bg'=>'#fce7f3', 'color'=>'#be185d', 'border'=>'#fbcfe8', 'label'=>'Review Bagian TU',    'icon'=>'bi-eye-fill'],
+        'in_consideration'      => ['bg'=>'#ede9fe', 'color'=>'#8b5cf6', 'border'=>'#ddd6fe', 'label'=>'Disposisi Aktif',     'icon'=>'bi-arrow-repeat'],
+        'completed'             => ['bg'=>'#dcfce7', 'color'=>'#166534', 'border'=>'#bbf7d0', 'label'=>'Selesai',             'icon'=>'bi-check-circle-fill'],
+        'draft'                 => ['bg'=>'#f1f5f9', 'color'=>'#475569', 'border'=>'#e2e8f0', 'label'=>'Draft',               'icon'=>'bi-pencil'],
     ];
     $sm = $statusMap[$letter->status] ?? ['bg'=>'#f1f5f9', 'color'=>'#475569', 'border'=>'#e2e8f0', 'label'=>ucfirst($letter->status),'icon'=>'bi-info-circle'];
     
     $canDispose = false;
     if ($letter->status !== 'completed') {
-        if (in_array($role, ['kasubag_tu', 'kepala_sekretariat'])) {
-            if (in_array($letter->status, ['in_review_kasubag', 'in_consideration']) || ($dispRecv && $dispRecv->status === 'pending')) {
+        if (in_array($role, ['bagian_tu', 'kepala_sekretariat'])) {
+            if (in_array($letter->status, ['in_review_bagian_tu', 'in_consideration']) || ($dispRecv && $dispRecv->status === 'pending')) {
                 $canDispose = true;
             }
         } else {
-            if ($letter->to_unit_id == $user->unit_id) {
+            if ($letter->to_unit_id == $user->unit_id && in_array($role, ['admin_unit', 'kepala_unit'])) {
+                // If the letter is sent directly to the unit
                 $canDispose = true;
-                // Prevent Staf TU from manually disposing if it needs an agenda first
-                if ($role === 'staf_tu' && $letter->status === 'pending_agenda') {
-                    $canDispose = false;
-                }
             }
-            elseif ($dispRecv && $dispRecv->status === 'pending') {
+            elseif ($dispRecv && $dispRecv->status === 'pending' && in_array($role, ['kepala_unit', 'sub_unit'])) {
+                // For unit, only Kepala Unit and Sub Unit can make new dispositions off an incoming disposition
                 $canDispose = true;
             }
         }
     }
+
+    $isDispoToMyUnit = $dispRecv && $dispRecv->to_unit_id === $user->unit_id && is_null($dispRecv->to_user_id) && $dispRecv->status === 'pending';
+
     $hasAction = $letter->status !== 'completed' && (
-        ($dispRecv && $dispRecv->status==='pending')
-        || ($role==='staf_tu' && $letter->status==='pending_agenda')
+        ($role==='kepala_unit' && $letter->status==='pending_approval')
+        || ($role==='admin_unit' && $letter->status==='pending_sending')
+        || ($role==='admin_unit' && $isDispoToMyUnit)
+        || ($role==='admin_sekretariat' && $letter->status==='pending_agenda')
+        || ($role==='subag_persuratan' && $letter->status==='in_review_subag')
+        || ($role==='bagian_tu' && $letter->status==='in_review_bagian_tu')
+        || ($dispRecv && $dispRecv->status==='pending')
         || $canDispose
-        || ($role==='staf_tu' && !in_array($letter->status,['draft','pending_agenda','completed']))
     );
 @endphp
 
@@ -182,26 +190,85 @@
     
     {{-- KOLOM KIRI (Aksi & Timeline) --}}
     <div>
-        {{-- Perlu Tindakan --}}
-        @if($role === 'staf_tu' && $letter->status !== 'completed' && $dispRecv && $dispRecv->status==='pending' && in_array($dispRecv->fromUser->role ?? '', ['kasubag_tu', 'kepala_sekretariat']))
+        {{-- ACC Surat Keluar (Kepala Unit) --}}
+        @if($role === 'kepala_unit' && $letter->status === 'pending_approval')
+        <div class="action-box primary" style="background:#fff7ed; border-color:#fed7aa;">
+            <div class="action-title" style="color:#c2410c;"><i class="bi bi-check-circle-fill"></i> ACC Surat Keluar</div>
+            <div class="action-desc mb-3">Tinjau dokumen dan setujui surat untuk diteruskan ke Admin Unit.</div>
+            <form action="{{ route('letters.approve', $letter) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn-custom w-100" style="background:#f97316; color:#fff; border:none;"><i class="bi bi-check2-all"></i> ACC Surat Ini</button>
+            </form>
+        </div>
+        @endif
+
+        {{-- Kirim Surat (Admin Unit) --}}
+        @if($role === 'admin_unit' && $letter->status === 'pending_sending')
+        <div class="action-box primary" style="background:#f0f9ff; border-color:#bae6fd;">
+            <div class="action-title" style="color:#0369a1;"><i class="bi bi-send-fill"></i> Kirim Fisik Surat</div>
+            <div class="action-desc mb-3">Surat ini telah di-ACC Kepala Unit. Harap kirimkan fisik surat dan klik tombol di bawah.</div>
+            <form action="{{ route('letters.sendFinal', $letter) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn-custom w-100" style="background:#0ea5e9; color:#fff; border:none;"><i class="bi bi-rocket-takeoff-fill"></i> Konfirmasi Pengiriman</button>
+            </form>
+        </div>
+        @endif
+
+        {{-- Teruskan Disposisi ke Kepala (Admin Unit) --}}
+        @if($role === 'admin_unit' && $isDispoToMyUnit)
+        <div class="action-box primary">
+            <div class="action-title text-primary"><i class="bi bi-arrow-right-circle-fill"></i> Teruskan Disposisi</div>
+            <div class="action-desc mb-3">Ada disposisi masuk untuk unit Anda. Teruskan ke Kepala Unit untuk diproses.</div>
+            <form action="{{ route('letters.dispositions.forwardToKepala', $letter) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn-custom primary w-100"><i class="bi bi-person-up"></i> Teruskan ke Kepala Unit</button>
+            </form>
+        </div>
+        @endif
+
+        {{-- Selesaikan Disposisi --}}
+        @if($dispRecv && $dispRecv->status==='pending' && $dispRecv->to_user_id === $user->id)
         <div class="action-box warning">
             <div class="action-title text-warning-emphasis"><i class="bi bi-exclamation-circle-fill"></i> Tindakan Diperlukan</div>
             <div class="action-desc">Disposisi dari <strong>{{ $dispRecv->fromUser->name }}</strong>:<br><em style="color:#92400e;">"{{ $dispRecv->note }}"</em></div>
             <div class="d-flex flex-column gap-2">
-                <button class="btn-custom success w-100" data-bs-toggle="modal" data-bs-target="#acceptModal"><i class="bi bi-archive-fill"></i> Masukkan ke Arsip</button>
+                <button class="btn-custom success w-100" data-bs-toggle="modal" data-bs-target="#acceptModal"><i class="bi bi-check-circle-fill"></i> Tandai Selesai / Tanggapi</button>
             </div>
         </div>
         @endif
 
         {{-- Agenda --}}
-        @if($role==='staf_tu' && $letter->status==='pending_agenda')
+        @if($role==='admin_sekretariat' && $letter->status==='pending_agenda')
         <div class="action-box primary">
             <div class="action-title text-primary"><i class="bi bi-journal-plus"></i> Beri Nomor Agenda</div>
             <form action="{{ route('letters.agenda', $letter) }}" method="POST">
                 @csrf
                 <input type="text" name="agenda_number" class="form-control mb-2" placeholder="Nomor agenda…" required>
-                <textarea name="note" class="form-control mb-3" rows="2" placeholder="Catatan pengantar…"></textarea>
+                <textarea name="note" class="form-control mb-3" rows="2" placeholder="Catatan pengantar (opsional)…"></textarea>
                 <button type="submit" class="btn-custom primary w-100"><i class="bi bi-send-fill"></i> Agendakan & Teruskan</button>
+            </form>
+        </div>
+        @endif
+
+        {{-- Review Subag --}}
+        @if($role==='subag_persuratan' && $letter->status==='in_review_subag')
+        <div class="action-box primary">
+            <div class="action-title text-primary"><i class="bi bi-envelope-paper"></i> Review Subag Persuratan</div>
+            <div class="action-desc mb-3">Surat telah memiliki agenda. Silakan periksa kelengkapan, lalu teruskan ke Bagian TU.</div>
+            <form action="{{ route('letters.forwardToBagianTu', $letter) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn-custom primary w-100"><i class="bi bi-arrow-right"></i> Teruskan ke Bagian TU</button>
+            </form>
+        </div>
+        @endif
+
+        {{-- Selesaikan (Arsip Sekretariat) --}}
+        @if(in_array($role, ['bagian_tu', 'subag_persuratan']) && $letter->status !== 'completed' && !in_array($letter->status, ['draft', 'pending_approval', 'pending_sending', 'pending_agenda']))
+        <div class="action-box" style="background:#f0fdf4; border:1px solid #bbf7d0;">
+            <div class="action-title" style="color:#166534;"><i class="bi bi-archive-fill"></i> Arsipkan Surat</div>
+            <form action="{{ route('letters.complete', $letter) }}" method="POST">
+                @csrf
+                <button type="submit" class="btn-custom w-100" style="background:#22c55e; color:#fff; border:none;" onclick="return confirm('Surat ini sudah selesai diproses?')"><i class="bi bi-check-circle-fill"></i> Tandai Selesai (Arsip)</button>
             </form>
         </div>
         @endif
@@ -232,9 +299,17 @@
                 </div>
                 <div class="mb-3" id="selectUser" style="display:none;">
                     <select name="to_user_id" class="form-select">
-                        <option value="">— Pilih Pengguna —</option>
-                        @foreach(\App\Models\User::where('unit_id',$user->unit_id)->get() as $u)
-                            <option value="{{ $u->id }}">{{ $u->name }}</option>
+                        <option value="">— Pilih Organ / Jabatan —</option>
+                        @foreach(\App\Models\Unit::with('organs.users')->get() as $unit)
+                            @if($unit->organs->isNotEmpty())
+                                <optgroup label="{{ $unit->name }} (Cab. {{ $unit->branch->name ?? '' }})">
+                                    @foreach($unit->organs as $organ)
+                                        @foreach($organ->users as $u)
+                                            <option value="{{ $u->id }}">{{ $organ->name }} — {{ $u->name }}</option>
+                                        @endforeach
+                                    @endforeach
+                                </optgroup>
+                            @endif
                         @endforeach
                     </select>
                 </div>
@@ -321,20 +396,33 @@
 {{-- MODALS --}}
 @if($dispRecv)
 <div class="modal fade" id="acceptModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg" style="border-radius:1.5rem;">
-            <form action="{{ route('letters.complete', $letter) }}" method="POST">
-                @csrf
-                <div class="modal-body text-center p-4 pt-5">
-                    <div style="width:80px;height:80px;background:var(--green-soft);color:var(--green);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;">
-                        <i class="bi bi-check-lg" style="font-size:3rem;line-height:0;"></i>
+            <div class="modal-header bg-light border-0" style="border-radius:1.5rem 1.5rem 0 0;">
+                <h5 class="modal-title fw-bold">Tanggapi Disposisi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('letters.dispositions.respond', $dispRecv->id) }}" method="POST">
+                @csrf @method('PUT')
+                <div class="modal-body p-4">
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Tindakan / Status Lanjutan <span class="text-danger">*</span></label>
+                        <select name="action" class="form-select" required>
+                            <option value="">— Pilih Tindakan —</option>
+                            <option value="accepted">Selesai / Diterima</option>
+                            <option value="pertimbangan">Membutuhkan Pertimbangan</option>
+                            <option value="followup">Akan Ditindaklanjuti</option>
+                            <option value="rejected">Ditolak / Tidak Valid</option>
+                        </select>
                     </div>
-                    <h5 class="fw-bold mb-2">Arsipkan Surat?</h5>
-                    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:2rem;">Tugas atau arahan dari disposisi ini sudah selesai dan surat siap untuk diarsipkan secara permanen?</p>
-                    <div class="d-flex flex-column gap-2">
-                        <button type="submit" class="btn btn-success fw-bold py-2" style="border-radius:0.75rem;">Ya, Arsipkan</button>
-                        <button type="button" class="btn btn-light fw-bold py-2" style="border-radius:0.75rem;" data-bs-dismiss="modal">Batal</button>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Catatan Tanggapan <span class="text-danger">*</span></label>
+                        <textarea name="response_note" class="form-control" rows="3" placeholder="Tuliskan keterangan hasil proses Anda..." required></textarea>
                     </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light fw-bold" style="border-radius:0.75rem;" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary fw-bold" style="border-radius:0.75rem;"><i class="bi bi-save-fill"></i> Simpan Tanggapan</button>
                 </div>
             </form>
         </div>

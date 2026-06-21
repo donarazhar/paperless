@@ -75,24 +75,27 @@
             <div class="mb-4">
                 <label class="form-label">Role / Hak Akses <span class="text-danger">*</span></label>
                 <select name="role" class="form-select" required>
-                    <option value="staf_unit" selected>Staf Unit — Pembuat Surat</option>
+                    <option value="">— Pilih Role —</option>
+                    <option value="admin_sekretariat">Admin Sekretariat</option>
+                    <option value="subag_persuratan">Subag Persuratan (Admin Sekretariat)</option>
+                    <option value="bagian_tu">Bagian TU (Kuasa Disposisi Pusat)</option>
+                    <option value="kepala_sekretariat">Kepala Sekretariat (Monitoring)</option>
+                    <option value="admin_unit">Admin Unit (Staf TU Unit)</option>
+                    <option value="kepala_unit">Kepala Unit (Pimpinan Unit)</option>
+                    <option value="sub_unit">Sub Unit (Wakil/Pimpinan Divisi)</option>
                 </select>
-                <div style="font-size:0.72rem;color:#94a3b8;margin-top:6px;display:flex;gap:4px;align-items:center;">
-                    <i class="bi bi-info-circle text-primary"></i> Saat ini hanya dapat membuat akun Staf Unit.
-                </div>
             </div>
 
             <div class="mb-4">
-                <label class="form-label">Penempatan Unit <span class="text-danger">*</span></label>
-                <select name="unit_id" class="form-select" required>
-                    <option value="">— Pilih Unit —</option>
-                    @foreach($units as $unit)
-                        @if($unit->name === 'Administrator') @continue @endif
-                        <option value="{{ $unit->id }}">{{ $unit->name }} (Cab. {{ $unit->branch->name ?? '-' }})</option>
+                <label class="form-label">Penempatan Organ (Jabatan) <span class="text-danger">*</span></label>
+                <select name="organ_id" class="form-select" required>
+                    <option value="">— Pilih Organ / Jabatan —</option>
+                    @foreach($organs as $organ)
+                        <option value="{{ $organ->id }}">{{ $organ->name }} di Unit {{ $organ->unit->name }}</option>
                     @endforeach
                 </select>
-                @if($units->count() <= 1)
-                    <div class="warn-text"><i class="bi bi-exclamation-circle-fill"></i> Semua unit telah terisi. Buat unit baru terlebih dahulu.</div>
+                @if($organs->count() == 0)
+                    <div class="warn-text"><i class="bi bi-exclamation-circle-fill"></i> Belum ada organ/jabatan. Buat organ/jabatan terlebih dahulu.</div>
                 @endif
             </div>
 
@@ -109,7 +112,7 @@
             </div>
             <div class="info-row">
                 <div class="info-icon"><i class="bi bi-person-fill"></i></div>
-                <div><strong>Staf Unit</strong> — Pengguna yang dapat membuat dan mengirim surat keluar internal dari unitnya.</div>
+                <div>Setiap peran memiliki otoritas yang berbeda sesuai dengan <strong>Workflow Surat</strong> di sistem.</div>
             </div>
             <div class="info-row">
                 <div class="info-icon"><i class="bi bi-building-fill"></i></div>

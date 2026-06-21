@@ -26,26 +26,43 @@ class DashboardController extends Controller
         $unreadCount = 0;
         $withDisposition = 0;
 
-        if ($role === 'staf_unit') {
+        $unitId = $user->unit_id;
+
+        if (in_array($role, ['admin_unit', 'kepala_unit', 'sub_unit'])) {
             $inboundToday = Letter::whereDate('created_at', $today)
-                ->whereHas('dispositions', fn($d) => $d->where('to_user_id', $user->id)->orWhere('to_unit_id', $user->unit_id))
+                ->whereHas('dispositions', fn($d) => $d->where('to_user_id', $user->id)->orWhere('to_unit_id', $unitId))
                 ->count();
-            $outboundToday = Letter::whereDate('created_at', $today)->where('from_user_id', $user->id)->count();
-            $unreadCount = Letter::where('status', 'in_consideration')
-                ->whereHas('dispositions', fn($d) => $d->where('to_user_id', $user->id)->orWhere('to_unit_id', $user->unit_id))
+            $outboundToday = Letter::whereDate('created_at', $today)
+                ->whereHas('sender', fn($s) => $s->where('unit_id', $unitId))
                 ->count();
-            $withDisposition = Disposition::where('status', 'pending')->where('to_user_id', $user->id)->count();
-        } elseif ($role === 'staf_tu') {
-            $inboundToday = Letter::whereDate('created_at', $today)->where('to_unit_id', $user->unit_id)->count();
-            $unreadCount = Letter::where('status', 'pending_agenda')->where('to_unit_id', $user->unit_id)->count();
-            $withDisposition = 0; // Staf TU doesn't receive dispositions, they assign agenda
-        } elseif (in_array($role, ['kasubag_tu', 'kepala_sekretariat'])) {
-            $inboundToday = Letter::whereDate('created_at', $today)
-                ->where(function($q) use ($user) {
-                    $q->where('to_unit_id', $user->unit_id)
-                      ->orWhereHas('dispositions', fn($d) => $d->where('to_user_id', $user->id));
+
+            if ($role === 'kepala_unit') {
+                $unreadCount = Letter::where('status', 'pending_approval')
+                    ->whereHas('sender', fn($s) => $s->where('unit_id', $unitId))
+                    ->count();
+            } else {
+                $unreadCount = Letter::where('status', 'in_consideration')
+                    ->whereHas('dispositions', fn($d) => $d->where('to_user_id', $user->id)->orWhere('to_unit_id', $unitId))
+                    ->count();
+            }
+
+            $withDisposition = Disposition::where('status', 'pending')
+                ->where(function($q) use ($user, $unitId) {
+                    $q->where('to_user_id', $user->id)->orWhere('to_unit_id', $unitId);
                 })->count();
-            $unreadCount = Letter::where('status', 'in_review_kasubag')->where('to_unit_id', $user->unit_id)->count();
+        } elseif ($role === 'admin_sekretariat') {
+            $inboundToday = Letter::whereDate('created_at', $today)->count();
+            $unreadCount = Letter::where('status', 'pending_agenda')->count();
+        } elseif ($role === 'subag_persuratan') {
+            $inboundToday = Letter::whereDate('created_at', $today)->count();
+            $unreadCount = Letter::where('status', 'in_review_subag')->count();
+        } elseif ($role === 'bagian_tu') {
+            $inboundToday = Letter::whereDate('created_at', $today)->count();
+            $unreadCount = Letter::where('status', 'in_review_bagian_tu')->count();
+            $withDisposition = Disposition::where('status', 'pending')->where('to_user_id', $user->id)->count();
+        } elseif ($role === 'kepala_sekretariat') {
+            $inboundToday = Letter::whereDate('created_at', $today)->count();
+            $unreadCount = 0; // Hanya monitoring
             $withDisposition = Disposition::where('status', 'pending')->where('to_user_id', $user->id)->count();
         } else {
             $inboundToday = Letter::whereDate('created_at', $today)->count();
@@ -67,10 +84,14 @@ class DashboardController extends Controller
         }
 
         $letterNotes = collect();
-        if ($role === 'staf_tu') {
+        if ($role === 'kepala_unit') {
+            $letterNotes = Letter::where('status', 'pending_approval')->whereHas('sender', fn($s) => $s->where('unit_id', $unitId))->latest()->take(5)->get();
+        } elseif ($role === 'admin_sekretariat') {
             $letterNotes = Letter::where('status', 'pending_agenda')->latest()->take(5)->get();
-        } elseif ($role === 'kasubag_tu') {
-            $letterNotes = Letter::where('status', 'in_review_kasubag')->latest()->take(5)->get();
+        } elseif ($role === 'subag_persuratan') {
+            $letterNotes = Letter::where('status', 'in_review_subag')->latest()->take(5)->get();
+        } elseif ($role === 'bagian_tu') {
+            $letterNotes = Letter::where('status', 'in_review_bagian_tu')->latest()->take(5)->get();
         }
 
         $letterNotes = $letterNotes->map(fn($l) => (object) [
@@ -83,8 +104,8 @@ class DashboardController extends Controller
         ]);
 
         $dispoNotes = Disposition::where('status', 'pending')
-            ->when($role === 'staf_unit', fn($q) => $q->where('to_user_id', $user->id)->orWhere('to_unit_id', $user->unit_id))
-            ->when(in_array($role, ['kasubag_tu', 'kepala_sekretariat']), fn($q) => $q->where('to_user_id', $user->id))
+            ->when(in_array($role, ['admin_unit', 'kepala_unit', 'sub_unit']), fn($q) => $q->where('to_user_id', $user->id)->orWhere('to_unit_id', $unitId))
+            ->when(in_array($role, ['bagian_tu', 'kepala_sekretariat']), fn($q) => $q->where('to_user_id', $user->id))
             ->latest()->take(5)->with('fromUser', 'letter')->get()
             ->map(fn($d) => (object) [
                 'type' => 'disposition',

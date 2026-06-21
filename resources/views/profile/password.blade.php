@@ -3,123 +3,152 @@
 
 @push('styles')
 <style>
-    .profile-page{max-width:720px;margin:0 auto}
-    .profile-header{
-        background:linear-gradient(135deg,#6366f1 0%,#8b5cf6 50%,#06b6d4 100%);
-        border-radius:1.25rem;padding:2rem 2rem 1.5rem;margin-bottom:1.5rem;
-        position:relative;overflow:hidden;
-    }
-    .profile-header::before{
-        content:'';position:absolute;width:200px;height:200px;border-radius:50%;
-        background:rgba(255,255,255,0.08);top:-60px;right:-40px;
-    }
-    .profile-header::after{
-        content:'';position:absolute;width:120px;height:120px;border-radius:50%;
-        background:rgba(255,255,255,0.06);bottom:-30px;left:30px;
-    }
-    .ph-inner{position:relative;z-index:1;display:flex;align-items:center;gap:1.25rem}
-    .ph-avatar{
-        width:64px;height:64px;border-radius:1rem;flex-shrink:0;
-        background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.3);
-        display:flex;align-items:center;justify-content:center;
-        font-size:1.5rem;font-weight:800;color:#fff;
-        backdrop-filter:blur(10px);
-    }
-    .ph-name{font-size:1.25rem;font-weight:800;color:#fff;line-height:1.2}
-    .ph-role{
-        display:inline-flex;align-items:center;gap:4px;
-        font-size:.7rem;font-weight:600;color:rgba(255,255,255,0.8);
-        background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.2);
-        padding:.2rem .6rem;border-radius:100px;margin-top:.35rem;
-    }
-    .ph-email{font-size:.78rem;color:rgba(255,255,255,0.7);margin-top:.15rem}
-    .profile-tabs{
-        display:flex;gap:.35rem;background:#f1f5f9;
-        border-radius:.75rem;padding:.3rem;margin-bottom:1.5rem;
-    }
-    .profile-tab{
-        flex:1;padding:.6rem .75rem;border-radius:.55rem;
-        font-size:.82rem;font-weight:600;color:#64748b;
-        text-align:center;cursor:pointer;transition:all .2s;
-        border:none;background:none;display:flex;align-items:center;
-        justify-content:center;gap:.4rem;text-decoration:none;
-    }
-    .profile-tab:hover{color:#0f172a}
-    .profile-tab.active{background:#fff;color:#6366f1;box-shadow:0 1px 4px rgba(0,0,0,0.06)}
-    .profile-tab i{font-size:.9rem}
-    .profile-card{
-        background:#fff;border:1px solid #e8edf4;border-radius:1rem;
-        padding:1.75rem;box-shadow:0 1px 6px rgba(15,23,42,0.04);
-    }
-    .pc-title{font-size:1rem;font-weight:700;color:#0f172a;margin-bottom:.25rem}
-    .pc-desc{font-size:.8rem;color:#64748b;margin-bottom:1.5rem}
-    .field-group{margin-bottom:1.25rem}
-    .field-label{
-        display:block;font-size:.72rem;font-weight:700;
-        text-transform:uppercase;letter-spacing:.06em;
-        color:#0f172a;margin-bottom:.35rem;
-    }
-    .field-hint{font-size:.7rem;color:#94a3b8;margin-top:.25rem}
-    .field-input{
-        width:100%;height:2.85rem;border:1.5px solid #e2e8f0;
-        border-radius:.65rem;padding:0 .85rem;font-size:.88rem;
-        font-family:inherit;color:#0f172a;background:#f8fafc;
-        outline:none;transition:all .25s;
-    }
-    .field-input:focus{border-color:#6366f1;background:#fff;box-shadow:0 0 0 3px rgba(99,102,241,0.1)}
-    .field-input.is-invalid{border-color:#ef4444}
-    .field-error{color:#ef4444;font-size:.75rem;margin-top:.25rem}
-    .field-pw-wrap{position:relative}
-    .field-pw-wrap .pw-eye{
-        position:absolute;right:.75rem;top:50%;transform:translateY(-50%);
-        background:none;border:none;color:#94a3b8;cursor:pointer;
-        font-size:.95rem;padding:0;transition:color .2s;z-index:2;
-    }
-    .field-pw-wrap .pw-eye:hover{color:#6366f1}
-    .btn-profile-save{
-        display:inline-flex;align-items:center;gap:.4rem;
-        background:linear-gradient(135deg,#6366f1,#8b5cf6);
-        color:#fff;border:none;border-radius:.65rem;
-        padding:.65rem 1.5rem;font-size:.88rem;font-weight:700;
-        font-family:inherit;cursor:pointer;transition:all .2s;
-    }
-    .btn-profile-save:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(99,102,241,0.35)}
-    .btn-cancel{
-        display:inline-flex;align-items:center;gap:.4rem;
-        background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;
-        border-radius:.65rem;padding:.65rem 1.25rem;font-size:.85rem;
-        font-weight:600;font-family:inherit;cursor:pointer;transition:all .2s;
-        text-decoration:none;
-    }
-    .btn-cancel:hover{background:#e2e8f0;color:#0f172a}
-    .btn-row{display:flex;align-items:center;gap:.75rem;flex-wrap:wrap;margin-top:1.5rem}
+    .profile-page { max-width: 900px; margin: 0 auto; }
 
-    /* Password strength */
-    .pw-strength{margin-top:.35rem}
-    .pw-bar{height:4px;border-radius:4px;background:#e2e8f0;overflow:hidden}
-    .pw-bar-fill{height:100%;border-radius:4px;width:0;transition:all .3s}
-    .pw-text{font-size:.68rem;font-weight:600;margin-top:.2rem}
-
-    /* Security tips */
-    .security-tips{
-        background:#f8fafc;border:1px solid #f1f5f9;border-radius:.75rem;
-        padding:1rem 1.25rem;margin-bottom:1.5rem;
+    .profile-hero {
+        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #06b6d4 100%);
+        border-radius: 1.5rem; padding: 2.5rem 2rem 4.5rem;
+        position: relative; overflow: hidden; margin-bottom: -3.5rem;
     }
-    .st-title{font-size:.78rem;font-weight:700;color:#0f172a;margin-bottom:.5rem;display:flex;align-items:center;gap:.4rem}
-    .st-item{
-        display:flex;align-items:flex-start;gap:.4rem;
-        font-size:.75rem;color:#64748b;margin-bottom:.3rem;line-height:1.4;
+    .profile-hero::before {
+        content: ''; position: absolute; width: 260px; height: 260px; border-radius: 50%;
+        background: rgba(255,255,255,0.07); top: -80px; right: -60px; pointer-events: none;
     }
-    .st-item i{color:#94a3b8;font-size:.65rem;margin-top:3px;flex-shrink:0}
+    .profile-hero::after {
+        content: ''; position: absolute; width: 160px; height: 160px; border-radius: 50%;
+        background: rgba(255,255,255,0.05); bottom: -40px; left: 10%; pointer-events: none;
+    }
+    .ph-z { position: relative; z-index: 1; }
+    .ph-avatar-lg {
+        width: 80px; height: 80px; border-radius: 1.25rem; flex-shrink: 0;
+        background: rgba(255,255,255,0.22); border: 2.5px solid rgba(255,255,255,0.35);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 2rem; font-weight: 800; color: #fff; backdrop-filter: blur(12px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .ph-name { font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1.2; }
+    .ph-badge {
+        display: inline-flex; align-items: center; gap: 5px;
+        font-size: .7rem; font-weight: 600; color: rgba(255,255,255,0.9);
+        background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+        padding: .25rem .7rem; border-radius: 100px; margin-top: .4rem;
+    }
+    .ph-email { font-size: .8rem; color: rgba(255,255,255,0.65); margin-top: .2rem; }
 
-    @media(max-width:640px){
-        .profile-header{padding:1.5rem 1.25rem 1.25rem}
-        .ph-avatar{width:48px;height:48px;font-size:1.15rem}
-        .ph-name{font-size:1.05rem}
-        .profile-card{padding:1.25rem}
-        .profile-tabs{flex-direction:column}
-        .btn-row{flex-direction:column}
-        .btn-row .btn-profile-save,.btn-row .btn-cancel{width:100%;justify-content:center}
+    .profile-body { position: relative; z-index: 2; }
+
+    .profile-tabs {
+        display: flex; gap: .35rem; background: #fff;
+        border-radius: 1rem; padding: .3rem; margin-bottom: 1.25rem;
+        box-shadow: 0 4px 16px rgba(15,23,42,0.08); border: 1px solid #e8edf4;
+    }
+    .profile-tab {
+        flex: 1; padding: .65rem .75rem; border-radius: .75rem;
+        font-size: .83rem; font-weight: 600; color: #64748b;
+        text-align: center; cursor: pointer; transition: all .2s;
+        border: none; background: none; display: flex; align-items: center;
+        justify-content: center; gap: .4rem; text-decoration: none;
+    }
+    .profile-tab:hover { color: #0f172a; background: #f8fafc; }
+    .profile-tab.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; box-shadow: 0 3px 10px rgba(99,102,241,0.3); }
+    .profile-tab i { font-size: .9rem; }
+
+    .profile-grid { display: grid; grid-template-columns: 1fr 1.65fr; gap: 1.25rem; align-items: start; }
+
+    .profile-card {
+        background: #fff; border: 1px solid #e8edf4; border-radius: 1.25rem;
+        padding: 1.5rem; box-shadow: 0 2px 10px rgba(15,23,42,0.05);
+    }
+    .pc-section-title {
+        font-size: .7rem; font-weight: 700; text-transform: uppercase;
+        letter-spacing: .08em; color: #94a3b8; margin-bottom: 1rem;
+        display: flex; align-items: center; gap: .4rem;
+    }
+    .pc-section-title::after { content: ''; flex: 1; height: 1px; background: #f1f5f9; }
+
+    .info-item {
+        display: flex; align-items: center; gap: .85rem;
+        padding: .75rem .9rem; border-radius: .85rem;
+        transition: background .15s; margin-bottom: .4rem;
+    }
+    .info-item:hover { background: #f8fafc; }
+    .info-icon {
+        width: 36px; height: 36px; border-radius: .6rem; flex-shrink: 0;
+        display: flex; align-items: center; justify-content: center; font-size: .9rem;
+    }
+    .info-label { font-size: .68rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: .04em; }
+    .info-value { font-size: .9rem; font-weight: 700; color: #0f172a; margin-top: 1px; }
+
+    .field-group { margin-bottom: 1.15rem; }
+    .field-label {
+        display: block; font-size: .72rem; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .06em; color: #475569; margin-bottom: .4rem;
+    }
+    .field-input {
+        width: 100%; height: 2.8rem; border: 1.5px solid #e2e8f0;
+        border-radius: .7rem; padding: 0 .9rem; font-size: .875rem;
+        font-family: inherit; color: #0f172a; background: #f8fafc;
+        outline: none; transition: all .25s;
+    }
+    .field-pw-input {
+        width: 100%; height: 2.8rem; border: 1.5px solid #e2e8f0;
+        border-radius: .7rem; padding: 0 2.75rem 0 .9rem; font-size: .875rem;
+        font-family: inherit; color: #0f172a; background: #f8fafc;
+        outline: none; transition: all .25s;
+    }
+    .field-input:focus, .field-pw-input:focus { border-color: #6366f1; background: #fff; box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+    .field-input.is-invalid, .field-pw-input.is-invalid { border-color: #ef4444; box-shadow: 0 0 0 3px rgba(239,68,68,0.1); }
+    .field-error { color: #ef4444; font-size: .75rem; margin-top: .3rem; display: flex; align-items: center; gap: 4px; }
+    .field-hint { font-size: .7rem; color: #94a3b8; margin-top: .3rem; }
+
+    .field-pw-wrap { position: relative; }
+    .pw-eye {
+        position: absolute; right: .75rem; top: 50%; transform: translateY(-50%);
+        background: none; border: none; color: #94a3b8; cursor: pointer;
+        font-size: .95rem; padding: 0; transition: color .2s; z-index: 2;
+    }
+    .pw-eye:hover { color: #6366f1; }
+
+    .pw-strength { margin-top: .4rem; }
+    .pw-bar { height: 4px; border-radius: 4px; background: #e2e8f0; overflow: hidden; }
+    .pw-bar-fill { height: 100%; border-radius: 4px; width: 0; transition: all .3s; }
+    .pw-text { font-size: .68rem; font-weight: 600; margin-top: .2rem; }
+
+    .btn-save {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        color: #fff; border: none; border-radius: .7rem;
+        padding: .7rem 1.6rem; font-size: .875rem; font-weight: 700;
+        font-family: inherit; cursor: pointer; transition: all .2s;
+        box-shadow: 0 3px 12px rgba(99,102,241,0.3);
+    }
+    .btn-save:hover { transform: translateY(-2px); box-shadow: 0 7px 20px rgba(99,102,241,0.4); }
+    .btn-back {
+        display: inline-flex; align-items: center; gap: .4rem;
+        background: #f1f5f9; color: #64748b; border: 1.5px solid #e2e8f0;
+        border-radius: .7rem; padding: .7rem 1.25rem; font-size: .85rem;
+        font-weight: 600; font-family: inherit; cursor: pointer; transition: all .2s;
+        text-decoration: none;
+    }
+    .btn-back:hover { background: #e2e8f0; color: #0f172a; }
+    .btn-row { display: flex; align-items: center; gap: .75rem; flex-wrap: wrap; margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid #f1f5f9; }
+
+    .tips-card {
+        background: linear-gradient(135deg, #f8faff, #fff);
+        border: 1px solid #e0e7ff; border-radius: 1rem; padding: 1.1rem 1.25rem;
+    }
+    .tip-item {
+        display: flex; align-items: flex-start; gap: .5rem;
+        font-size: .78rem; color: #64748b; margin-bottom: .5rem; line-height: 1.45;
+    }
+    .tip-item:last-child { margin-bottom: 0; }
+    .tip-item i { color: #6366f1; font-size: .75rem; margin-top: 2px; flex-shrink: 0; }
+
+    @media (max-width: 768px) {
+        .profile-hero { padding: 1.75rem 1.25rem 4rem; }
+        .profile-grid { grid-template-columns: 1fr; }
+        .ph-avatar-lg { width: 64px; height: 64px; font-size: 1.5rem; }
+        .ph-name { font-size: 1.15rem; }
     }
 </style>
 @endpush
@@ -128,124 +157,159 @@
 @php
     $user = Auth::user();
     $initials = collect(explode(' ', $user->name))->take(2)->map(fn($w) => strtoupper(substr($w,0,1)))->join('');
-    $role = ucwords(str_replace('_', ' ', $user->role ?? ''));
+    $roleLabel = ucwords(str_replace('_', ' ', $user->role ?? ''));
 @endphp
 
 <div class="profile-page">
 
-    <!-- Header -->
-    <div class="profile-header">
-        <div class="ph-inner">
-            <div class="ph-avatar">{{ $initials }}</div>
+    {{-- Hero Banner --}}
+    <div class="profile-hero">
+        <div class="ph-z d-flex align-items-center gap-3">
+            <div class="ph-avatar-lg">{{ $initials }}</div>
             <div>
                 <div class="ph-name">{{ $user->name }}</div>
-                <div class="ph-role"><i class="bi bi-shield-check-fill"></i> {{ $role }} — {{ $user->unit->name ?? 'Administrator' }}</div>
-                <div class="ph-email">{{ $user->email }}</div>
+                <span class="ph-badge"><i class="bi bi-shield-check-fill"></i> {{ $roleLabel }}</span>
+                <div class="ph-email"><i class="bi bi-envelope-fill" style="font-size:.7rem;"></i> {{ $user->email }}</div>
             </div>
         </div>
     </div>
 
-    <!-- Tabs -->
-    <div class="profile-tabs">
-        <a class="profile-tab" href="{{ route('profile.edit') }}">
-            <i class="bi bi-person-fill"></i> Informasi Profil
-        </a>
-        <a class="profile-tab active" href="{{ route('profile.password') }}">
-            <i class="bi bi-lock-fill"></i> Ubah Password
-        </a>
-    </div>
+    <div class="profile-body">
 
-    <!-- Security Tips -->
-    <div class="security-tips">
-        <div class="st-title"><i class="bi bi-shield-lock-fill" style="color:#6366f1"></i> Tips Keamanan Password</div>
-        <div class="st-item"><i class="bi bi-check-circle-fill"></i> Minimal 6 karakter</div>
-        <div class="st-item"><i class="bi bi-check-circle-fill"></i> Kombinasi huruf besar, kecil, dan angka</div>
-        <div class="st-item"><i class="bi bi-check-circle-fill"></i> Jangan gunakan nama atau tanggal lahir</div>
-    </div>
+        {{-- Tabs --}}
+        <div class="profile-tabs">
+            <a class="profile-tab" href="{{ route('profile.edit') }}">
+                <i class="bi bi-person-fill"></i> Informasi Profil
+            </a>
+            <a class="profile-tab active" href="{{ route('profile.password') }}">
+                <i class="bi bi-lock-fill"></i> Ubah Password
+            </a>
+        </div>
 
-    <!-- Password Form -->
-    <div class="profile-card">
-        <div class="pc-title"><i class="bi bi-key-fill" style="color:#6366f1;margin-right:.35rem"></i> Ubah Password</div>
-        <div class="pc-desc">Masukkan password saat ini lalu buat password baru.</div>
+        {{-- Grid --}}
+        <div class="profile-grid">
 
-        <form method="POST" action="{{ route('profile.password.update') }}">
-            @csrf @method('PUT')
+            {{-- LEFT: Info + Tips --}}
+            <div class="d-flex flex-column gap-3">
+                <div class="profile-card">
+                    <div class="pc-section-title"><i class="bi bi-person-vcard-fill" style="color:#6366f1;"></i> Informasi Akun</div>
 
-            <div class="field-group">
-                <label class="field-label" for="current_password">Password Saat Ini</label>
-                <div class="field-pw-wrap">
-                    <input type="password" id="current_password" name="current_password"
-                        class="field-input {{ $errors->has('current_password') ? 'is-invalid' : '' }}"
-                        required placeholder="Masukkan password saat ini">
-                    <button type="button" class="pw-eye" data-target="current_password" tabindex="-1">
-                        <i class="bi bi-eye"></i>
-                    </button>
+                    <div style="display:flex; flex-direction:column; gap:.75rem; padding-top:.25rem;">
+                        <div style="display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:#374151; font-weight:600;">
+                            <i class="bi bi-building-fill" style="color:#6366f1; font-size:1.05rem; width:20px; text-align:center;"></i>
+                            {{ $user->unit->name ?? '—' }}
+                        </div>
+                        <div style="display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:#374151; font-weight:600;">
+                            <i class="bi bi-person-badge-fill" style="color:#16a34a; font-size:1.05rem; width:20px; text-align:center;"></i>
+                            {{ $roleLabel }}
+                        </div>
+                    </div>
                 </div>
-                @error('current_password')<div class="field-error">{{ $message }}</div>@enderror
-            </div>
 
-            <div class="field-group">
-                <label class="field-label" for="password">Password Baru</label>
-                <div class="field-pw-wrap">
-                    <input type="password" id="password" name="password"
-                        class="field-input {{ $errors->has('password') ? 'is-invalid' : '' }}"
-                        required placeholder="Minimal 6 karakter">
-                    <button type="button" class="pw-eye" data-target="password" tabindex="-1">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
-                @error('password')<div class="field-error">{{ $message }}</div>@enderror
-                <div class="pw-strength" id="pwStrength" style="display:none">
-                    <div class="pw-bar"><div class="pw-bar-fill" id="pwBarFill"></div></div>
-                    <div class="pw-text" id="pwText"></div>
+                <div class="tips-card">
+                    <div class="pc-section-title" style="margin-bottom:.75rem;">
+                        <i class="bi bi-shield-lock-fill" style="color:#6366f1;"></i> Tips Keamanan
+                    </div>
+                    <div class="tip-item"><i class="bi bi-check-circle-fill"></i> Gunakan minimal 8 karakter</div>
+                    <div class="tip-item"><i class="bi bi-check-circle-fill"></i> Kombinasi huruf besar, kecil & angka</div>
+                    <div class="tip-item"><i class="bi bi-check-circle-fill"></i> Tambahkan karakter khusus (!@#$)</div>
+                    <div class="tip-item"><i class="bi bi-x-circle-fill" style="color:#ef4444;"></i> Hindari nama atau tanggal lahir</div>
+                    <div class="tip-item"><i class="bi bi-x-circle-fill" style="color:#ef4444;"></i> Jangan gunakan ulang password lama</div>
                 </div>
             </div>
 
-            <div class="field-group">
-                <label class="field-label" for="password_confirmation">Konfirmasi Password Baru</label>
-                <div class="field-pw-wrap">
-                    <input type="password" id="password_confirmation" name="password_confirmation"
-                        class="field-input" required placeholder="Ulangi password baru">
-                    <button type="button" class="pw-eye" data-target="password_confirmation" tabindex="-1">
-                        <i class="bi bi-eye"></i>
-                    </button>
-                </div>
-                <div class="field-hint" id="matchHint"></div>
-            </div>
+            {{-- RIGHT: Password Form --}}
+            <div class="profile-card">
+                <div class="pc-section-title"><i class="bi bi-key-fill" style="color:#6366f1;"></i> Ubah Password</div>
 
-            <div class="btn-row">
-                <button type="submit" class="btn-profile-save">
-                    <i class="bi bi-shield-check"></i> Ubah Password
-                </button>
-                <a href="{{ route('profile.edit') }}" class="btn-cancel">
-                    <i class="bi bi-arrow-left"></i> Kembali
-                </a>
+                @if(session('success'))
+                    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:.75rem;padding:.75rem 1rem;margin-bottom:1.25rem;display:flex;align-items:center;gap:.6rem;font-size:.83rem;color:#166534;font-weight:600;">
+                        <i class="bi bi-check-circle-fill" style="color:#16a34a;"></i> {{ session('success') }}
+                    </div>
+                @endif
+
+                <form method="POST" action="{{ route('profile.password.update') }}">
+                    @csrf @method('PUT')
+
+                    <div class="field-group">
+                        <label class="field-label" for="current_password">Password Saat Ini</label>
+                        <div class="field-pw-wrap">
+                            <input type="password" id="current_password" name="current_password"
+                                class="field-pw-input {{ $errors->has('current_password') ? 'is-invalid' : '' }}"
+                                required placeholder="Masukkan password saat ini">
+                            <button type="button" class="pw-eye" data-target="current_password" tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        @error('current_password')
+                            <div class="field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label" for="password">Password Baru</label>
+                        <div class="field-pw-wrap">
+                            <input type="password" id="password" name="password"
+                                class="field-pw-input {{ $errors->has('password') ? 'is-invalid' : '' }}"
+                                required placeholder="Minimal 6 karakter">
+                            <button type="button" class="pw-eye" data-target="password" tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        @error('password')
+                            <div class="field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ $message }}</div>
+                        @enderror
+                        <div class="pw-strength" id="pwStrength" style="display:none">
+                            <div class="pw-bar"><div class="pw-bar-fill" id="pwBarFill"></div></div>
+                            <div class="pw-text" id="pwText"></div>
+                        </div>
+                    </div>
+
+                    <div class="field-group">
+                        <label class="field-label" for="password_confirmation">Konfirmasi Password Baru</label>
+                        <div class="field-pw-wrap">
+                            <input type="password" id="password_confirmation" name="password_confirmation"
+                                class="field-pw-input" required placeholder="Ulangi password baru">
+                            <button type="button" class="pw-eye" data-target="password_confirmation" tabindex="-1">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                        <div class="field-hint" id="matchHint"></div>
+                    </div>
+
+                    <div class="btn-row">
+                        <button type="submit" class="btn-save">
+                            <i class="bi bi-shield-check"></i> Ubah Password
+                        </button>
+                        <a href="{{ route('profile.edit') }}" class="btn-back">
+                            <i class="bi bi-arrow-left"></i> Kembali
+                        </a>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function(){
-    // Toggle password visibility
     document.querySelectorAll('.pw-eye').forEach(function(btn){
         btn.addEventListener('click', function(){
             var inp = document.getElementById(this.dataset.target);
             var ico = this.querySelector('i');
-            if(inp.type==='password'){inp.type='text';ico.className='bi bi-eye-slash'}
-            else{inp.type='password';ico.className='bi bi-eye'}
+            if(inp.type==='password'){inp.type='text';ico.className='bi bi-eye-slash';}
+            else{inp.type='password';ico.className='bi bi-eye';}
         });
     });
 
-    // Password strength
     var pwInput = document.getElementById('password');
     var strength = document.getElementById('pwStrength');
     var bar = document.getElementById('pwBarFill');
     var text = document.getElementById('pwText');
     pwInput.addEventListener('input', function(){
         var v = this.value;
-        if(!v){strength.style.display='none';return}
+        if(!v){strength.style.display='none';return;}
         strength.style.display='block';
         var s=0;
         if(v.length>=6)s++;if(v.length>=10)s++;
@@ -258,13 +322,15 @@ document.addEventListener('DOMContentLoaded', function(){
         text.style.color=colors[i];text.textContent=labels[i];
     });
 
-    // Confirm match
-    var confirm = document.getElementById('password_confirmation');
+    var confirmInput = document.getElementById('password_confirmation');
     var hint = document.getElementById('matchHint');
-    confirm.addEventListener('input', function(){
-        if(!this.value){hint.textContent='';return}
-        if(this.value===pwInput.value){hint.textContent='✓ Password cocok';hint.style.color='#16a34a'}
-        else{hint.textContent='✗ Password belum cocok';hint.style.color='#ef4444'}
+    confirmInput.addEventListener('input', function(){
+        if(!this.value){hint.textContent='';return;}
+        if(this.value===pwInput.value){
+            hint.innerHTML='<span style="color:#16a34a;font-weight:600;"><i class="bi bi-check-circle-fill"></i> Password cocok</span>';
+        } else {
+            hint.innerHTML='<span style="color:#ef4444;font-weight:600;"><i class="bi bi-x-circle-fill"></i> Password belum cocok</span>';
+        }
     });
 });
 </script>

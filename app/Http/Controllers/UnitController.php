@@ -8,8 +8,6 @@ class UnitController extends Controller
 {
     public function __construct()
     {
-        // Hanya staf_tu (Super Admin) yang boleh CRUD unit
-        $this->middleware(['auth', 'role:staf_tu']);
     }
 
     public function index()

@@ -162,7 +162,6 @@
         .mobile-menu .mm-profile-email{font-size:.7rem;color:var(--muted)}
 
         /* Collapsible accordion */
-        .mm-accordion{}
         .mm-acc-trigger{
             display:flex;align-items:center;gap:.6rem;width:100%;
             font-size:.85rem;font-weight:700;color:var(--text);
@@ -238,7 +237,7 @@
                     </div>
                 </div>
 
-                @if(in_array($role, ['staf_tu', 'staf_unit']))
+                @if(!in_array($role, ['kepala_sekretariat']))
                 <div class="nav-dropdown">
                     <button class="nav-link-item {{ request()->routeIs('letters.outbound*') ? 'active' : '' }}">
                         <i class="bi bi-send-fill"></i> Surat Keluar <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
@@ -260,7 +259,7 @@
                     </div>
                 </div>
 
-                @if($role === 'staf_tu')
+                @if(in_array($role, ['admin', 'admin_sekretariat', 'subag_persuratan', 'bagian_tu']))
                 <div class="nav-dropdown">
                     <button class="nav-link-item {{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'active' : '' }}">
                         <i class="bi bi-database-fill"></i> Master Data <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
@@ -268,6 +267,7 @@
                     <div class="nav-dd-menu">
                         <a class="nav-dd-item" href="{{ route('branches.index') }}">Cabang</a>
                         <a class="nav-dd-item" href="{{ route('units.index') }}">Unit Kerja</a>
+                        <a class="nav-dd-item" href="{{ route('organs.index') }}">Organ</a>
                         <a class="nav-dd-item" href="{{ route('users.index') }}">Pengguna</a>
                     </div>
                 </div>
@@ -335,7 +335,7 @@
         </div>
 
         {{-- Surat Keluar — collapsible --}}
-        @if(in_array($role, ['staf_tu', 'staf_unit']))
+        @if(!in_array($role, ['kepala_sekretariat']))
         <div class="mm-section mm-accordion">
             <button class="mm-acc-trigger {{ request()->routeIs('letters.outbound*') ? 'open' : '' }}" data-acc="accOutbound">
                 <i class="bi bi-send-fill acc-icon"></i> Surat Keluar
@@ -361,15 +361,16 @@
         </div>
 
         {{-- Master Data — collapsible --}}
-        @if($role === 'staf_tu')
+        @if(in_array($role, ['admin', 'admin_sekretariat', 'subag_persuratan', 'bagian_tu']))
         <div class="mm-section mm-accordion">
-            <button class="mm-acc-trigger {{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'open' : '' }}" data-acc="accMaster">
+            <button class="mm-acc-trigger {{ request()->routeIs('users.*', 'branches.*', 'units.*', 'organs.*') ? 'open' : '' }}" data-acc="accMaster">
                 <i class="bi bi-database-fill acc-icon"></i> Master Data
                 <i class="bi bi-chevron-down acc-chevron"></i>
             </button>
-            <div class="mm-acc-body {{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'open' : '' }}" id="accMaster">
+            <div class="mm-acc-body {{ request()->routeIs('users.*', 'branches.*', 'units.*', 'organs.*') ? 'open' : '' }}" id="accMaster">
                 <a class="mm-link" href="{{ route('branches.index') }}"><i class="bi bi-building-fill"></i> Cabang</a>
                 <a class="mm-link" href="{{ route('units.index') }}"><i class="bi bi-diagram-3-fill"></i> Unit Kerja</a>
+                <a class="mm-link" href="{{ route('organs.index') }}"><i class="bi bi-layers-fill"></i> Organ</a>
                 <a class="mm-link" href="{{ route('users.index') }}"><i class="bi bi-people-fill"></i> Pengguna</a>
             </div>
         </div>
@@ -435,16 +436,22 @@
 
         // Scroll shadow
         window.addEventListener('scroll',function(){document.getElementById('topNav').classList.toggle('scrolled',window.scrollY>10)});
-
-        // SweetAlert
-        @if(session('success'))
-            Swal.fire({toast:true,icon:'success',title:'{{ session("success") }}',position:'top-end',showConfirmButton:false,timer:3000,timerProgressBar:true});
-        @endif
-        @if(session('error'))
-            Swal.fire({toast:true,icon:'error',title:'{{ session("error") }}',position:'top-end',showConfirmButton:false,timer:3000,timerProgressBar:true});
-        @endif
     });
     </script>
+    @if(session('success'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({toast:true,icon:'success',title:'{!! session("success") !!}',position:'top-end',showConfirmButton:false,timer:3000,timerProgressBar:true});
+        });
+    </script>
+    @endif
+    @if(session('error'))
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            Swal.fire({toast:true,icon:'error',title:'{!! session("error") !!}',position:'top-end',showConfirmButton:false,timer:3000,timerProgressBar:true});
+        });
+    </script>
+    @endif
     @stack('scripts')
 </body>
 </html>

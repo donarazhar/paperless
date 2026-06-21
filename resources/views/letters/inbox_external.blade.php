@@ -82,9 +82,11 @@
         </div>
         <div class="d-flex align-items-center gap-2 flex-wrap">
             <div class="stat-chip"><i class="bi bi-envelope-exclamation-fill"></i> {{ $letters->total() }} surat</div>
+            @if(in_array(Auth::user()->role, ['admin', 'admin_sekretariat', 'subag_persuratan', 'bagian_tu']))
             <a href="{{ route('letters.createExternal') }}" class="btn-custom success" style="width:auto;">
                 <i class="bi bi-plus-lg"></i> Buat Surat Eksternal
             </a>
+            @endif
         </div>
     </div>
 </div>
@@ -130,9 +132,36 @@
                         $d->to_user_id === $authUser->id || $d->to_unit_id === $authUser->unit_id
                     );
                     $status = $letter->status;
-                    $pillClass = match($status) { 'pending_agenda'=>'sp-pending','in_review_kasubag'=>'sp-review','in_consideration'=>'sp-active','completed'=>'sp-done',default=>'sp-default' };
-                    $pillText = match($status) { 'pending_agenda'=>'Antre Agenda','in_review_kasubag'=>'Review Kasubag','in_consideration'=>'Disposisi Aktif','completed'=>'Selesai',default=>ucfirst($status) };
-                    $pillIcon = match($status) { 'pending_agenda'=>'bi-hourglass-split','in_review_kasubag'=>'bi-eye-fill','in_consideration'=>'bi-arrow-repeat','completed'=>'bi-check-circle-fill',default=>'bi-info-circle' };
+                    $pillClass = match($status) {
+                        'pending_approval'      => 'sp-pending',
+                        'pending_sending'       => 'sp-review',
+                        'pending_agenda'        => 'sp-pending',
+                        'in_review_subag'       => 'sp-review',
+                        'in_review_bagian_tu'   => 'sp-review',
+                        'in_consideration'      => 'sp-active',
+                        'completed'             => 'sp-done',
+                        default                 => 'sp-default',
+                    };
+                    $pillText = match($status) {
+                        'pending_approval'      => 'Menunggu ACC Kepala',
+                        'pending_sending'       => 'Menunggu Dikirim',
+                        'pending_agenda'        => 'Antre Agenda',
+                        'in_review_subag'       => 'Review Subag',
+                        'in_review_bagian_tu'   => 'Review Bagian TU',
+                        'in_consideration'      => 'Disposisi Aktif',
+                        'completed'             => 'Selesai',
+                        default                 => ucfirst(str_replace('_', ' ', $status)),
+                    };
+                    $pillIcon = match($status) {
+                        'pending_approval'      => 'bi-clock',
+                        'pending_sending'       => 'bi-send',
+                        'pending_agenda'        => 'bi-hourglass-split',
+                        'in_review_subag'       => 'bi-envelope-paper',
+                        'in_review_bagian_tu'   => 'bi-eye-fill',
+                        'in_consideration'      => 'bi-arrow-repeat',
+                        'completed'             => 'bi-check-circle-fill',
+                        default                 => 'bi-info-circle',
+                    };
                     $showUrl = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
                 @endphp
                 @php
@@ -214,8 +243,36 @@
                 $d->to_user_id === $authUser->id || $d->to_unit_id === $authUser->unit_id
             );
             $status = $letter->status;
-            $pillClass = match($status) { 'pending_agenda'=>'sp-pending','in_review_kasubag'=>'sp-review','in_consideration'=>'sp-active','completed'=>'sp-done',default=>'sp-default' };
-            $pillText = match($status) { 'pending_agenda'=>'Antre Agenda','in_review_kasubag'=>'Review Kasubag','in_consideration'=>'Disposisi Aktif','completed'=>'Selesai',default=>ucfirst($status) };
+                    $pillClass = match($status) {
+                        'pending_approval'      => 'sp-pending',
+                        'pending_sending'       => 'sp-review',
+                        'pending_agenda'        => 'sp-pending',
+                        'in_review_subag'       => 'sp-review',
+                        'in_review_bagian_tu'   => 'sp-review',
+                        'in_consideration'      => 'sp-active',
+                        'completed'             => 'sp-done',
+                        default                 => 'sp-default',
+                    };
+                    $pillText = match($status) {
+                        'pending_approval'      => 'Menunggu ACC Kepala',
+                        'pending_sending'       => 'Menunggu Dikirim',
+                        'pending_agenda'        => 'Antre Agenda',
+                        'in_review_subag'       => 'Review Subag',
+                        'in_review_bagian_tu'   => 'Review Bagian TU',
+                        'in_consideration'      => 'Disposisi Aktif',
+                        'completed'             => 'Selesai',
+                        default                 => ucfirst(str_replace('_', ' ', $status)),
+                    };
+                    $pillIcon = match($status) {
+                        'pending_approval'      => 'bi-clock',
+                        'pending_sending'       => 'bi-send',
+                        'pending_agenda'        => 'bi-hourglass-split',
+                        'in_review_subag'       => 'bi-envelope-paper',
+                        'in_review_bagian_tu'   => 'bi-eye-fill',
+                        'in_consideration'      => 'bi-arrow-repeat',
+                        'completed'             => 'bi-check-circle-fill',
+                        default                 => 'bi-info-circle',
+                    };
         @endphp
         <a href="{{ route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
            class="letter-card {{ $disp ? 'has-disp' : '' }}">
@@ -232,7 +289,7 @@
                 @if($disp)
                     <span class="status-pill sp-disp"><i class="bi bi-exclamation-circle-fill"></i> Ada Disposisi</span>
                 @else
-                    <span class="status-pill {{ $pillClass }}">{{ $pillText }}</span>
+                    <span class="status-pill {{ $pillClass }}"><i class="bi {{ $pillIcon }}"></i> {{ $pillText }}</span>
                 @endif
                 <span class="lc-open">Buka <i class="bi bi-arrow-right-short" style="font-size:1rem;"></i></span>
             </div>

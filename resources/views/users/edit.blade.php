@@ -93,20 +93,22 @@
             <div class="mb-4">
                 <label class="form-label">Role / Hak Akses <span class="text-danger">*</span></label>
                 <select name="role" class="form-select" required>
-                    <option value="staf_unit"          {{ old('role',$user->role)==='staf_unit'          ? 'selected':'' }}>Staf Unit — Pembuat Surat</option>
-                    <option value="staf_tu"            {{ old('role',$user->role)==='staf_tu'            ? 'selected':'' }}>Staf TU Sekretariat</option>
-                    <option value="kasubag_tu"         {{ old('role',$user->role)==='kasubag_tu'         ? 'selected':'' }}>Kasubag TU Sekretariat</option>
-                    <option value="kepala_sekretariat" {{ old('role',$user->role)==='kepala_sekretariat' ? 'selected':'' }}>Kepala Sekretariat</option>
+                    <option value="admin_sekretariat"        {{ old('role',$user->role)==='admin_sekretariat'        ? 'selected':'' }}>Admin Sekretariat</option>
+                    <option value="subag_persuratan"   {{ old('role',$user->role)==='subag_persuratan'   ? 'selected':'' }}>Subag Persuratan (Admin Sekretariat)</option>
+                    <option value="bagian_tu"          {{ old('role',$user->role)==='bagian_tu'          ? 'selected':'' }}>Bagian TU (Kuasa Disposisi Pusat)</option>
+                    <option value="kepala_sekretariat" {{ old('role',$user->role)==='kepala_sekretariat' ? 'selected':'' }}>Kepala Sekretariat (Monitoring)</option>
+                    <option value="admin_unit"         {{ old('role',$user->role)==='admin_unit'         ? 'selected':'' }}>Admin Unit (Staf TU Unit)</option>
+                    <option value="kepala_unit"        {{ old('role',$user->role)==='kepala_unit'        ? 'selected':'' }}>Kepala Unit (Pimpinan Unit)</option>
+                    <option value="sub_unit"           {{ old('role',$user->role)==='sub_unit'           ? 'selected':'' }}>Sub Unit (Wakil/Pimpinan Divisi)</option>
                 </select>
             </div>
 
             <div class="mb-4">
-                <label class="form-label">Penempatan Unit <span class="text-danger">*</span></label>
-                <select name="unit_id" class="form-select" required>
-                    @foreach($units as $unit)
-                        @if($unit->name === 'Administrator' && $user->unit_id != $unit->id) @continue @endif
-                        <option value="{{ $unit->id }}" {{ $user->unit_id == $unit->id ? 'selected':'' }}>
-                            {{ $unit->name }} (Cab. {{ $unit->branch->name ?? '-' }})
+                <label class="form-label">Penempatan Organ (Jabatan) <span class="text-danger">*</span></label>
+                <select name="organ_id" class="form-select" required>
+                    @foreach($organs as $organ)
+                        <option value="{{ $organ->id }}" {{ $user->organ_id == $organ->id ? 'selected':'' }}>
+                            {{ $organ->name }} di Unit {{ $organ->unit->name }}
                         </option>
                     @endforeach
                 </select>
@@ -125,19 +127,7 @@
             </div>
             <div class="info-row">
                 <div class="info-icon"><i class="bi bi-person-fill"></i></div>
-                <div><strong>Staf Unit</strong> — Membuat dan mengirim surat antar unit.</div>
-            </div>
-            <div class="info-row">
-                <div class="info-icon"><i class="bi bi-briefcase-fill"></i></div>
-                <div><strong>Staf TU</strong> — Input surat eksternal, memberi nomor agenda, dan meneruskan ke Kasubag.</div>
-            </div>
-            <div class="info-row">
-                <div class="info-icon"><i class="bi bi-person-badge-fill"></i></div>
-                <div><strong>Kasubag TU</strong> — Mereview surat dan membuat disposisi ke unit terkait.</div>
-            </div>
-            <div class="info-row">
-                <div class="info-icon"><i class="bi bi-star-fill"></i></div>
-                <div><strong>Kepala Sekretariat</strong> — Hak akses tertinggi pengelolaan surat di Sekretariat.</div>
+                <div>Setiap peran memiliki otoritas yang berbeda sesuai dengan <strong>Workflow Surat</strong> di sistem. Pastikan menetapkan role yang sesuai dengan jabatan pengguna.</div>
             </div>
         </div>
     </div>

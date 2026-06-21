@@ -15,24 +15,40 @@ class LetterPolicy
      */
     public function view(User $user, Letter $letter): bool
     {
-        // Staf TU Sekretariat, Kasubag TU, dan Kepala Sekretariat berfungsi sebagai pengelola sentral
-        // sehingga memiliki akses penuh untuk melihat semua laporan surat demi keperluan arsip dan pemantauan.
-        if (in_array($user->role, ['staf_tu', 'kasubag_tu', 'kepala_sekretariat'])) {
+        $userUnitId = $user->unit_id;
+
+        // Peran-peran di Sekretariat
+        if (in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu', 'kepala_sekretariat'])) {
+            // Mereka bisa melihat semua surat yang sudah masuk ke Sekretariat (pending_agenda dan seterusnya)
+            if (in_array($letter->status, ['draft', 'pending_approval'])) {
+                // Kecuali surat tersebut berasal dari unit mereka sendiri (Sekretariat juga bisa buat surat)
+                if ($letter->sender && $letter->sender->unit_id === $userUnitId) {
+                    return true;
+                }
+                return false;
+            }
             return true;
         }
 
-        // Staf Unit Biasa
-        // Bisa melihat surat yang ia kirim sendiri (outbox),
-        // atau surat yang didisposisikan ke unitnya / ke dirinya secara personal.
-        if ($user->role === 'staf_unit') {
-            return $letter->from_user_id === $user->id
-                || $letter->to_user_id === $user->id
-                || $letter->to_unit_id === $user->unit_id
-                || $letter->created_by_user_id === $user->id
-                || $letter->dispositions()->where(function ($q) use ($user) {
-                        $q->where('to_unit_id', $user->unit_id)
-                          ->orWhere('to_user_id', $user->id);
-                    })->exists();
+        // Peran-peran di tingkat Unit
+        if (in_array($user->role, ['admin_unit', 'kepala_unit', 'sub_unit'])) {
+            // Bisa melihat jika surat dibuat oleh unitnya
+            if ($letter->sender && $letter->sender->unit_id === $userUnitId) {
+                return true;
+            }
+            // Bisa melihat jika ditujukan ke unitnya
+            if ($letter->to_unit_id === $userUnitId) {
+                return true;
+            }
+            // Bisa melihat jika ditujukan ke dirinya secara spesifik
+            if ($letter->to_user_id === $user->id) {
+                return true;
+            }
+            // Bisa melihat jika ada disposisi yang masuk ke unit atau ke dirinya
+            return $letter->dispositions()->where(function ($q) use ($user, $userUnitId) {
+                $q->where('to_unit_id', $userUnitId)
+                  ->orWhere('to_user_id', $user->id);
+            })->exists();
         }
 
         return false;

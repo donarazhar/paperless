@@ -89,7 +89,7 @@
             <div class="stat-chip">
                 <i class="bi bi-send-fill"></i> {{ $letters->total() }} surat
             </div>
-            @if(in_array(Auth::user()->role, ['staf_unit','staf_tu']))
+            @if(!in_array(Auth::user()->role, ['kepala_sekretariat']))
                 <a href="{{ route('letters.create') }}" class="btn-custom success" style="width: auto;">
                     <i class="bi bi-plus-lg"></i> Buat Surat Baru
                 </a>
@@ -142,28 +142,37 @@
                 @php
                     $status = $letter->status;
                     $pillClass = match($status) {
-                        'draft'             => 'sp-draft',
-                        'pending_agenda'    => 'sp-pending',
-                        'in_review_kasubag' => 'sp-review',
-                        'in_consideration'  => 'sp-active',
-                        'completed'         => 'sp-done',
-                        default             => 'sp-default',
+                        'draft'                 => 'sp-draft',
+                        'pending_approval'      => 'sp-pending',
+                        'pending_sending'       => 'sp-review',
+                        'pending_agenda'        => 'sp-pending',
+                        'in_review_subag'       => 'sp-review',
+                        'in_review_bagian_tu'   => 'sp-review',
+                        'in_consideration'      => 'sp-active',
+                        'completed'             => 'sp-done',
+                        default                 => 'sp-default',
                     };
                     $pillText = match($status) {
-                        'draft'             => 'Draft',
-                        'pending_agenda'    => 'Antre Agenda',
-                        'in_review_kasubag' => 'Review Kasubag',
-                        'in_consideration'  => 'Disposisi Aktif',
-                        'completed'         => 'Selesai',
-                        default             => ucfirst($status),
+                        'draft'                 => 'Draft',
+                        'pending_approval'      => 'Menunggu ACC Kepala',
+                        'pending_sending'       => 'Menunggu Dikirim',
+                        'pending_agenda'        => 'Antre Agenda',
+                        'in_review_subag'       => 'Review Subag',
+                        'in_review_bagian_tu'   => 'Review Bagian TU',
+                        'in_consideration'      => 'Disposisi Aktif',
+                        'completed'             => 'Selesai',
+                        default                 => ucfirst(str_replace('_', ' ', $status)),
                     };
                     $pillIcon = match($status) {
-                        'draft'             => 'bi-pencil',
-                        'pending_agenda'    => 'bi-hourglass-split',
-                        'in_review_kasubag' => 'bi-eye-fill',
-                        'in_consideration'  => 'bi-arrow-repeat',
-                        'completed'         => 'bi-check-circle-fill',
-                        default             => 'bi-info-circle',
+                        'draft'                 => 'bi-pencil',
+                        'pending_approval'      => 'bi-clock',
+                        'pending_sending'       => 'bi-send',
+                        'pending_agenda'        => 'bi-hourglass-split',
+                        'in_review_subag'       => 'bi-envelope-paper',
+                        'in_review_bagian_tu'   => 'bi-eye-fill',
+                        'in_consideration'      => 'bi-arrow-repeat',
+                        'completed'             => 'bi-check-circle-fill',
+                        default                 => 'bi-info-circle',
                     };
                 @endphp
                 <tr>
@@ -226,10 +235,40 @@
 <div class="cards-wrap">
     @forelse($letters as $letter)
         @php
-            $status = $letter->status;
-            $pillClass = match($status) { 'draft'=>'sp-draft','pending_agenda'=>'sp-pending','in_review_kasubag'=>'sp-review','in_consideration'=>'sp-active','completed'=>'sp-done',default=>'sp-default' };
-            $pillText  = match($status) { 'draft'=>'Draft','pending_agenda'=>'Antre Agenda','in_review_kasubag'=>'Review Kasubag','in_consideration'=>'Disposisi Aktif','completed'=>'Selesai',default=>ucfirst($status) };
-            $pillIcon = match($status) { 'draft'=>'bi-pencil','pending_agenda'=>'bi-hourglass-split','in_review_kasubag'=>'bi-eye-fill','in_consideration'=>'bi-arrow-repeat','completed'=>'bi-check-circle-fill',default=>'bi-info-circle' };
+                    $status = $letter->status;
+                    $pillClass = match($status) {
+                        'draft'                 => 'sp-draft',
+                        'pending_approval'      => 'sp-pending',
+                        'pending_sending'       => 'sp-review',
+                        'pending_agenda'        => 'sp-pending',
+                        'in_review_subag'       => 'sp-review',
+                        'in_review_bagian_tu'   => 'sp-review',
+                        'in_consideration'      => 'sp-active',
+                        'completed'             => 'sp-done',
+                        default                 => 'sp-default',
+                    };
+                    $pillText = match($status) {
+                        'draft'                 => 'Draft',
+                        'pending_approval'      => 'Menunggu ACC Kepala',
+                        'pending_sending'       => 'Menunggu Dikirim',
+                        'pending_agenda'        => 'Antre Agenda',
+                        'in_review_subag'       => 'Review Subag',
+                        'in_review_bagian_tu'   => 'Review Bagian TU',
+                        'in_consideration'      => 'Disposisi Aktif',
+                        'completed'             => 'Selesai',
+                        default                 => ucfirst(str_replace('_', ' ', $status)),
+                    };
+                    $pillIcon = match($status) {
+                        'draft'                 => 'bi-pencil',
+                        'pending_approval'      => 'bi-clock',
+                        'pending_sending'       => 'bi-send',
+                        'pending_agenda'        => 'bi-hourglass-split',
+                        'in_review_subag'       => 'bi-envelope-paper',
+                        'in_review_bagian_tu'   => 'bi-eye-fill',
+                        'in_consideration'      => 'bi-arrow-repeat',
+                        'completed'             => 'bi-check-circle-fill',
+                        default                 => 'bi-info-circle',
+                    };
         @endphp
         <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}" class="letter-card">
             <div class="lc-no">{{ $letter->letter_number !== '-' ? $letter->letter_number : 'Draft' }}</div>

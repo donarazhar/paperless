@@ -17,7 +17,7 @@ class DispositionController extends Controller
 
     public function agenda(Request $request, Letter $letter)
     {
-        $this->authorizeRole('staf_tu');
+        if (Auth::user()->role !== 'admin_sekretariat') abort(403);
         
         $data = $request->validate([
             'agenda_number' => 'required|string',
@@ -26,19 +26,8 @@ class DispositionController extends Controller
 
         $letter->update([
             'agenda_number' => $data['agenda_number'],
-            'status' => 'in_review_kasubag'
+            'status' => 'in_review_subag'
         ]);
-
-        $kasubagTuUser = \App\Models\User::where('role', 'kasubag_tu')->first();
-        if ($kasubagTuUser) {
-            Disposition::create([
-                'letter_id' => $letter->id,
-                'from_user_id' => Auth::id(),
-                'to_user_id' => $kasubagTuUser->id,
-                'note' => $data['note'] ?? 'Mohon arahan/disposisi',
-                'status' => 'pending',
-            ]);
-        }
 
         LetterHistory::create([
             'letter_id' => $letter->id,
@@ -51,13 +40,29 @@ class DispositionController extends Controller
 
         return redirect()
             ->route($route)
-            ->with('success', 'Surat berhasil diagendakan dan diteruskan ke Kasubag TU.');
+            ->with('success', 'Surat berhasil diagendakan dan diteruskan ke Subag Persuratan.');
+    }
+
+    public function forwardToBagianTu(Request $request, Letter $letter)
+    {
+        if (Auth::user()->role !== 'subag_persuratan') abort(403);
+        
+        $letter->update(['status' => 'in_review_bagian_tu']);
+        
+        LetterHistory::create([
+            'letter_id' => $letter->id,
+            'user_id' => Auth::id(),
+            'action' => 'forwarded',
+            'note' => 'Diteruskan ke Bagian TU untuk Disposisi',
+        ]);
+        
+        return back()->with('success', 'Surat diteruskan ke Bagian TU.');
     }
 
     public function store(Request $request, Letter $letter)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ['kasubag_tu', 'kepala_sekretariat', 'staf_unit', 'staf_tu'])) {
+        if (!in_array($user->role, ['bagian_tu', 'kepala_sekretariat', 'kepala_unit', 'sub_unit', 'admin_unit'])) {
             abort(403, 'Anda tidak memiliki akses untuk membuat disposisi.');
         }
 
@@ -74,18 +79,11 @@ class DispositionController extends Controller
                          ($targetUser && $targetUser->unit && $targetUser->unit->is_sekretariat);
 
         if ($isSekretariat) {
-            if (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
-                $stafTu = \App\Models\User::where('role', 'staf_tu')->first();
-                if ($stafTu) {
-                    $data['to_unit_id'] = null;
-                    $data['to_user_id'] = $stafTu->id;
-                }
-            } else {
-                $kasubagTu = \App\Models\User::where('role', 'kasubag_tu')->first();
-                if ($kasubagTu) {
-                    $data['to_unit_id'] = null;
-                    $data['to_user_id'] = $kasubagTu->id;
-                }
+            // Jika ke sekretariat, arahkan ke subag_persuratan atau bagian_tu
+            $bagTu = \App\Models\User::where('role', 'bagian_tu')->first();
+            if ($bagTu) {
+                $data['to_unit_id'] = null;
+                $data['to_user_id'] = $bagTu->id;
             }
         }
 
@@ -146,7 +144,9 @@ class DispositionController extends Controller
 
     public function selesai(Request $request, Letter $letter)
     {
-        $this->authorizeRole('staf_tu');
+        if (!in_array(Auth::user()->role, ['bagian_tu', 'subag_persuratan', 'kepala_sekretariat'])) {
+            abort(403);
+        }
 
         $letter->update(['status' => 'completed']);
 
@@ -160,5 +160,44 @@ class DispositionController extends Controller
         return redirect()
             ->route('letters.show', ['letter' => Hashids::encode($letter->id)])
             ->with('success', 'Surat telah ditandai Selesai.');
+    }
+
+    public function forwardDispositionToKepala(Letter $letter)
+    {
+        $user = Auth::user();
+        if ($user->role !== 'admin_unit') abort(403);
+        
+        $dispo = Disposition::where('letter_id', $letter->id)
+            ->where('to_unit_id', $user->unit_id)
+            ->whereNull('to_user_id')
+            ->where('status', 'pending')
+            ->first();
+            
+        if ($dispo) {
+            $dispo->update(['status' => 'forwarded_to_kepala', 'response_note' => 'Diteruskan ke Kepala Unit']);
+            
+            $kepala = \App\Models\User::whereHas('organ', function($q) use ($user) {
+                $q->where('unit_id', $user->unit_id);
+            })->where('role', 'kepala_unit')->first();
+
+            if ($kepala) {
+                Disposition::create([
+                    'letter_id' => $letter->id,
+                    'from_user_id' => $user->id,
+                    'to_user_id' => $kepala->id,
+                    'note' => 'Terusan dari Admin Unit: ' . $dispo->note,
+                    'status' => 'pending',
+                ]);
+            }
+        }
+        
+        LetterHistory::create([
+            'letter_id' => $letter->id,
+            'user_id' => $user->id,
+            'action' => 'forwarded_disposition',
+            'note' => 'Meneruskan disposisi ke Kepala Unit',
+        ]);
+        
+        return back()->with('success', 'Disposisi diteruskan ke Kepala Unit.');
     }
 }

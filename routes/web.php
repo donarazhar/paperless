@@ -26,19 +26,18 @@ Route::middleware('auth')->group(function () {
     Route::get('profile/password', [ProfileController::class, 'showPasswordForm'])->name('profile.password');
     Route::put('profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
 
-    Route::middleware('role:staf_unit,staf_tu')->group(function () {
+    // Pembuatan Surat
+    Route::middleware('role:admin_unit,kepala_unit,sub_unit,admin_sekretariat,subag_persuratan,bagian_tu')->group(function () {
         Route::get('letters/create', [LetterController::class, 'create'])->name('letters.create');
         Route::post('letters', [LetterController::class, 'store'])->name('letters.store');
-    });
-
-    Route::get('letters/create-external', [LetterController::class, 'createExternal'])->name('letters.createExternal');
-    Route::post('letters/external', [LetterController::class, 'storeExternal'])->name('letters.storeExternal');
-
-    Route::middleware('role:staf_unit,staf_tu')->group(function () {
+        
         Route::get('letters/create-outbound-external', [LetterController::class, 'createOutboundExternal'])->name('letters.createOutboundExternal');
         Route::post('letters/outbound-external', [LetterController::class, 'storeOutboundExternal'])->name('letters.storeOutboundExternal');
         Route::post('letters/{letter}/update-notes', [LetterController::class, 'updateExternalNotes'])->name('letters.updateExternalNotes');
     });
+
+    Route::get('letters/create-external', [LetterController::class, 'createExternal'])->name('letters.createExternal');
+    Route::post('letters/external', [LetterController::class, 'storeExternal'])->name('letters.storeExternal');
 
     Route::get('letters/inbox', [LetterController::class, 'inbound'])->name('letters.inbound');
     Route::get('letters/inbox-external', [LetterController::class, 'inboundExternal'])->name('letters.inboundExternal');
@@ -50,17 +49,21 @@ Route::middleware('auth')->group(function () {
     Route::get('letters/{letter}/print-disposition', [LetterController::class, 'printDisposition'])->name('letters.printDisposition');
     Route::post('letters/{letter}/mark-read', [LetterController::class, 'markRead'])->name('letters.markRead');
 
-    Route::middleware('role:staf_tu')->group(function () {
-        Route::post('letters/{letter}/agenda', [DispositionController::class, 'agenda'])->name('letters.agenda');
-        Route::post('letters/{letter}/complete', [DispositionController::class, 'selesai'])->name('letters.complete');
-    });
-
+    // Aksi Workflow Surat
+    Route::post('letters/{letter}/approve', [LetterController::class, 'approve'])->name('letters.approve');
+    Route::post('letters/{letter}/send-final', [LetterController::class, 'sendFinal'])->name('letters.sendFinal');
+    Route::post('letters/{letter}/agenda', [DispositionController::class, 'agenda'])->name('letters.agenda');
+    Route::post('letters/{letter}/forward-tu', [DispositionController::class, 'forwardToBagianTu'])->name('letters.forwardToBagianTu');
+    Route::post('letters/{letter}/forward-kepala', [DispositionController::class, 'forwardDispositionToKepala'])->name('letters.dispositions.forwardToKepala');
+    Route::post('letters/{letter}/complete', [DispositionController::class, 'selesai'])->name('letters.complete');
+    
     Route::post('letters/{letter}/dispositions', [DispositionController::class, 'store'])->name('letters.dispositions.store');
+    Route::put('dispositions/{disposition}/respond', [DispositionController::class, 'respond'])->name('letters.dispositions.respond');
 
-    Route::post('dispositions/{disposition}/respond', [DispositionController::class, 'respond'])->name('dispositions.respond');
-
-    Route::middleware('role:staf_tu')->group(function () {
+    // Master Data
+    Route::middleware('role:admin,admin_sekretariat,subag_persuratan,bagian_tu')->group(function () {
         Route::resource('users', UserController::class);
+        Route::resource('organs', \App\Http\Controllers\OrganController::class)->except(['show']);
         Route::resource('units', UnitController::class)->except(['show']);
         Route::resource('branches', \App\Http\Controllers\BranchController::class)->except(['show']);
     });

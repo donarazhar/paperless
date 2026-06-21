@@ -86,9 +86,11 @@
             <div class="stat-chip">
                 <i class="bi bi-send-arrow-up-fill"></i> {{ $letters->total() }} surat
             </div>
+            @if(!in_array(Auth::user()->role, ['kepala_sekretariat']))
             <a href="{{ route('letters.createOutboundExternal') }}" class="btn-custom success" style="width: auto;">
                 <i class="bi bi-plus-lg"></i> Catat Surat Keluar
             </a>
+            @endif
         </div>
     </div>
 </div>

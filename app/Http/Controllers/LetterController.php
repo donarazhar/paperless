@@ -25,9 +25,11 @@ class LetterController extends Controller
         $q = Letter::with(['sender', 'dispositions.toUser', 'dispositions.unit', 'recipientUser', 'recipientUnit'])
                    ->where('type', 'internal');
 
-        // Jika staf unit, hanya tampilkan surat yang dikirim olehnya saja
-        if ($user->role === 'staf_unit') {
-            $q->where('from_user_id', $user->id);
+        // Jika admin_unit / kepala_unit, tampilkan surat keluar dari unit mereka
+        if (in_array($user->role, ['admin_unit', 'kepala_unit', 'sub_unit'])) {
+            $q->whereHas('sender', function($sq) use ($user) {
+                $sq->where('unit_id', $user->unit_id);
+            });
         }
 
         if ($s = $request->search) {
@@ -80,15 +82,11 @@ class LetterController extends Controller
 
         // Unified Visibility Logic: User sees letters addressed to their unit OR dispositioned to them/their unit
         $q->where(function ($query) use ($user) {
-            if (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
-                // Kasubag TU & Kepala Sekretariat MUST NOT see raw letters sent to Secretariat.
-                // They only see them after Staf TU assigns an agenda and creates a disposition.
-                $query->whereHas('dispositions', function ($d) use ($user) {
-                    $d->where('to_user_id', $user->id)
-                      ->orWhere('to_unit_id', $user->unit_id);
-                });
+            if (in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu', 'kepala_sekretariat'])) {
+                // Sekretariat sees letters that have reached them (pending_agenda or further)
+                $query->whereNotIn('status', ['draft', 'pending_approval', 'pending_sending']);
             } else {
-                // Staf Unit and Staf TU see letters sent directly to their unit
+                // Admin Unit / Kepala Unit sees direct letters to their unit or dispositions
                 $query->where('to_unit_id', $user->unit_id)
                       ->orWhereHas('dispositions', function ($d) use ($user) {
                           $d->where('to_user_id', $user->id)
@@ -269,7 +267,9 @@ class LetterController extends Controller
     {
         $user = Auth::user();
         $q = Letter::with(['recipientUser', 'recipientUnit'])
-            ->where('from_user_id', $user->id)
+            ->whereHas('sender', function($sq) use ($user) {
+                $sq->where('unit_id', $user->unit_id);
+            })
             ->where('type', 'internal');
 
         // -- FILTERS --
@@ -326,11 +326,9 @@ class LetterController extends Controller
         $targetUnit = \App\Models\Unit::find($data['to_unit_id']);
         $isSekretariat = $targetUnit && $targetUnit->is_sekretariat;
         
-        $status = 'sent';
-        if ($request->action === 'draft') {
-            $status = 'draft';
-        } elseif ($isSekretariat) {
-            $status = 'pending_agenda';
+        $status = 'draft';
+        if ($request->action === 'send') {
+            $status = 'pending_approval';
         }
 
         $letter = Letter::create([
@@ -399,7 +397,7 @@ class LetterController extends Controller
             'external_recipient_name' => $data['external_recipient_name'],
             'external_notes' => $data['external_notes'],
             'from_user_id' => Auth::id(),
-            'status' => 'completed',
+            'status' => 'pending_approval',
         ]);
 
         if ($request->hasFile('attachments')) {
@@ -418,7 +416,9 @@ class LetterController extends Controller
     public function outboundExternal(Request $request)
     {
         $user = Auth::user();
-        $q = Letter::where('from_user_id', $user->id)
+        $q = Letter::whereHas('sender', function($sq) use ($user) {
+                $sq->where('unit_id', $user->unit_id);
+            })
             ->where('type', 'outbound_external');
 
         if ($request->has('search') && $request->search != '') {
@@ -482,5 +482,32 @@ class LetterController extends Controller
         ]);
 
         return back();
+    }
+
+    public function approve(Letter $letter)
+    {
+        $this->authorize('view', $letter);
+        if ($letter->status !== 'pending_approval' || Auth::user()->role !== 'kepala_unit') {
+            abort(403);
+        }
+        $letter->update(['status' => 'pending_sending']);
+        LetterHistory::create(['letter_id' => $letter->id, 'user_id' => Auth::id(), 'action' => 'approved', 'note' => 'Disetujui Kepala Unit']);
+        return back()->with('success', 'Surat berhasil di-ACC. Menunggu Admin Unit mengirim fisik surat.');
+    }
+
+    public function sendFinal(Letter $letter)
+    {
+        $this->authorize('view', $letter);
+        if ($letter->status !== 'pending_sending' || Auth::user()->role !== 'admin_unit') {
+            abort(403);
+        }
+        
+        $newStatus = ($letter->type === 'outbound_external') ? 'completed' : 'pending_agenda';
+        $letter->update(['status' => $newStatus]);
+        
+        $note = ($letter->type === 'outbound_external') ? 'Surat eksternal telah dikirim.' : 'Surat dikirim ke Sekretariat untuk diagendakan.';
+        LetterHistory::create(['letter_id' => $letter->id, 'user_id' => Auth::id(), 'action' => 'sent', 'note' => $note]);
+        
+        return back()->with('success', $note);
     }
 }
