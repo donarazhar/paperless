@@ -33,12 +33,12 @@ class DashboardController extends Controller
                 ->whereHas('dispositions', fn($d) => $d->where('to_user_id', $user->id)->orWhere('to_unit_id', $unitId))
                 ->count();
             $outboundToday = Letter::whereDate('created_at', $today)
-                ->whereHas('sender', fn($s) => $s->where('unit_id', $unitId))
+                ->whereHas('sender.organ', fn($s) => $s->where('unit_id', $unitId))
                 ->count();
 
             if ($role === 'kepala_unit') {
                 $unreadCount = Letter::where('status', 'pending_approval')
-                    ->whereHas('sender', fn($s) => $s->where('unit_id', $unitId))
+                    ->whereHas('sender.organ', fn($s) => $s->where('unit_id', $unitId))
                     ->count();
             } else {
                 $unreadCount = Letter::where('status', 'in_consideration')
@@ -85,7 +85,7 @@ class DashboardController extends Controller
 
         $letterNotes = collect();
         if ($role === 'kepala_unit') {
-            $letterNotes = Letter::where('status', 'pending_approval')->whereHas('sender', fn($s) => $s->where('unit_id', $unitId))->latest()->take(5)->get();
+            $letterNotes = Letter::where('status', 'pending_approval')->whereHas('sender.organ', fn($s) => $s->where('unit_id', $unitId))->latest()->take(5)->get();
         } elseif ($role === 'admin_sekretariat') {
             $letterNotes = Letter::where('status', 'pending_agenda')->latest()->take(5)->get();
         } elseif ($role === 'subag_persuratan') {

@@ -232,8 +232,8 @@
                         <i class="bi bi-envelope-arrow-down-fill"></i> Surat Masuk <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
                     </button>
                     <div class="nav-dd-menu">
-                        <a class="nav-dd-item" href="{{ route('letters.inbound') }}">Masuk Internal</a>
-                        <a class="nav-dd-item" href="{{ route('letters.inboundExternal') }}">Masuk Eksternal</a>
+                        <a class="nav-dd-item" href="{{ route('letters.inbound') }}"><i class="bi bi-envelope-fill me-2" style="color:var(--primary)"></i>Masuk Internal</a>
+                        <a class="nav-dd-item" href="{{ route('letters.inboundExternal') }}"><i class="bi bi-envelope-open-fill me-2" style="color:var(--primary)"></i>Masuk Eksternal</a>
                     </div>
                 </div>
 
@@ -243,8 +243,8 @@
                         <i class="bi bi-send-fill"></i> Surat Keluar <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
                     </button>
                     <div class="nav-dd-menu">
-                        <a class="nav-dd-item" href="{{ route('letters.outbound') }}">Keluar Internal</a>
-                        <a class="nav-dd-item" href="{{ route('letters.outboundExternal') }}">Keluar Eksternal</a>
+                        <a class="nav-dd-item" href="{{ route('letters.outbound') }}"><i class="bi bi-send-fill me-2" style="color:var(--primary)"></i>Keluar Internal</a>
+                        <a class="nav-dd-item" href="{{ route('letters.outboundExternal') }}"><i class="bi bi-send-check-fill me-2" style="color:var(--primary)"></i>Keluar Eksternal</a>
                     </div>
                 </div>
                 @endif
@@ -254,8 +254,8 @@
                         <i class="bi bi-bar-chart-line-fill"></i> Laporan <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
                     </button>
                     <div class="nav-dd-menu">
-                        <a class="nav-dd-item" href="{{ route('letters.index') }}">Laporan Surat</a>
-                        <a class="nav-dd-item" href="{{ route('letters.arsip') }}">Arsip Surat</a>
+                        <a class="nav-dd-item" href="{{ route('letters.index') }}"><i class="bi bi-bar-chart-line-fill me-2" style="color:var(--primary)"></i>Laporan Surat</a>
+                        <a class="nav-dd-item" href="{{ route('letters.arsip') }}"><i class="bi bi-archive-fill me-2" style="color:var(--primary)"></i>Arsip Surat</a>
                     </div>
                 </div>
 
@@ -265,10 +265,10 @@
                         <i class="bi bi-database-fill"></i> Master Data <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
                     </button>
                     <div class="nav-dd-menu">
-                        <a class="nav-dd-item" href="{{ route('branches.index') }}">Cabang</a>
-                        <a class="nav-dd-item" href="{{ route('units.index') }}">Unit Kerja</a>
-                        <a class="nav-dd-item" href="{{ route('organs.index') }}">Organ</a>
-                        <a class="nav-dd-item" href="{{ route('users.index') }}">Pengguna</a>
+                        <a class="nav-dd-item" href="{{ route('branches.index') }}"><i class="bi bi-building-fill me-2" style="color:var(--primary)"></i>Cabang</a>
+                        <a class="nav-dd-item" href="{{ route('units.index') }}"><i class="bi bi-diagram-3-fill me-2" style="color:var(--primary)"></i>Unit Kerja</a>
+                        <a class="nav-dd-item" href="{{ route('organs.index') }}"><i class="bi bi-layers-fill me-2" style="color:var(--primary)"></i>Organ</a>
+                        <a class="nav-dd-item" href="{{ route('users.index') }}"><i class="bi bi-people-fill me-2" style="color:var(--primary)"></i>Pengguna</a>
                     </div>
                 </div>
                 @endif

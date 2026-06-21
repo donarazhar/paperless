@@ -25,7 +25,7 @@
 @endphp
 
 {{-- Header --}}
-<div class="inbox-hero" style="background: linear-gradient(135deg, #10b981 0%, #059669 45%, #047857 100%);">
+<div class="inbox-hero">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3" style="position:relative;z-index:1;">
         <div>
             <div class="hero-title mb-0">Manajemen Pengguna</div>
@@ -35,7 +35,7 @@
             <div class="stat-chip">
                 <i class="bi bi-people-fill"></i> {{ $users->count() }} pengguna
             </div>
-            <a href="{{ route('users.create') }}" class="btn-custom outline" style="width: auto; background: rgba(255,255,255,0.15); color: #fff; border-color: rgba(255,255,255,0.25);">
+            <a href="{{ route('users.create') }}" class="btn-filter" style="text-decoration:none;">
                 <i class="bi bi-person-plus-fill"></i> Tambah Pengguna
             </a>
         </div>

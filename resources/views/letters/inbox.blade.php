@@ -3,32 +3,6 @@
 
 @push('styles')
 <style>
-    /* ── Enhanced Inbox Styles ── */
-    .inbox-hero{
-        background:linear-gradient(135deg,#312e81 0%,#6366f1 50%,#8b5cf6 100%);
-        border-radius:1.25rem;margin-bottom:1.25rem;padding:1.75rem 2rem;
-        position:relative;overflow:hidden;
-        box-shadow:0 8px 32px rgba(99,102,241,0.22);
-    }
-    .inbox-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.06)}
-    .inbox-hero::after{content:'';position:absolute;bottom:-60px;left:30%;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.04)}
-
-    .hero-icon{
-        width:42px;height:42px;border-radius:12px;flex-shrink:0;
-        background:rgba(255,255,255,0.15);backdrop-filter:blur(4px);
-        display:flex;align-items:center;justify-content:center;
-        font-size:1.15rem;color:#fff;
-    }
-    .hero-title{font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1.2}
-    .hero-sub{font-size:.82rem;color:rgba(255,255,255,0.7);font-weight:500;margin-top:.25rem}
-    .stat-chip{
-        display:inline-flex;align-items:center;gap:6px;
-        background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);
-        border:1px solid rgba(255,255,255,0.25);border-radius:100px;
-        padding:.4rem 1rem;font-size:.82rem;font-weight:700;color:#fff;
-    }
-    .filter-chip{background:rgba(245,158,11,0.25);border-color:rgba(245,158,11,0.4)}
-
     /* Filter */
     .filter-card{
         background:#fff;border:1px solid #e2e8f0;border-radius:1rem;

@@ -60,7 +60,7 @@
 </style>
 
 {{-- Page Header --}}
-<div class="inbox-hero" style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%);">
+<div class="inbox-hero">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3" style="position:relative;z-index:1;">
         <div>
             <div class="d-flex align-items-center gap-2 mb-1">

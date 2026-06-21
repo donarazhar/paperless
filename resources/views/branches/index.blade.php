@@ -4,7 +4,7 @@
 @section('content')
 
 {{-- Hero Header --}}
-<div class="inbox-hero" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 45%, #b45309 100%);">
+<div class="inbox-hero">
     <div class="d-flex align-items-center justify-content-between flex-wrap gap-3" style="position:relative;z-index:1;">
         <div>
             <div class="hero-title mb-0">Manajemen Cabang</div>

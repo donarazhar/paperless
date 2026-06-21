@@ -7,43 +7,36 @@
 
     /* ─── Hero ─── */
     .profile-hero {
-        background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 55%, #06b6d4 100%);
-        border-radius: 1.5rem; padding: 2.5rem 2rem 4.5rem;
-        position: relative; overflow: hidden; margin-bottom: -3.5rem;
+        background: #fff; border: 1px solid #e8edf4;
+        border-radius: 1rem; padding: 1.75rem 1.75rem 3.5rem;
+        position: relative; overflow: hidden; margin-bottom: -2.75rem;
+        box-shadow: 0 1px 6px rgba(15,23,42,0.04);
     }
-    .profile-hero::before {
-        content: ''; position: absolute; width: 260px; height: 260px; border-radius: 50%;
-        background: rgba(255,255,255,0.07); top: -80px; right: -60px; pointer-events: none;
-    }
-    .profile-hero::after {
-        content: ''; position: absolute; width: 160px; height: 160px; border-radius: 50%;
-        background: rgba(255,255,255,0.05); bottom: -40px; left: 10%; pointer-events: none;
-    }
+    .profile-hero::before, .profile-hero::after { display: none; }
     .ph-z { position: relative; z-index: 1; }
     .ph-avatar-lg {
-        width: 80px; height: 80px; border-radius: 1.25rem; flex-shrink: 0;
-        background: rgba(255,255,255,0.22); border: 2.5px solid rgba(255,255,255,0.35);
+        width: 64px; height: 64px; border-radius: 1rem; flex-shrink: 0;
+        background: #eef2ff; border: 2px solid #e0e7ff;
         display: flex; align-items: center; justify-content: center;
-        font-size: 2rem; font-weight: 800; color: #fff; backdrop-filter: blur(12px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        font-size: 1.5rem; font-weight: 800; color: #6366f1;
     }
-    .ph-name { font-size: 1.4rem; font-weight: 800; color: #fff; line-height: 1.2; }
+    .ph-name { font-size: 1.25rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
     .ph-badge {
         display: inline-flex; align-items: center; gap: 5px;
-        font-size: .7rem; font-weight: 600; color: rgba(255,255,255,0.9);
-        background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
+        font-size: .7rem; font-weight: 600; color: #6366f1;
+        background: #eef2ff; border: 1px solid #e0e7ff;
         padding: .25rem .7rem; border-radius: 100px; margin-top: .4rem;
     }
-    .ph-email { font-size: .8rem; color: rgba(255,255,255,0.65); margin-top: .2rem; }
+    .ph-email { font-size: .8rem; color: #94a3b8; margin-top: .2rem; }
 
-    /* ─── Content wrapper (floats above hero) ─── */
+    /* ─── Content wrapper ─── */
     .profile-body { position: relative; z-index: 2; }
 
     /* ─── Tabs ─── */
     .profile-tabs {
         display: flex; gap: .35rem; background: #fff;
         border-radius: 1rem; padding: .3rem; margin-bottom: 1.25rem;
-        box-shadow: 0 4px 16px rgba(15,23,42,0.08); border: 1px solid #e8edf4;
+        box-shadow: 0 2px 10px rgba(15,23,42,0.06); border: 1px solid #e8edf4;
     }
     .profile-tab {
         flex: 1; padding: .65rem .75rem; border-radius: .75rem;
@@ -53,7 +46,7 @@
         justify-content: center; gap: .4rem; text-decoration: none;
     }
     .profile-tab:hover { color: #0f172a; background: #f8fafc; }
-    .profile-tab.active { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff; box-shadow: 0 3px 10px rgba(99,102,241,0.3); }
+    .profile-tab.active { background: #f1f5f9; color: #0f172a; font-weight: 700; }
     .profile-tab i { font-size: .9rem; }
 
     /* ─── Grid ─── */

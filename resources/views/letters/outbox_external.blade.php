@@ -3,19 +3,7 @@
 
 @push('styles')
 <style>
-    .inbox-hero{
-        background:linear-gradient(135deg,#7e22ce 0%,#a855f7 45%,#c084fc 100%);
-        border-radius:1.25rem;margin-bottom:1.25rem;padding:1.75rem 2rem;
-        position:relative;overflow:hidden;
-        box-shadow:0 8px 32px rgba(168,85,247,0.22);
-    }
-    .inbox-hero::before{content:'';position:absolute;top:-40px;right:-40px;width:220px;height:220px;border-radius:50%;background:rgba(255,255,255,0.06)}
-    .inbox-hero::after{content:'';position:absolute;bottom:-60px;left:30%;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,0.04)}
-    .hero-icon{width:42px;height:42px;border-radius:12px;flex-shrink:0;background:rgba(255,255,255,0.15);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:1.15rem;color:#fff}
-    .hero-title{font-size:1.35rem;font-weight:800;color:#fff;letter-spacing:-.03em;line-height:1.2}
-    .hero-sub{font-size:.82rem;color:rgba(255,255,255,0.7);font-weight:500;margin-top:.25rem}
-    .stat-chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.15);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,0.25);border-radius:100px;padding:.4rem 1rem;font-size:.82rem;font-weight:700;color:#fff}
-    .ext-badge{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,0.2);color:#fff;font-size:.68rem;font-weight:700;padding:.2rem .6rem;border-radius:100px;letter-spacing:.04em}
+    .ext-badge{display:inline-flex;align-items:center;gap:4px;background:var(--accent-soft);color:var(--accent);font-size:.68rem;font-weight:700;padding:.2rem .6rem;border-radius:100px;letter-spacing:.04em}
 
     .filter-card{background:#fff;border:1px solid #e2e8f0;border-radius:1rem;padding:1.15rem 1.35rem;margin-bottom:1.25rem;box-shadow:0 1px 8px rgba(15,23,42,0.04)}
     .f-label{font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:#94a3b8;margin-bottom:.35rem;display:block}

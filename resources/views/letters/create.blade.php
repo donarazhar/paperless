@@ -21,7 +21,7 @@
     .upload-input { position:absolute;top:0;left:0;width:100%;height:100%;opacity:0;cursor:pointer; }
     
     /* Buttons */
-    .btn-submit { background:linear-gradient(135deg,#16a34a,#6366f1);color:#fff;border:none;border-radius:0.75rem;font-size:0.9rem;font-weight:700;padding:0 2rem;height:48px;transition:all .2s;display:inline-flex;align-items:center;gap:0.5rem; }
+    .btn-submit { background:var(--primary);color:#fff;border:none;border-radius:0.75rem;font-size:0.9rem;font-weight:700;padding:0 2rem;height:48px;transition:all .2s;display:inline-flex;align-items:center;gap:0.5rem; }
     .btn-submit:hover { transform:translateY(-2px);box-shadow:0 8px 16px rgba(99,102,241,0.2);color:#fff; }
     .btn-draft { background:#fff;color:#475569;border:1.5px solid #cbd5e1;border-radius:0.75rem;font-size:0.9rem;font-weight:700;padding:0 1.5rem;height:48px;transition:all .2s;display:inline-flex;align-items:center;gap:0.5rem; }
     .btn-draft:hover { background:#f8fafc;border-color:#94a3b8;color:#0f172a; }

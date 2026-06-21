@@ -27,7 +27,7 @@ class LetterController extends Controller
 
         // Jika admin_unit / kepala_unit, tampilkan surat keluar dari unit mereka
         if (in_array($user->role, ['admin_unit', 'kepala_unit', 'sub_unit'])) {
-            $q->whereHas('sender', function($sq) use ($user) {
+            $q->whereHas('sender.organ', function($sq) use ($user) {
                 $sq->where('unit_id', $user->unit_id);
             });
         }
@@ -54,7 +54,7 @@ class LetterController extends Controller
         }
 
         if ($unitId = $request->unit_id) {
-            $q->whereHas('sender', function($sq) use ($unitId) {
+            $q->whereHas('sender.organ', function($sq) use ($unitId) {
                 $sq->where('unit_id', $unitId);
             });
         }
@@ -267,7 +267,7 @@ class LetterController extends Controller
     {
         $user = Auth::user();
         $q = Letter::with(['recipientUser', 'recipientUnit'])
-            ->whereHas('sender', function($sq) use ($user) {
+            ->whereHas('sender.organ', function($sq) use ($user) {
                 $sq->where('unit_id', $user->unit_id);
             })
             ->where('type', 'internal');
@@ -416,7 +416,7 @@ class LetterController extends Controller
     public function outboundExternal(Request $request)
     {
         $user = Auth::user();
-        $q = Letter::whereHas('sender', function($sq) use ($user) {
+        $q = Letter::whereHas('sender.organ', function($sq) use ($user) {
                 $sq->where('unit_id', $user->unit_id);
             })
             ->where('type', 'outbound_external');
