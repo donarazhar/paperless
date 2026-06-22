@@ -230,7 +230,7 @@
         @if($dispRecv && $dispRecv->status==='pending' && $dispRecv->to_user_id === $user->id)
         <div class="action-box warning">
             <div class="action-title text-warning-emphasis"><i class="bi bi-exclamation-circle-fill"></i> Tindakan Diperlukan</div>
-            <div class="action-desc">Disposisi dari <strong>{{ $dispRecv->fromUser->name }}</strong>:<br><em style="color:#92400e;">"{{ $dispRecv->note }}"</em></div>
+            <div class="action-desc">Disposisi dari <strong>{{ $dispRecv->fromUser->name ?? 'Sistem' }}</strong>:<br><em style="color:#92400e;">"{{ $dispRecv->note }}"</em></div>
             <div class="d-flex flex-column gap-2">
                 <button class="btn-custom success w-100" data-bs-toggle="modal" data-bs-target="#acceptModal"><i class="bi bi-check-circle-fill"></i> Tandai Selesai / Tanggapi</button>
             </div>
