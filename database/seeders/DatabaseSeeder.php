@@ -29,22 +29,22 @@ class DatabaseSeeder extends Seeder
         $organSubSD = \App\Models\Organ::firstOrCreate(['name' => 'Wakil Kepala Sekolah SD', 'unit_id' => 3]);
 
         User::firstOrCreate(
-            ['email' => 'stafagenda@example.com'],
+            ['email' => 'admin@example.com'],
             ['name' => 'Admin Sekretariat', 'password' => Hash::make('123456'), 'role' => 'admin_sekretariat', 'organ_id' => $organAgenda->id]
         );
 
         User::firstOrCreate(
-            ['email' => 'subagpersuratan@example.com'],
+            ['email' => 'subagsurat@example.com'],
             ['name' => 'Subag Persuratan', 'password' => Hash::make('123456'), 'role' => 'subag_persuratan', 'organ_id' => $organSubagTu->id]
         );
 
         User::firstOrCreate(
-            ['email' => 'bagiantu@example.com'],
+            ['email' => 'kabagiantu@example.com'],
             ['name' => 'Bagian TU Sekretariat', 'password' => Hash::make('123456'), 'role' => 'bagian_tu', 'organ_id' => $organBagianTu->id]
         );
 
         User::firstOrCreate(
-            ['email' => 'kepalasekretariat@example.com'],
+            ['email' => 'kasekretariat@example.com'],
             ['name' => 'Kepala Sekretariat', 'password' => Hash::make('123456'), 'role' => 'kepala_sekretariat', 'organ_id' => $organKepalaSek->id]
         );
 
@@ -54,12 +54,12 @@ class DatabaseSeeder extends Seeder
         );
 
         User::firstOrCreate(
-            ['email' => 'kepalasd@example.com'],
+            ['email' => 'kasd@example.com'],
             ['name' => 'Kepala Sekolah SD 1', 'password' => Hash::make('123456'), 'role' => 'kepala_unit', 'organ_id' => $organKepalaSD->id]
         );
         
         User::firstOrCreate(
-            ['email' => 'wakepalasd@example.com'],
+            ['email' => 'wakasd@example.com'],
             ['name' => 'Wakil Kepala Sekolah SD 1', 'password' => Hash::make('123456'), 'role' => 'sub_unit', 'organ_id' => $organSubSD->id]
         );
 
