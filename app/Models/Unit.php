@@ -21,4 +21,9 @@ class Unit extends Model
     {
         return $this->hasMany(Letter::class, 'to_unit_id');
     }
+
+    public function organs()
+    {
+        return $this->hasMany(Organ::class);
+    }
 }
