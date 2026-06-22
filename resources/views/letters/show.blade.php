@@ -73,104 +73,65 @@
 </div>
 
 {{-- ═══ INFORMASI SURAT ═══ --}}
-<div class="modern-panel">
-    <div class="panel-title"><i class="bi bi-info-circle-fill"></i> Detail Informasi</div>
-    <div class="info-grid">
-        <div class="info-item">
-            <span class="info-label">Nomor Surat</span>
-            <span class="info-value" style="font-family: monospace; font-size: 1rem;">{{ $letter->letter_number ?: '—' }}</span>
+<div class="modern-panel mb-4">
+    <div style="position: relative; padding: 10px 0; font-family: sans-serif; font-size: 0.95rem; color: #000;">
+        <div style="position: absolute; top: 0; left: 0; width: 100%; border-top: 1px solid #aaa;"></div>
+        <div style="position: absolute; top: -1.5px; left: 0; width: 15%; border-top: 4px solid #777;"></div>
+        
+        <div class="d-flex justify-content-between align-items-start mb-1 mt-2">
+            <div style="width: 40%;">
+                <div class="d-flex"><div style="width: 100px;">No Agenda</div><div>: {{ $letter->agenda_number ?: '-' }}</div></div>
+            </div>
+            <div style="width: 30%; text-align: center;">
+                <u>Diterima Hari : {{ $letter->created_at->locale('id')->isoFormat('dddd') }}</u>
+            </div>
+            <div style="width: 30%; text-align: right;">
+                Tanggal : {{ $letter->created_at->locale('id')->isoFormat('D MMMM YYYY') }}
+            </div>
         </div>
-        <div class="info-item">
-            <span class="info-label">Sifat / Jenis</span>
-            <span class="info-value text-capitalize">{{ str_replace('_',' ',$letter->type) }}</span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Pengirim</span>
-            <span class="info-value">
+        <div class="d-flex mb-1">
+            <div style="width: 100px;">Asal Surat</div>
+            <div>: 
                 @if($letter->type==='external')
-                    <span style="color:var(--accent);">{{ $letter->external_sender_name }}</span>
-                    <span class="info-sub">Instansi Luar (Diinput: {{ $letter->creator->name ?? 'Admin' }})</span>
+                    {{ $letter->external_sender_name }}
                 @else
-                    {{ $letter->sender->name ?? 'Sistem' }}
-                    @if($letter->sender->unit->name ?? false)
-                        <span class="info-sub">{{ $letter->sender->unit->name }}</span>
-                    @endif
+                    {{ $letter->sender->name ?? 'Sistem' }} {{ isset($letter->sender->unit) ? '('.$letter->sender->unit->name.')' : '' }}
                 @endif
-            </span>
-        </div>
-        <div class="info-item">
-            <span class="info-label">Tujuan Utama</span>
-            <span class="info-value">
-                @if($letter->type==='outbound_external')
-                    <span style="color:var(--primary);">{{ $letter->external_recipient_name }}</span>
-                    <span class="info-sub">Instansi Luar</span>
-                @elseif($letter->recipientUser)
-                    {{ $letter->recipientUser->name }}
-                    @if($letter->recipientUser->unit->name ?? false)
-                        <span class="info-sub">{{ $letter->recipientUser->unit->name }}</span>
-                    @endif
-                @else
-                    Unit {{ $letter->recipientUnit->name ?? '—' }}
-                @endif
-            </span>
-        </div>
-    </div>
-
-    <div class="row mt-4 gx-3 gy-3">
-        @if($letter->body)
-        <div class="col-lg-{{ $letter->attachments->count() ? '6' : '12' }}">
-            <div class="content-box m-0 h-100">
-                <span class="info-label d-block mb-2">Isi Surat / Pengantar</span>
-                {!! nl2br(e($letter->body)) !!}
             </div>
         </div>
-        @endif
-
-        @if($letter->attachments->count())
-        <div class="col-lg-{{ $letter->body ? '6' : '12' }}">
-            <div class="content-box m-0 h-100" style="background:var(--surface); border-color:var(--border);">
-                <span class="info-label d-block mb-2">Dokumen Lampiran</span>
-                <div class="d-flex flex-column gap-2" id="attachmentButtons">
-                    @foreach($letter->attachments as $att)
-                        @php
-                            $url  = Storage::url($att->file_path);
-                            $ext  = strtolower(pathinfo($att->file_path, PATHINFO_EXTENSION));
-                            $name = basename($att->file_path);
-                        @endphp
-                        @if($ext==='pdf')
-                            <div class="att-card att-pdf view-pdf w-100" style="max-width:none;" data-src="{{ $url }}" data-name="{{ $name }}">
-                                <div class="att-icon"><i class="bi bi-file-earmark-pdf-fill"></i></div>
-                                <div class="att-details">
-                                    <div class="att-name">{{ $name }}</div>
-                                    <div class="att-ext">Dokumen PDF</div>
-                                </div>
-                            </div>
-                        @elseif(in_array($ext,['doc','docx']))
-                            <a href="{{ $url }}" download class="att-card att-doc w-100" style="max-width:none;">
-                                <div class="att-icon"><i class="bi bi-file-earmark-word-fill"></i></div>
-                                <div class="att-details">
-                                    <div class="att-name">{{ $name }}</div>
-                                    <div class="att-ext">Dokumen Word</div>
-                                </div>
-                            </a>
-                        @else
-                            <a href="{{ $url }}" download class="att-card att-other w-100" style="max-width:none;">
-                                <div class="att-icon"><i class="bi bi-file-earmark-fill"></i></div>
-                                <div class="att-details">
-                                    <div class="att-name">{{ $name }}</div>
-                                    <div class="att-ext">Dokumen Lampiran</div>
-                                </div>
-                            </a>
-                        @endif
-                    @endforeach
-                </div>
-            </div>
+        <div class="d-flex">
+            <div style="width: 100px;">Perihal</div>
+            <div>: {{ $letter->subject }}</div>
         </div>
-        @endif
+        
+        <div style="border-bottom: 1px solid #aaa; margin-top: 10px;"></div>
     </div>
+
+    @if($letter->body)
+    <div class="mt-3">
+        <span class="fw-bold d-block mb-1">Isi Surat / Pengantar:</span>
+        {!! nl2br(e($letter->body)) !!}
+    </div>
+    @endif
+
+    {{-- Sembunyikan tombol lampiran agar langsung fokus ke preview saja --}}
+    @if($letter->attachments->count())
+    <div class="d-none" id="attachmentButtons">
+        @foreach($letter->attachments as $att)
+            @php
+                $url  = Storage::url($att->file_path);
+                $ext  = strtolower(pathinfo($att->file_path, PATHINFO_EXTENSION));
+                $name = basename($att->file_path);
+            @endphp
+            @if($ext==='pdf')
+                <div class="att-card att-pdf view-pdf" data-src="{{ $url }}" data-name="{{ $name }}"></div>
+            @endif
+        @endforeach
+    </div>
+    @endif
 
     @if($letter->type==='outbound_external')
-    <div class="content-box" style="background:#fffbeb; border-color:#fde68a; margin-top:1rem;">
+    <div class="content-box mt-3" style="background:#fffbeb; border-color:#fde68a;">
         <span class="info-label d-block mb-2" style="color:#92400e;">Keterangan Eksternal</span>
         <span style="color:#92400e;">{!! nl2br(e($letter->external_notes ?: 'Belum ada keterangan.')) !!}</span>
         @if($letter->from_user_id == Auth::id())
