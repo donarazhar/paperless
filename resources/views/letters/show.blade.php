@@ -56,64 +56,79 @@
 
 
 {{-- ═══ HERO HEADER ═══ --}}
-<div class="detail-hero">
-    <div class="hero-content">
-        <div class="status-badge mb-3" style="background:{{$sm['bg']}};color:{{$sm['color']}};border-color:{{$sm['border']}};">
+<div class="detail-hero" style="align-items: flex-start; padding-bottom: 2rem;">
+    <div class="hero-content" style="flex: 1;">
+        <div class="status-badge mb-2" style="background:{{$sm['bg']}};color:{{$sm['color']}};border-color:{{$sm['border']}};">
             <i class="bi {{$sm['icon']}}"></i> {{$sm['label']}}
         </div>
-        <h1 class="hero-title">{{ $letter->subject }}</h1>
-        <div class="hero-meta">
-            <span><i class="bi bi-calendar-event"></i> {{ $letter->created_at->locale('id')->isoFormat('dddd, D MMMM YYYY') }}</span>
-            @if($letter->agenda_number)
-                <span><i class="bi bi-hash"></i> Agenda: {{ $letter->agenda_number }}</span>
+        <div style="font-size: 0.75rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 0.1rem;">Perihal :</div>
+        <h1 class="hero-title mb-1">{{ $letter->subject }}</h1>
+
+        <div style="background: rgba(255,255,255,0.6); border: 1px solid rgba(255,255,255,0.6); border-radius: 1rem; padding: 1.25rem; backdrop-filter: blur(4px); box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+            {{-- INLINE DETAILS (Merged) --}}
+            <div class="d-flex flex-wrap gap-4" style="{{ $letter->body ? 'border-bottom: 1px dashed rgba(0,0,0,0.1); padding-bottom: 0.75rem; margin-bottom: 0.75rem;' : '' }}">
+                <div>
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">No Agenda</div>
+                    <div style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">{{ $letter->agenda_number ?: '-' }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Diterima Hari</div>
+                    <div style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">{{ $letter->created_at->locale('id')->isoFormat('dddd') }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Tanggal</div>
+                    <div style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">{{ $letter->created_at->locale('id')->isoFormat('D MMMM YYYY') }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Asal Surat</div>
+                    <div style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">
+                        @if($letter->type==='external')
+                            <span class="text-primary">{{ $letter->external_sender_name }}</span>
+                        @else
+                            @if(isset($letter->sender->unit))
+                                {{ $letter->sender->unit->name }}
+                            @else
+                                {{ $letter->sender->name ?? 'Sistem' }}
+                            @endif
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            @if($letter->body)
+            <div>
+                <div style="font-size: 0.85rem; font-weight: 700; color: #475569; margin-bottom: 0.3rem;"><i class="bi bi-text-paragraph me-2"></i>Isi Surat:</div>
+                <div style="font-size: 0.95rem; color: #1e293b; line-height: 1.6;">
+                    {!! nl2br(e($letter->body)) !!}
+                </div>
+            </div>
             @endif
         </div>
+        
+        @if($letter->type==='outbound_external')
+        <div class="content-box mt-3" style="background: rgba(255,251,235,0.8); border-color:#fde68a;">
+            <span class="info-label d-block mb-2" style="color:#92400e;">Keterangan Eksternal</span>
+            <span style="color:#92400e;">{!! nl2br(e($letter->external_notes ?: 'Belum ada keterangan.')) !!}</span>
+            @if($letter->from_user_id == Auth::id())
+                <div class="mt-3">
+                    <button class="btn btn-sm btn-warning fw-bold text-dark" data-bs-toggle="collapse" data-bs-target="#extNoteForm"><i class="bi bi-pencil-square"></i> Perbarui Keterangan</button>
+                    <div class="collapse mt-2" id="extNoteForm">
+                        <form action="{{ route('letters.updateExternalNotes', $letter) }}" method="POST">
+                            @csrf
+                            <textarea name="external_notes" class="form-control mb-2" rows="2">{{ $letter->external_notes }}</textarea>
+                            <button type="submit" class="btn btn-sm btn-dark fw-bold">Simpan Perubahan</button>
+                        </form>
+                    </div>
+                </div>
+            @endif
+        </div>
+        @endif
     </div>
-    <a href="{{ url()->previous() }}" class="btn-back"><i class="bi bi-arrow-left"></i> Kembali</a>
+    
+    <a href="{{ url()->previous() }}" class="btn-back ms-4"><i class="bi bi-arrow-left"></i> Kembali</a>
 </div>
 
-{{-- ═══ INFORMASI SURAT ═══ --}}
-<div class="modern-panel mb-4">
-    <div style="position: relative; padding: 10px 0; font-family: sans-serif; font-size: 0.95rem; color: #000;">
-        <div style="position: absolute; top: 0; left: 0; width: 100%; border-top: 1px solid #aaa;"></div>
-        <div style="position: absolute; top: -1.5px; left: 0; width: 15%; border-top: 4px solid #777;"></div>
-        
-        <div class="d-flex justify-content-between align-items-start mb-1 mt-2">
-            <div style="width: 40%;">
-                <div class="d-flex"><div style="width: 100px;">No Agenda</div><div>: {{ $letter->agenda_number ?: '-' }}</div></div>
-            </div>
-            <div style="width: 30%; text-align: center;">
-                <u>Diterima Hari : {{ $letter->created_at->locale('id')->isoFormat('dddd') }}</u>
-            </div>
-            <div style="width: 30%; text-align: right;">
-                Tanggal : {{ $letter->created_at->locale('id')->isoFormat('D MMMM YYYY') }}
-            </div>
-        </div>
-        <div class="d-flex mb-1">
-            <div style="width: 100px;">Asal Surat</div>
-            <div>: 
-                @if($letter->type==='external')
-                    {{ $letter->external_sender_name }}
-                @else
-                    {{ $letter->sender->name ?? 'Sistem' }} {{ isset($letter->sender->unit) ? '('.$letter->sender->unit->name.')' : '' }}
-                @endif
-            </div>
-        </div>
-        <div class="d-flex">
-            <div style="width: 100px;">Perihal</div>
-            <div>: {{ $letter->subject }}</div>
-        </div>
-        
-        <div style="border-bottom: 1px solid #aaa; margin-top: 10px;"></div>
-    </div>
-
-    @if($letter->body)
-    <div class="mt-3">
-        <span class="fw-bold d-block mb-1">Isi Surat / Pengantar:</span>
-        {!! nl2br(e($letter->body)) !!}
-    </div>
-    @endif
-
+<div class="mb-4">
     {{-- Sembunyikan tombol lampiran agar langsung fokus ke preview saja --}}
     @if($letter->attachments->count())
     <div class="d-none" id="attachmentButtons">
@@ -127,25 +142,6 @@
                 <div class="att-card att-pdf view-pdf" data-src="{{ $url }}" data-name="{{ $name }}"></div>
             @endif
         @endforeach
-    </div>
-    @endif
-
-    @if($letter->type==='outbound_external')
-    <div class="content-box mt-3" style="background:#fffbeb; border-color:#fde68a;">
-        <span class="info-label d-block mb-2" style="color:#92400e;">Keterangan Eksternal</span>
-        <span style="color:#92400e;">{!! nl2br(e($letter->external_notes ?: 'Belum ada keterangan.')) !!}</span>
-        @if($letter->from_user_id == Auth::id())
-            <div class="mt-3">
-                <button class="btn btn-sm btn-warning fw-bold text-dark" data-bs-toggle="collapse" data-bs-target="#extNoteForm"><i class="bi bi-pencil-square"></i> Perbarui Keterangan</button>
-                <div class="collapse mt-2" id="extNoteForm">
-                    <form action="{{ route('letters.updateExternalNotes', $letter) }}" method="POST">
-                        @csrf
-                        <textarea name="external_notes" class="form-control mb-2" rows="2">{{ $letter->external_notes }}</textarea>
-                        <button type="submit" class="btn btn-sm btn-dark fw-bold">Simpan Perubahan</button>
-                    </form>
-                </div>
-            </div>
-        @endif
     </div>
     @endif
 </div>
