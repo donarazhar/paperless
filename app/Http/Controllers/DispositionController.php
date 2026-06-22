@@ -62,7 +62,7 @@ class DispositionController extends Controller
     public function store(Request $request, Letter $letter)
     {
         $user = Auth::user();
-        if (!in_array($user->role, ['bagian_tu', 'kepala_sekretariat', 'kepala_unit', 'sub_unit', 'admin_unit'])) {
+        if (!in_array($user->role, ['bagian_tu', 'kepala_sekretariat', 'kepala_unit', 'sub_unit', 'admin_unit', 'subag_persuratan'])) {
             abort(403, 'Anda tidak memiliki akses untuk membuat disposisi.');
         }
 

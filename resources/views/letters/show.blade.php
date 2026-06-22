@@ -23,6 +23,10 @@
             if (in_array($letter->status, ['in_review_bagian_tu', 'in_consideration']) || ($dispRecv && $dispRecv->status === 'pending')) {
                 $canDispose = true;
             }
+        } elseif ($role === 'subag_persuratan') {
+            if (in_array($letter->status, ['in_review_subag', 'in_consideration']) || ($dispRecv && $dispRecv->status === 'pending')) {
+                $canDispose = true;
+            }
         } else {
             if ($letter->to_unit_id == $user->unit_id && in_array($role, ['admin_unit', 'kepala_unit'])) {
                 // If the letter is sent directly to the unit
