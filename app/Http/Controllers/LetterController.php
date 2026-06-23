@@ -139,14 +139,14 @@ class LetterController extends Controller
             'dispositions',
         ])->where('type', 'internal');
 
-        // Filter out drafts from inbox
-        $q->where('status', '!=', 'draft');
+        // Filter out letters that haven't been sent by the sender yet
+        $q->whereNotIn('status', ['draft', 'pending_approval', 'pending_sending']);
 
         // Unified Visibility Logic: User sees letters addressed to their unit OR dispositioned to them/their unit
         $q->where(function ($query) use ($user) {
             if (in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu', 'kepala_sekretariat'])) {
                 // Sekretariat sees letters that have reached them (pending_agenda or further)
-                $query->whereNotIn('status', ['draft', 'pending_approval', 'pending_sending']);
+                $query->whereNotNull('id'); // dummy condition since we already filtered out above
             } else {
                 // Admin Unit / Kepala Unit sees direct letters to their unit or dispositions
                 $query->where('to_unit_id', $user->unit_id)

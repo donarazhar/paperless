@@ -32,8 +32,8 @@
                 // If the letter is sent directly to the unit
                 $canDispose = true;
             }
-            elseif ($dispRecv && $dispRecv->status === 'pending' && in_array($role, ['kepala_unit', 'sub_unit'])) {
-                // For unit, only Kepala Unit and Sub Unit can make new dispositions off an incoming disposition
+            elseif ($dispRecv && $dispRecv->status === 'pending' && in_array($role, ['admin_unit', 'kepala_unit', 'sub_unit'])) {
+                // For unit, Admin Unit, Kepala Unit, and Sub Unit can make new dispositions off an incoming disposition
                 $canDispose = true;
             }
         }
@@ -265,8 +265,12 @@
         </div>
         @endif
 
-        {{-- Selesaikan (Arsip Sekretariat) --}}
-        @if(in_array($role, ['bagian_tu', 'subag_persuratan']) && $letter->status !== 'completed' && !in_array($letter->status, ['draft', 'pending_approval', 'pending_sending', 'pending_agenda']))
+        {{-- Selesaikan / Arsipkan --}}
+        @php
+            $canCompleteSekretariat = in_array($role, ['bagian_tu', 'subag_persuratan']) && $letter->status !== 'completed' && !in_array($letter->status, ['draft', 'pending_approval', 'pending_sending', 'pending_agenda']);
+            $canCompleteUnit = in_array($role, ['admin_unit', 'kepala_unit', 'sub_unit']) && $canDispose && $letter->status !== 'completed';
+        @endphp
+        @if($canCompleteSekretariat || $canCompleteUnit)
         <div class="action-box" style="background:#f0fdf4; border:1px solid #bbf7d0;">
             <div class="action-title" style="color:#166534;"><i class="bi bi-archive-fill"></i> Arsipkan Surat</div>
             <form action="{{ route('letters.complete', $letter) }}" method="POST">
