@@ -169,20 +169,13 @@ Gunakan akun-akun berikut untuk menguji *workflow* (Password untuk semua akun: `
 - `subagsurat@example.com` (Subag Persuratan)
 - `kabagiantu@example.com` (Bagian TU)
 
-**Unit - Masjid Agung Al Azhar:**
-- `adminmasjid@example.com` (Admin Unit)
-- `kepalamasjid@example.com` (Kepala Unit)
-- `submasjid@example.com` (Sub Unit)
+**Direktorat Keuangan:**
+- `adminkeuangan@example.com` (Admin Unit)
+- `kepalakeuangan@example.com` (Kepala Unit)
 
-**Unit - Bagian ITTD:**
+**Bagian ITTD:**
 - `adminittd@example.com` (Admin Unit)
 - `kepalaittd@example.com` (Kepala Unit)
-- `subittd@example.com` (Sub Unit)
-
-**Unit - SD Islam Al Azhar 1 (Kampus Bandung):**
-- `adminsd@example.com` (Admin Unit)
-- `kasd@example.com` (Kepala Unit)
-- `wakasd@example.com` (Sub Unit)
 
 *(Buka `DatabaseSeeder.php` untuk melihat senarai lengkap pengguna).*
 
