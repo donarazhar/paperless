@@ -227,6 +227,7 @@
                     <i class="bi bi-grid-1x2-fill"></i> Dashboard
                 </a>
 
+                @if(in_array($role, ['admin_sekretariat', 'admin_unit', 'admin']))
                 <div class="nav-dropdown">
                     <button class="nav-link-item {{ request()->routeIs('letters.inbound*') ? 'active' : '' }}">
                         <i class="bi bi-envelope-arrow-down-fill"></i> Surat Masuk <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
@@ -237,7 +238,6 @@
                     </div>
                 </div>
 
-                @if(!in_array($role, ['kepala_sekretariat']))
                 <div class="nav-dropdown">
                     <button class="nav-link-item {{ request()->routeIs('letters.outbound*') ? 'active' : '' }}">
                         <i class="bi bi-send-fill"></i> Surat Keluar <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
@@ -247,6 +247,24 @@
                         <a class="nav-dd-item" href="{{ route('letters.outboundExternal') }}"><i class="bi bi-send-check-fill me-2" style="color:var(--primary)"></i>Keluar Eksternal</a>
                     </div>
                 </div>
+                @endif
+
+                @if(in_array($role, ['subag_persuratan', 'kepala_unit']))
+                <div class="nav-dropdown">
+                    <button class="nav-link-item {{ request()->routeIs('tugas.*') ? 'active' : '' }}">
+                        <i class="bi bi-clipboard-check-fill"></i> Tugas <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
+                    </button>
+                    <div class="nav-dd-menu">
+                        <a class="nav-dd-item" href="{{ route('tugas.disposisi') }}"><i class="bi bi-file-earmark-check-fill me-2" style="color:var(--primary)"></i>Disposisi</a>
+                        <a class="nav-dd-item" href="{{ route('tugas.accSurat') }}"><i class="bi bi-pen-fill me-2" style="color:var(--primary)"></i>ACC Surat</a>
+                    </div>
+                </div>
+                @endif
+
+                @if(in_array($role, ['kepala_sekretariat', 'sub_unit', 'bagian_tu']))
+                <a class="nav-link-item {{ request()->routeIs('tugas.myDisposisi') ? 'active' : '' }}" href="{{ route('tugas.myDisposisi') }}">
+                    <i class="bi bi-inboxes-fill"></i> Disposisi
+                </a>
                 @endif
 
                 <div class="nav-dropdown">
@@ -259,7 +277,7 @@
                     </div>
                 </div>
 
-                @if(in_array($role, ['admin', 'admin_sekretariat', 'subag_persuratan', 'bagian_tu']))
+                @if(in_array($role, ['admin', 'admin_sekretariat']))
                 <div class="nav-dropdown">
                     <button class="nav-link-item {{ request()->routeIs('users.*', 'branches.*', 'units.*') ? 'active' : '' }}">
                         <i class="bi bi-database-fill"></i> Master Data <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
@@ -322,7 +340,8 @@
             </a>
         </div>
 
-        {{-- Surat Masuk — collapsible --}}
+        {{-- Surat Masuk & Keluar --}}
+        @if(in_array($role, ['admin_sekretariat', 'admin_unit', 'admin']))
         <div class="mm-section mm-accordion">
             <button class="mm-acc-trigger {{ request()->routeIs('letters.inbound*') ? 'open' : '' }}" data-acc="accInbound">
                 <i class="bi bi-envelope-arrow-down-fill acc-icon"></i> Surat Masuk
@@ -334,8 +353,6 @@
             </div>
         </div>
 
-        {{-- Surat Keluar — collapsible --}}
-        @if(!in_array($role, ['kepala_sekretariat']))
         <div class="mm-section mm-accordion">
             <button class="mm-acc-trigger {{ request()->routeIs('letters.outbound*') ? 'open' : '' }}" data-acc="accOutbound">
                 <i class="bi bi-send-fill acc-icon"></i> Surat Keluar
@@ -345,6 +362,29 @@
                 <a class="mm-link" href="{{ route('letters.outbound') }}"><i class="bi bi-send-fill"></i> Internal</a>
                 <a class="mm-link" href="{{ route('letters.outboundExternal') }}"><i class="bi bi-send-check-fill"></i> Eksternal</a>
             </div>
+        </div>
+        @endif
+
+        {{-- Tugas --}}
+        @if(in_array($role, ['subag_persuratan', 'kepala_unit']))
+        <div class="mm-section mm-accordion">
+            <button class="mm-acc-trigger {{ request()->routeIs('tugas.*') ? 'open' : '' }}" data-acc="accTugas">
+                <i class="bi bi-clipboard-check-fill acc-icon"></i> Tugas
+                <i class="bi bi-chevron-down acc-chevron"></i>
+            </button>
+            <div class="mm-acc-body {{ request()->routeIs('tugas.*') ? 'open' : '' }}" id="accTugas">
+                <a class="mm-link" href="{{ route('tugas.disposisi') }}"><i class="bi bi-file-earmark-check-fill"></i> Disposisi</a>
+                <a class="mm-link" href="{{ route('tugas.accSurat') }}"><i class="bi bi-pen-fill"></i> ACC Surat</a>
+            </div>
+        </div>
+        @endif
+
+        {{-- Disposisi --}}
+        @if(in_array($role, ['kepala_sekretariat', 'sub_unit', 'bagian_tu']))
+        <div class="mm-section">
+            <a class="mm-link {{ request()->routeIs('tugas.myDisposisi') ? 'active' : '' }}" href="{{ route('tugas.myDisposisi') }}">
+                <i class="bi bi-inboxes-fill"></i> Disposisi
+            </a>
         </div>
         @endif
 
@@ -361,7 +401,7 @@
         </div>
 
         {{-- Master Data — collapsible --}}
-        @if(in_array($role, ['admin', 'admin_sekretariat', 'subag_persuratan', 'bagian_tu']))
+        @if(in_array($role, ['admin', 'admin_sekretariat']))
         <div class="mm-section mm-accordion">
             <button class="mm-acc-trigger {{ request()->routeIs('users.*', 'branches.*', 'units.*', 'organs.*') ? 'open' : '' }}" data-acc="accMaster">
                 <i class="bi bi-database-fill acc-icon"></i> Master Data

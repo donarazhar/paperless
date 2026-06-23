@@ -34,6 +34,10 @@
     .btn-open:hover{background:#9333ea;color:#fff;border-color:#9333ea;transform:translateY(-1px);box-shadow:0 2px 8px rgba(147,51,234,0.25)}
     
     .status-pill{display:inline-flex;align-items:center;gap:4px;font-size:.68rem;font-weight:700;padding:.25rem .6rem;border-radius:100px;white-space:nowrap}
+    .sp-draft{background:#f1f5f9;color:#475569}
+    .sp-pending{background:#fef9c3;color:#92400e}
+    .sp-review{background:#e0e7ff;color:#4f46e5}
+    .sp-active{background:#f5f3ff;color:#8b5cf6}
     .sp-done{background:#d1fae5;color:#065f46}
 
     .letter-card{background:#fff;border:1.5px solid #e2e8f0;border-radius:1rem;padding:1rem 1.15rem;margin-bottom:.7rem;text-decoration:none;color:inherit;display:block;transition:all .18s;position:relative;overflow:hidden}
@@ -115,7 +119,9 @@
     <table class="inbox-table">
         <thead>
             <tr>
+                @if(!in_array(Auth::user()->role, ['admin_sekretariat', 'admin_unit']))
                 <th style="width:105px;">No. Agenda</th>
+                @endif
                 <th style="width:100px;">Tgl. Kirim</th>
                 <th>No. Surat & Perihal</th>
                 <th style="width:185px;">Tujuan & Status</th>
@@ -124,7 +130,32 @@
         </thead>
         <tbody>
             @forelse($letters as $letter)
+                @php
+                    $status = $letter->status;
+                    $pillClass = match($status) {
+                        'draft'                 => 'sp-draft',
+                        'pending_approval'      => 'sp-pending',
+                        'pending_sending'       => 'sp-review',
+                        'completed'             => 'sp-done',
+                        default                 => 'sp-default',
+                    };
+                    $pillText = match($status) {
+                        'draft'                 => 'Draft',
+                        'pending_approval'      => Auth::user()->role === 'admin_sekretariat' ? 'Menunggu ACC Subag Surat' : 'Menunggu ACC Kepala',
+                        'pending_sending'       => 'Menunggu Dikirim',
+                        'completed'             => 'Terkirim',
+                        default                 => ucfirst(str_replace('_', ' ', $status)),
+                    };
+                    $pillIcon = match($status) {
+                        'draft'                 => 'bi-pencil',
+                        'pending_approval'      => 'bi-clock',
+                        'pending_sending'       => 'bi-send',
+                        'completed'             => 'bi-check-circle-fill',
+                        default                 => 'bi-info-circle',
+                    };
+                @endphp
                 <tr>
+                    @if(!in_array(Auth::user()->role, ['admin_sekretariat', 'admin_unit']))
                     <td>
                         @if($letter->agenda_number)
                             <span class="agenda-pill">{{ $letter->agenda_number }}</span>
@@ -132,6 +163,7 @@
                             <span style="color:#cbd5e1;font-size:0.8rem;">—</span>
                         @endif
                     </td>
+                    @endif
                     <td>
                         <div class="date-cell">
                             <div class="d-date">{{ $letter->created_at->format('d/m/Y') }}</div>
@@ -149,15 +181,15 @@
                                 <i class="bi bi-building-fill" style="color:#a855f7;"></i> {{ $letter->external_recipient_name }}
                             </div>
                             <div>
-                                <span class="status-pill sp-done m-0">
-                                    <i class="bi bi-check-circle-fill"></i> Tercatat
+                                <span class="status-pill {{ $pillClass }} m-0">
+                                    <i class="bi {{ $pillIcon }}"></i> {{ $pillText }}
                                 </span>
                             </div>
                         </div>
                     </td>
                     <td style="text-align:center;">
                         <a href="{{ route('letters.show', \Vinkla\Hashids\Facades\Hashids::encode($letter->id)) }}" class="btn-open" title="Buka Detail">
-                            <i class="bi bi-chevron-right" style="font-size:0.9rem;margin:0;"></i>
+                            <i class="bi bi-eye" style="font-size:0.9rem;margin:0;"></i>
                         </a>
                     </td>
                 </tr>
@@ -177,6 +209,30 @@
 {{-- MOBILE CARDS --}}
 <div class="cards-wrap">
     @forelse($letters as $letter)
+        @php
+            $status = $letter->status;
+            $pillClass = match($status) {
+                'draft'                 => 'sp-draft',
+                'pending_approval'      => 'sp-pending',
+                'pending_sending'       => 'sp-review',
+                'completed'             => 'sp-done',
+                default                 => 'sp-default',
+            };
+            $pillText = match($status) {
+                'draft'                 => 'Draft',
+                'pending_approval'      => Auth::user()->role === 'admin_sekretariat' ? 'Menunggu ACC Subag Surat' : 'Menunggu ACC Kepala',
+                'pending_sending'       => 'Menunggu Dikirim',
+                'completed'             => 'Terkirim',
+                default                 => ucfirst(str_replace('_', ' ', $status)),
+            };
+            $pillIcon = match($status) {
+                'draft'                 => 'bi-pencil',
+                'pending_approval'      => 'bi-clock',
+                'pending_sending'       => 'bi-send',
+                'completed'             => 'bi-check-circle-fill',
+                default                 => 'bi-info-circle',
+            };
+        @endphp
         <a href="{{ route('letters.show', \Vinkla\Hashids\Facades\Hashids::encode($letter->id)) }}" class="letter-card">
             <div class="d-flex align-items-center gap-2 mb-1">
                 <div class="lc-no flex-grow-1">{{ $letter->letter_number ?: 'No. belum ada' }}</div>
@@ -188,7 +244,7 @@
                 <span><i class="bi bi-clock"></i> {{ $letter->created_at->format('d/m/Y') }}</span>
             </div>
             <div class="d-flex align-items-center justify-content-between">
-                <span class="status-pill sp-done"><i class="bi bi-check-circle-fill"></i> Tercatat</span>
+                <span class="status-pill {{ $pillClass }}"><i class="bi {{ $pillIcon }}"></i> {{ $pillText }}</span>
                 <span class="lc-open">Buka <i class="bi bi-arrow-right-short" style="font-size:1rem;"></i></span>
             </div>
         </a>

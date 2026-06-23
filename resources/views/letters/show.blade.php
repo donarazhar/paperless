@@ -83,7 +83,7 @@
                     <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Asal Surat</div>
                     <div style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">
                         @if($letter->type==='external')
-                            <span class="text-primary">{{ $letter->external_sender_name }}</span>
+                            {{ $letter->external_sender_name }}
                         @else
                             @if(isset($letter->sender->unit))
                                 {{ $letter->sender->unit->name }}
@@ -93,6 +93,26 @@
                         @endif
                     </div>
                 </div>
+                @if(in_array($letter->type, ['internal', 'outbound_external']))
+                <div>
+                    <div style="font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase;">Tujuan Surat</div>
+                    <div style="font-size: 0.95rem; font-weight: 800; color: #0f172a;">
+                        @if($letter->type === 'outbound_external')
+                            <span style="color:#a855f7;"><i class="bi bi-building-fill"></i> {{ $letter->external_recipient_name }}</span>
+                        @else
+                            <span style="color:#059669;">
+                            @if($letter->recipientUser)
+                                <i class="bi bi-person-fill"></i> {{ $letter->recipientUser->name }}
+                            @elseif($letter->recipientUnit)
+                                <i class="bi bi-building-fill"></i> {{ $letter->recipientUnit->name }}
+                            @else
+                                <span style="color:#94a3b8;">—</span>
+                            @endif
+                            </span>
+                        @endif
+                    </div>
+                </div>
+                @endif
             </div>
 
             @if($letter->body)
@@ -151,11 +171,11 @@
     
     {{-- KOLOM KIRI (Aksi & Timeline) --}}
     <div>
-        {{-- ACC Surat Keluar (Kepala Unit) --}}
-        @if($role === 'kepala_unit' && $letter->status === 'pending_approval')
+        {{-- ACC Surat Keluar (Kepala Unit & Subag Persuratan) --}}
+        @if(in_array($role, ['kepala_unit', 'subag_persuratan']) && $letter->status === 'pending_approval')
         <div class="action-box primary" style="background:#fff7ed; border-color:#fed7aa;">
             <div class="action-title" style="color:#c2410c;"><i class="bi bi-check-circle-fill"></i> ACC Surat Keluar</div>
-            <div class="action-desc mb-3">Tinjau dokumen dan setujui surat untuk diteruskan ke Admin Unit.</div>
+            <div class="action-desc mb-3">Tinjau dokumen dan setujui surat untuk diteruskan ke Admin.</div>
             <form action="{{ route('letters.approve', $letter) }}" method="POST">
                 @csrf
                 <button type="submit" class="btn-custom w-100" style="background:#f97316; color:#fff; border:none;"><i class="bi bi-check2-all"></i> ACC Surat Ini</button>
@@ -163,11 +183,11 @@
         </div>
         @endif
 
-        {{-- Kirim Surat (Admin Unit) --}}
-        @if($role === 'admin_unit' && $letter->status === 'pending_sending')
+        {{-- Kirim Surat (Admin Unit & Admin Sekretariat) --}}
+        @if(in_array($role, ['admin_unit', 'admin_sekretariat']) && $letter->status === 'pending_sending')
         <div class="action-box primary" style="background:#f0f9ff; border-color:#bae6fd;">
             <div class="action-title" style="color:#0369a1;"><i class="bi bi-send-fill"></i> Kirim Fisik Surat</div>
-            <div class="action-desc mb-3">Surat ini telah di-ACC Kepala Unit. Harap kirimkan fisik surat dan klik tombol di bawah.</div>
+            <div class="action-desc mb-3">Surat ini telah di-ACC. Harap kirimkan fisik surat dan klik tombol di bawah.</div>
             <form action="{{ route('letters.sendFinal', $letter) }}" method="POST">
                 @csrf
                 <button type="submit" class="btn-custom w-100" style="background:#0ea5e9; color:#fff; border:none;"><i class="bi bi-rocket-takeoff-fill"></i> Konfirmasi Pengiriman</button>

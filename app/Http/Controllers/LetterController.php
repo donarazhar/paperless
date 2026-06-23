@@ -487,18 +487,24 @@ class LetterController extends Controller
     public function approve(Letter $letter)
     {
         $this->authorize('view', $letter);
-        if ($letter->status !== 'pending_approval' || Auth::user()->role !== 'kepala_unit') {
+        $userRole = Auth::user()->role;
+        
+        if ($letter->status !== 'pending_approval' || !in_array($userRole, ['kepala_unit', 'subag_persuratan'])) {
             abort(403);
         }
+        
         $letter->update(['status' => 'pending_sending']);
-        LetterHistory::create(['letter_id' => $letter->id, 'user_id' => Auth::id(), 'action' => 'approved', 'note' => 'Disetujui Kepala Unit']);
-        return back()->with('success', 'Surat berhasil di-ACC. Menunggu Admin Unit mengirim fisik surat.');
+        
+        $roleName = ($userRole === 'subag_persuratan') ? 'Subag Persuratan' : 'Kepala Unit';
+        LetterHistory::create(['letter_id' => $letter->id, 'user_id' => Auth::id(), 'action' => 'approved', 'note' => 'Disetujui ' . $roleName]);
+        
+        return back()->with('success', 'Surat berhasil di-ACC. Menunggu Admin untuk mengirim fisik surat.');
     }
 
     public function sendFinal(Letter $letter)
     {
         $this->authorize('view', $letter);
-        if ($letter->status !== 'pending_sending' || Auth::user()->role !== 'admin_unit') {
+        if ($letter->status !== 'pending_sending' || !in_array(Auth::user()->role, ['admin_unit', 'admin_sekretariat'])) {
             abort(403);
         }
         

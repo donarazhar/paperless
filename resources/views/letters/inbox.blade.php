@@ -283,7 +283,7 @@
                     </td>
                     <td style="text-align:center;">
                         <a href="{{ $showUrl }}" class="btn-open" title="Buka Detail">
-                            <i class="bi bi-chevron-right" style="font-size:0.9rem;margin:0;"></i>
+                            <i class="bi bi-eye" style="font-size:0.9rem;margin:0;"></i>
                         </a>
                     </td>
                 </tr>

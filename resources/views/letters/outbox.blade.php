@@ -117,7 +117,9 @@
     <table class="inbox-table">
         <thead>
             <tr>
+                @if(Auth::user()->role !== 'admin_sekretariat')
                 <th style="width:105px;">No. Agenda</th>
+                @endif
                 <th style="width:100px;">Tgl. Kirim</th>
                 <th>No. Surat & Perihal</th>
                 <th style="width:185px;">Tujuan & Status</th>
@@ -141,7 +143,7 @@
                     };
                     $pillText = match($status) {
                         'draft'                 => 'Draft',
-                        'pending_approval'      => 'Menunggu ACC Kepala',
+                        'pending_approval'      => Auth::user()->role === 'admin_sekretariat' ? 'Menunggu ACC Subag Surat' : 'Menunggu ACC Kepala',
                         'pending_sending'       => 'Menunggu Dikirim',
                         'pending_agenda'        => 'Antre Agenda',
                         'in_review_subag'       => 'Review Subag',
@@ -163,6 +165,7 @@
                     };
                 @endphp
                 <tr>
+                    @if(Auth::user()->role !== 'admin_sekretariat')
                     <td>
                         @if($letter->agenda_number)
                             <span class="agenda-pill">{{ $letter->agenda_number }}</span>
@@ -170,6 +173,7 @@
                             <span style="color:#cbd5e1;font-size:0.8rem;">—</span>
                         @endif
                     </td>
+                    @endif
                     <td>
                         <div class="date-cell">
                             <div class="d-date">{{ $letter->created_at->format('d/m/Y') }}</div>
@@ -201,7 +205,7 @@
                     </td>
                     <td style="text-align:center;">
                         <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}" class="btn-open" title="Buka Detail">
-                            <i class="bi bi-chevron-right" style="font-size:0.9rem;margin:0;"></i>
+                            <i class="bi bi-eye" style="font-size:0.9rem;margin:0;"></i>
                         </a>
                     </td>
                 </tr>
@@ -236,7 +240,7 @@
                     };
                     $pillText = match($status) {
                         'draft'                 => 'Draft',
-                        'pending_approval'      => 'Menunggu ACC Kepala',
+                        'pending_approval'      => Auth::user()->role === 'admin_sekretariat' ? 'Menunggu ACC Subag Surat' : 'Menunggu ACC Kepala',
                         'pending_sending'       => 'Menunggu Dikirim',
                         'pending_agenda'        => 'Antre Agenda',
                         'in_review_subag'       => 'Review Subag',
