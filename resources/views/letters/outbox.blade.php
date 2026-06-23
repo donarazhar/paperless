@@ -122,8 +122,8 @@
                 @endif
                 <th style="width:100px;">Tgl. Kirim</th>
                 <th>No. Surat & Perihal</th>
-                <th style="width:185px;">Tujuan & Status</th>
-                <th style="width:55px;text-align:center;">Aksi</th>
+                <th style="width:250px;">Tujuan & Status</th>
+                <th style="width:90px;text-align:center;">Aksi</th>
             </tr>
         </thead>
         <tbody>
@@ -149,7 +149,7 @@
                         'in_review_subag'       => 'Review Subag',
                         'in_review_bagian_tu'   => 'Review Bagian TU',
                         'in_consideration'      => 'Disposisi Aktif',
-                        'completed'             => 'Selesai',
+                        'completed'             => 'Terkirim',
                         default                 => ucfirst(str_replace('_', ' ', $status)),
                     };
                     $pillIcon = match($status) {
@@ -204,9 +204,19 @@
                         </div>
                     </td>
                     <td style="text-align:center;">
-                        <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}" class="btn-open" title="Buka Detail">
-                            <i class="bi bi-eye" style="font-size:0.9rem;margin:0;"></i>
-                        </a>
+                        <div class="d-flex justify-content-center align-items-center gap-1">
+                            @if(Auth::user()->role === 'admin_sekretariat' && $letter->status === 'pending_sending')
+                            <form action="{{ route('letters.sendFinal', $letter) }}" method="POST" style="margin:0;" onsubmit="return confirm('Tandai surat ini sebagai telah dikirim?');">
+                                @csrf
+                                <button type="submit" class="btn-open" style="background:#059669; color:#fff; border:none;" title="Kirim Surat">
+                                    <i class="bi bi-send-fill" style="font-size:0.9rem;margin:0;"></i>
+                                </button>
+                            </form>
+                            @endif
+                            <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}" class="btn-open" title="Buka Detail">
+                                <i class="bi bi-eye" style="font-size:0.9rem;margin:0;"></i>
+                            </a>
+                        </div>
                     </td>
                 </tr>
             @empty
@@ -246,7 +256,7 @@
                         'in_review_subag'       => 'Review Subag',
                         'in_review_bagian_tu'   => 'Review Bagian TU',
                         'in_consideration'      => 'Disposisi Aktif',
-                        'completed'             => 'Selesai',
+                        'completed'             => 'Terkirim',
                         default                 => ucfirst(str_replace('_', ' ', $status)),
                     };
                     $pillIcon = match($status) {
@@ -274,7 +284,17 @@
             </div>
             <div class="d-flex align-items-center justify-content-between mt-2">
                 <span class="status-pill {{ $pillClass }}"><i class="bi {{ $pillIcon }}"></i> {{ $pillText }}</span>
-                <span class="lc-open">Buka <i class="bi bi-arrow-right-short" style="font-size:1rem;"></i></span>
+                <div class="d-flex align-items-center gap-2">
+                    @if(Auth::user()->role === 'admin_sekretariat' && $letter->status === 'pending_sending')
+                    <form action="{{ route('letters.sendFinal', $letter) }}" method="POST" style="margin:0;" onsubmit="return confirm('Tandai surat ini sebagai telah dikirim?');">
+                        @csrf
+                        <button type="submit" style="background:none;border:none;padding:0;color:#059669;" title="Kirim Surat">
+                            <i class="bi bi-send-fill" style="font-size:1.1rem;"></i>
+                        </button>
+                    </form>
+                    @endif
+                    <span class="lc-open">Buka <i class="bi bi-arrow-right-short" style="font-size:1rem;"></i></span>
+                </div>
             </div>
         </a>
     @empty

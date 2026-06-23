@@ -23,14 +23,10 @@ class LetterController extends Controller
         $user = Auth::user();
         
         $q = Letter::with(['sender', 'dispositions.toUser', 'dispositions.unit', 'recipientUser', 'recipientUnit'])
-                   ->where('type', 'internal');
-
-        // Jika admin_unit / kepala_unit, tampilkan surat keluar dari unit mereka
-        if (in_array($user->role, ['admin_unit', 'kepala_unit', 'sub_unit'])) {
-            $q->whereHas('sender.organ', function($sq) use ($user) {
-                $sq->where('unit_id', $user->unit_id);
-            });
-        }
+                   ->where(function($query) {
+                       $query->has('dispositions')
+                             ->orWhereNotNull('agenda_number');
+                   });
 
         if ($s = $request->search) {
             $q->where(function ($query) use ($s) {
@@ -59,11 +55,77 @@ class LetterController extends Controller
             });
         }
 
-        $letters = $q->latest()->get();
-        $branches = \App\Models\Branch::orderBy('name')->get();
-        $units = \App\Models\Unit::orderBy('name')->get();
+        if ($from = $request->date_from) {
+            $q->whereDate('created_at', '>=', $from);
+        }
+        if ($to = $request->date_to) {
+            $q->whereDate('created_at', '<=', $to);
+        }
 
-        return view('letters.index', compact('letters', 'branches', 'units'));
+        $letters = $q->latest()->paginate(25)->withQueryString();
+        
+        $pageTitle = 'History Surat';
+        $pageSubTitle = 'Menampilkan semua surat yang berproses disposisi atau memiliki nomor agenda';
+
+        return view('letters.index', compact('letters', 'pageTitle', 'pageSubTitle'));
+    }
+
+    public function reportOutboundInternal(Request $request)
+    {
+        $user = Auth::user();
+        
+        $q = Letter::with(['sender', 'dispositions.toUser', 'dispositions.unit', 'recipientUser', 'recipientUnit'])
+                   ->where('type', 'internal')
+                   ->whereHas('sender.organ', function($sq) use ($user) {
+                       $sq->where('unit_id', $user->unit_id);
+                   });
+
+        if ($s = $request->search) {
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%")
+                      ->orWhereHas('sender.unit', function ($sq) use ($s) {
+                          $sq->where('name', 'like', "%{$s}%");
+                      });
+            });
+        }
+
+        $letters = $q->latest()->paginate(25)->withQueryString();
+        
+        $pageTitle = 'Laporan Surat Keluar Internal';
+        $pageSubTitle = 'Rekap seluruh surat keluar internal dari unit Anda';
+
+        return view('letters.index', compact('letters', 'pageTitle', 'pageSubTitle'));
+    }
+
+    public function reportOutboundExternal(Request $request)
+    {
+        $user = Auth::user();
+        
+        $q = Letter::with(['sender', 'dispositions.toUser', 'dispositions.unit', 'recipientUser', 'recipientUnit'])
+                   ->where('type', 'outbound_external')
+                   ->whereHas('sender.organ', function($sq) use ($user) {
+                       $sq->where('unit_id', $user->unit_id);
+                   });
+
+        if ($s = $request->search) {
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%")
+                      ->orWhereHas('sender.unit', function ($sq) use ($s) {
+                          $sq->where('name', 'like', "%{$s}%");
+                      });
+            });
+        }
+
+        $letters = $q->latest()->paginate(25)->withQueryString();
+        
+        $pageTitle = 'Laporan Surat Keluar Eksternal';
+        $pageSubTitle = 'Rekap seluruh surat keluar eksternal dari unit Anda';
+
+        return view('letters.index', compact('letters', 'pageTitle', 'pageSubTitle'));
     }
 
     public function inbound(Request $request)
@@ -498,21 +560,29 @@ class LetterController extends Controller
         $roleName = ($userRole === 'subag_persuratan') ? 'Subag Persuratan' : 'Kepala Unit';
         LetterHistory::create(['letter_id' => $letter->id, 'user_id' => Auth::id(), 'action' => 'approved', 'note' => 'Disetujui ' . $roleName]);
         
-        return back()->with('success', 'Surat berhasil di-ACC. Menunggu Admin untuk mengirim fisik surat.');
+        return redirect()->route('tugas.accSurat')->with('success', 'Surat berhasil di-ACC. Menunggu Admin untuk mengirim fisik surat.');
     }
 
     public function sendFinal(Letter $letter)
     {
         $this->authorize('view', $letter);
-        if ($letter->status !== 'pending_sending' || !in_array(Auth::user()->role, ['admin_unit', 'admin_sekretariat'])) {
+        $user = Auth::user();
+        
+        if ($letter->status !== 'pending_sending' || !in_array($user->role, ['admin_unit', 'admin_sekretariat'])) {
             abort(403);
         }
         
-        $newStatus = ($letter->type === 'outbound_external') ? 'completed' : 'pending_agenda';
+        if ($letter->type === 'outbound_external' || $user->role === 'admin_sekretariat') {
+            $newStatus = 'completed';
+            $note = ($letter->type === 'outbound_external') ? 'Surat eksternal telah dikirim.' : 'Surat internal telah dikirim.';
+        } else {
+            $newStatus = 'pending_agenda';
+            $note = 'Surat dikirim ke Sekretariat untuk diagendakan.';
+        }
+        
         $letter->update(['status' => $newStatus]);
         
-        $note = ($letter->type === 'outbound_external') ? 'Surat eksternal telah dikirim.' : 'Surat dikirim ke Sekretariat untuk diagendakan.';
-        LetterHistory::create(['letter_id' => $letter->id, 'user_id' => Auth::id(), 'action' => 'sent', 'note' => $note]);
+        LetterHistory::create(['letter_id' => $letter->id, 'user_id' => $user->id, 'action' => 'sent', 'note' => $note]);
         
         return back()->with('success', $note);
     }

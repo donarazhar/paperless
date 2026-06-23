@@ -69,8 +69,8 @@
         }
         .nav-dropdown:hover .nav-dd-menu,.nav-dropdown.open .nav-dd-menu{opacity:1;visibility:visible;transform:translateY(0)}
         .nav-dd-item{
-            display:block;font-size:.8rem;font-weight:500;color:var(--text);
-            padding:.5rem .75rem;border-radius:.5rem;transition:all .15s;
+            display:flex; align-items:center; font-size:.8rem;font-weight:500;color:var(--text);
+            padding:.5rem .75rem;border-radius:.5rem;transition:all .15s; text-decoration:none;
         }
         .nav-dd-item:hover{background:var(--primary-light);color:var(--primary)}
 
@@ -141,9 +141,9 @@
         .mobile-menu.show{transform:translateY(0);opacity:1;pointer-events:auto}
         .mobile-menu .mm-section{margin-bottom:.35rem}
         .mobile-menu .mm-link{
-            display:flex;align-items:center;gap:.6rem;
+            display:flex;align-items:center;
             font-size:.88rem;font-weight:600;color:var(--text);
-            padding:.65rem .75rem;border-radius:.6rem;transition:all .15s;
+            padding:.65rem .75rem;border-radius:.6rem;transition:all .15s; text-decoration:none;
         }
         .mobile-menu .mm-link:hover,.mobile-menu .mm-link.active{background:var(--primary-light);color:var(--primary)}
         .mobile-menu .mm-link i{font-size:.95rem;width:1.25rem;text-align:center}
@@ -255,8 +255,22 @@
                         <i class="bi bi-clipboard-check-fill"></i> Tugas <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
                     </button>
                     <div class="nav-dd-menu">
-                        <a class="nav-dd-item" href="{{ route('tugas.disposisi') }}"><i class="bi bi-file-earmark-check-fill me-2" style="color:var(--primary)"></i>Disposisi</a>
-                        <a class="nav-dd-item" href="{{ route('tugas.accSurat') }}"><i class="bi bi-pen-fill me-2" style="color:var(--primary)"></i>ACC Surat</a>
+                        <a class="nav-dd-item" href="{{ route('tugas.disposisi') }}">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-file-earmark-check-fill" style="color:var(--primary)"></i>Disposisi
+                            </div>
+                            @if(isset($pendingDispCount) && $pendingDispCount > 0)
+                                <span class="badge bg-danger ms-auto" style="padding:0.35em 0.5em; border-radius:10px;">{{ $pendingDispCount }}</span>
+                            @endif
+                        </a>
+                        <a class="nav-dd-item" href="{{ route('tugas.accSurat') }}">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-pen-fill" style="color:var(--primary)"></i>ACC Surat
+                            </div>
+                            @if(isset($pendingAccCount) && $pendingAccCount > 0)
+                                <span class="badge bg-danger ms-auto" style="padding:0.35em 0.5em; border-radius:10px;">{{ $pendingAccCount }}</span>
+                            @endif
+                        </a>
                     </div>
                 </div>
                 @endif
@@ -267,15 +281,21 @@
                 </a>
                 @endif
 
+                @if(in_array($role, ['subag_persuratan', 'bagian_tu', 'admin_sekretariat']))
                 <div class="nav-dropdown">
-                    <button class="nav-link-item {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') ? 'active' : '' }}">
+                    <button class="nav-link-item {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') || request()->routeIs('letters.reportOutboundInternal') || request()->routeIs('letters.reportOutboundExternal') ? 'active' : '' }}">
                         <i class="bi bi-bar-chart-line-fill"></i> Laporan <i class="bi bi-chevron-down" style="font-size:.6rem;margin-left:2px"></i>
                     </button>
                     <div class="nav-dd-menu">
-                        <a class="nav-dd-item" href="{{ route('letters.index') }}"><i class="bi bi-bar-chart-line-fill me-2" style="color:var(--primary)"></i>Laporan Surat</a>
+                        @if(in_array($role, ['subag_persuratan', 'bagian_tu']))
+                        <a class="nav-dd-item" href="{{ route('letters.reportOutboundInternal') }}"><i class="bi bi-send-fill me-2" style="color:var(--primary)"></i>Surat Keluar Internal</a>
+                        <a class="nav-dd-item" href="{{ route('letters.reportOutboundExternal') }}"><i class="bi bi-send-check-fill me-2" style="color:var(--primary)"></i>Surat Keluar Eksternal</a>
+                        @endif
+                        <a class="nav-dd-item" href="{{ route('letters.index') }}"><i class="bi bi-clock-history me-2" style="color:var(--primary)"></i>History</a>
                         <a class="nav-dd-item" href="{{ route('letters.arsip') }}"><i class="bi bi-archive-fill me-2" style="color:var(--primary)"></i>Arsip Surat</a>
                     </div>
                 </div>
+                @endif
 
                 @if(in_array($role, ['admin', 'admin_sekretariat']))
                 <div class="nav-dropdown">
@@ -373,8 +393,22 @@
                 <i class="bi bi-chevron-down acc-chevron"></i>
             </button>
             <div class="mm-acc-body {{ request()->routeIs('tugas.*') ? 'open' : '' }}" id="accTugas">
-                <a class="mm-link" href="{{ route('tugas.disposisi') }}"><i class="bi bi-file-earmark-check-fill"></i> Disposisi</a>
-                <a class="mm-link" href="{{ route('tugas.accSurat') }}"><i class="bi bi-pen-fill"></i> ACC Surat</a>
+                <a class="mm-link" href="{{ route('tugas.disposisi') }}">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-file-earmark-check-fill"></i> Disposisi
+                    </div>
+                    @if(isset($pendingDispCount) && $pendingDispCount > 0)
+                        <span class="badge bg-danger ms-auto">{{ $pendingDispCount }}</span>
+                    @endif
+                </a>
+                <a class="mm-link" href="{{ route('tugas.accSurat') }}">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-pen-fill"></i> ACC Surat
+                    </div>
+                    @if(isset($pendingAccCount) && $pendingAccCount > 0)
+                        <span class="badge bg-danger ms-auto">{{ $pendingAccCount }}</span>
+                    @endif
+                </a>
             </div>
         </div>
         @endif
@@ -389,16 +423,22 @@
         @endif
 
         {{-- Laporan — collapsible --}}
+        @if(in_array($role, ['subag_persuratan', 'bagian_tu', 'admin_sekretariat']))
         <div class="mm-section mm-accordion">
-            <button class="mm-acc-trigger {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') ? 'open' : '' }}" data-acc="accLaporan">
+            <button class="mm-acc-trigger {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') || request()->routeIs('letters.reportOutboundInternal') || request()->routeIs('letters.reportOutboundExternal') ? 'open' : '' }}" data-acc="accLaporan">
                 <i class="bi bi-bar-chart-line-fill acc-icon"></i> Laporan
                 <i class="bi bi-chevron-down acc-chevron"></i>
             </button>
-            <div class="mm-acc-body {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') ? 'open' : '' }}" id="accLaporan">
-                <a class="mm-link" href="{{ route('letters.index') }}"><i class="bi bi-bar-chart-line-fill"></i> Laporan Surat</a>
+            <div class="mm-acc-body {{ request()->routeIs('letters.index') || request()->routeIs('letters.arsip') || request()->routeIs('letters.reportOutboundInternal') || request()->routeIs('letters.reportOutboundExternal') ? 'open' : '' }}" id="accLaporan">
+                @if(in_array($role, ['subag_persuratan', 'bagian_tu']))
+                <a class="mm-link" href="{{ route('letters.reportOutboundInternal') }}"><i class="bi bi-send-fill"></i> Surat Keluar Internal</a>
+                <a class="mm-link" href="{{ route('letters.reportOutboundExternal') }}"><i class="bi bi-send-check-fill"></i> Surat Keluar Eksternal</a>
+                @endif
+                <a class="mm-link" href="{{ route('letters.index') }}"><i class="bi bi-clock-history"></i> History</a>
                 <a class="mm-link" href="{{ route('letters.arsip') }}"><i class="bi bi-archive-fill"></i> Arsip Surat</a>
             </div>
         </div>
+        @endif
 
         {{-- Master Data — collapsible --}}
         @if(in_array($role, ['admin', 'admin_sekretariat']))

@@ -45,6 +45,10 @@ Route::middleware('auth')->group(function () {
     Route::get('letters/outbox-external', [LetterController::class, 'outboundExternal'])->name('letters.outboundExternal');
     Route::get('letters/arsip', [LetterController::class, 'arsip'])->name('letters.arsip');
     
+    // New Report Routes
+    Route::get('letters/report-outbound-internal', [LetterController::class, 'reportOutboundInternal'])->name('letters.reportOutboundInternal');
+    Route::get('letters/report-outbound-external', [LetterController::class, 'reportOutboundExternal'])->name('letters.reportOutboundExternal');
+    
     // Tugas Routes
     Route::get('tugas/disposisi', [\App\Http\Controllers\TugasController::class, 'disposisi'])->name('tugas.disposisi');
     Route::get('tugas/acc-surat', [\App\Http\Controllers\TugasController::class, 'accSurat'])->name('tugas.accSurat');

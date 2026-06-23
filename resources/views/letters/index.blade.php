@@ -147,11 +147,20 @@
                     </td>
                     <td style="text-align:center;">
                         <div class="d-flex gap-1 justify-content-center">
+                            @if(request()->routeIs('letters.index'))
                             <a href="{{ route('letters.printDisposition', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}" target="_blank"
                                class="btn-act btn-act-disp"
-                               title="Lacak Perjalanan (Print)">
-                                <i class="bi bi-sign-turn-right-fill"></i>
+                               title="Lacak Disposisi">
+                                <i class="bi bi-eye"></i>
                             </a>
+                            @else
+                            <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
+                               class="btn-act btn-act-disp"
+                               style="background:#fdf4ff;color:#7e22ce;"
+                               title="Detail">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            @endif
                         </div>
                     </td>
                 </tr>
@@ -181,10 +190,17 @@
                 @endif
             </div>
             <div class="d-flex gap-2">
+                @if(request()->routeIs('letters.index'))
                 <a href="{{ route('letters.printDisposition', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}" target="_blank"
                    style="display:inline-flex;align-items:center;gap:5px;background:#fdf4ff;color:#7e22ce;border:none;border-radius:0.5rem;font-size:0.78rem;font-weight:700;padding:0.4rem 0.85rem;text-decoration:none;cursor:pointer;">
-                    <i class="bi bi-printer-fill"></i> Cetak Lacak
+                    <i class="bi bi-eye"></i> Lacak Disposisi
                 </a>
+                @else
+                <a href="{{ route('letters.show', ['letter'=>\Vinkla\Hashids\Facades\Hashids::encode($letter->id)]) }}"
+                   style="display:inline-flex;align-items:center;gap:5px;background:#fdf4ff;color:#7e22ce;border:none;border-radius:0.5rem;font-size:0.78rem;font-weight:700;padding:0.4rem 0.85rem;text-decoration:none;cursor:pointer;">
+                    <i class="bi bi-eye"></i> Detail
+                </a>
+                @endif
             </div>
         </div>
     @empty

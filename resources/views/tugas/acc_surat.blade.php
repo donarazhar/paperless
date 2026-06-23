@@ -174,12 +174,9 @@
     <table class="inbox-table">
         <thead>
             <tr>
-                <th style="width:105px;">No. Agenda</th>
                 <th style="width:100px;">Tgl. Terima</th>
-                <th style="width:180px;">Asal Surat</th>
+                <th style="width:180px;">Tujuan Surat</th>
                 <th>No. Surat & Perihal</th>
-                <th style="width:105px;">Tgl. Disposisi</th>
-                <th style="width:160px;">Tujuan Disposisi</th>
                 <th style="width:55px;text-align:center;">Aksi</th>
             </tr>
         </thead>
@@ -202,7 +199,7 @@
                         default                 => 'sp-default',
                     };
                     $pillText = match($status) {
-                        'pending_approval'      => 'Menunggu ACC Kepala',
+                        'pending_approval'      => 'Menunggu ACC',
                         'pending_sending'       => 'Menunggu Dikirim',
                         'pending_agenda'        => 'Antre Agenda',
                         'in_review_subag'       => 'Review Subag',
@@ -229,20 +226,27 @@
                 @endphp
                 <tr>
                     <td>
-                        @if($letter->agenda_number)
-                            <span class="agenda-pill">{{ $letter->agenda_number }}</span>
-                        @else
-                            <span style="color:#cbd5e1;font-size:0.8rem;">—</span>
-                        @endif
-                    </td>
-                    <td>
                         <div class="date-cell">
                             <div class="d-date">{{ $letter->created_at->format('d/m/Y') }}</div>
                         </div>
                     </td>
                     <td>
                         <div class="d-flex flex-column gap-1 align-items-start">
-                            <div class="fw-bold" style="font-size:0.8rem;color:#0f172a;">{{ $letter->sender->unit->name ?? '—' }}</div>
+                            <div class="fw-bold" style="font-size:0.8rem;color:#0f172a;">
+                                @if($letter->type === 'outbound_external')
+                                    <i class="bi bi-building-fill" style="color:#a855f7;"></i> {{ $letter->external_recipient_name }}
+                                @else
+                                    <span style="color:#059669;">
+                                    @if($letter->recipientUser)
+                                        <i class="bi bi-person-fill"></i> {{ $letter->recipientUser->name }}
+                                    @elseif($letter->recipientUnit)
+                                        <i class="bi bi-building-fill"></i> {{ $letter->recipientUnit->name }}
+                                    @else
+                                        <span style="color:#94a3b8;">—</span>
+                                    @endif
+                                    </span>
+                                @endif
+                            </div>
                             <div>
                                 @if($disp && $letter->status !== 'in_review_kasubag')
                                     <span class="status-pill sp-disp m-0" style="display:inline-flex;margin-bottom:0.15rem !important;">
@@ -263,24 +267,6 @@
                             <div class="s-title" title="{{ $letter->subject }}">{{ $letter->subject }}</div>
                         </div>
                     </td>
-                    <td>
-                        <div class="date-cell">
-                            @if($latestDisp)
-                                <div class="d-date">{{ $latestDisp->created_at->format('d/m/Y') }}</div>
-                            @else
-                                <span style="font-size:0.8rem;color:#cbd5e1;">—</span>
-                            @endif
-                        </div>
-                    </td>
-                    <td>
-                        <div class="subject-cell">
-                            @if($latestDisp)
-                                <div class="fw-bold" style="font-size:0.75rem;color:#0f172a;"><i class="bi bi-geo-alt-fill" style="color:#ef4444;font-size:0.65rem;"></i> {{ $latestDisp->toUnit->name ?? $latestDisp->toUser->name ?? '—' }}</div>
-                            @else
-                                <span style="font-size:0.75rem;color:#64748b;">Belum didisposisi</span>
-                            @endif
-                        </div>
-                    </td>
                     <td style="text-align:center;">
                         <a href="{{ $showUrl }}" class="btn-open" title="Buka Detail">
                             <i class="bi bi-eye" style="font-size:0.9rem;margin:0;"></i>
@@ -289,7 +275,7 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="7">
+                    <td colspan="4">
                         <div class="empty-state">
                             <div class="empty-icon-wrap"><i class="bi bi-inbox"></i></div>
                             <div class="e-title">Tidak ada surat masuk</div>
@@ -322,7 +308,7 @@
                         default                 => 'sp-default',
             };
             $pillText = match($status) {
-                        'pending_approval'      => 'Menunggu ACC Kepala',
+                        'pending_approval'      => 'Menunggu ACC',
                         'pending_sending'       => 'Menunggu Dikirim',
                         'pending_agenda'        => 'Antre Agenda',
                         'in_review_subag'       => 'Review Subag',
@@ -347,7 +333,19 @@
             <div class="lc-no">{{ $letter->letter_number ?: 'No. belum ada' }}</div>
             <div class="lc-subject">{{ $letter->subject }}</div>
             <div class="lc-meta mb-2">
-                <span><i class="bi bi-person-fill"></i> {{ $letter->sender->name }}</span>
+                @if($letter->type === 'outbound_external')
+                    <span style="color:#a855f7;"><i class="bi bi-building-fill"></i> {{ $letter->external_recipient_name }}</span>
+                @else
+                    <span style="color:#059669;">
+                    @if($letter->recipientUser)
+                        <i class="bi bi-person-fill"></i> {{ $letter->recipientUser->name }}
+                    @elseif($letter->recipientUnit)
+                        <i class="bi bi-building-fill"></i> {{ $letter->recipientUnit->name }}
+                    @else
+                        —
+                    @endif
+                    </span>
+                @endif
                 <span><i class="bi bi-calendar"></i> {{ $letter->created_at->format('d/m/Y') }}</span>
             </div>
             <div class="d-flex align-items-center justify-content-between">

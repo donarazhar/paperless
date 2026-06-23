@@ -12,7 +12,7 @@
         'in_review_subag'       => ['bg'=>'#e0e7ff', 'color'=>'#4338ca', 'border'=>'#c7d2fe', 'label'=>'Review Subag',        'icon'=>'bi-envelope-paper'],
         'in_review_bagian_tu'   => ['bg'=>'#fce7f3', 'color'=>'#be185d', 'border'=>'#fbcfe8', 'label'=>'Review Bagian TU',    'icon'=>'bi-eye-fill'],
         'in_consideration'      => ['bg'=>'#ede9fe', 'color'=>'#8b5cf6', 'border'=>'#ddd6fe', 'label'=>'Disposisi Aktif',     'icon'=>'bi-arrow-repeat'],
-        'completed'             => ['bg'=>'#dcfce7', 'color'=>'#166534', 'border'=>'#bbf7d0', 'label'=>'Selesai',             'icon'=>'bi-check-circle-fill'],
+        'completed'             => ['bg'=>'#dcfce7', 'color'=>'#166534', 'border'=>'#bbf7d0', 'label'=> $letter->type === 'external' ? 'Selesai' : 'Terkirim', 'icon'=>'bi-check-circle-fill'],
         'draft'                 => ['bg'=>'#f1f5f9', 'color'=>'#475569', 'border'=>'#e2e8f0', 'label'=>'Draft',               'icon'=>'bi-pencil'],
     ];
     $sm = $statusMap[$letter->status] ?? ['bg'=>'#f1f5f9', 'color'=>'#475569', 'border'=>'#e2e8f0', 'label'=>ucfirst($letter->status),'icon'=>'bi-info-circle'];
@@ -42,7 +42,7 @@
     $isDispoToMyUnit = $dispRecv && $dispRecv->to_unit_id === $user->unit_id && is_null($dispRecv->to_user_id) && $dispRecv->status === 'pending';
 
     $hasAction = $letter->status !== 'completed' && (
-        ($role==='kepala_unit' && $letter->status==='pending_approval')
+        (in_array($role, ['kepala_unit', 'subag_persuratan']) && $letter->status==='pending_approval')
         || ($role==='admin_unit' && $letter->status==='pending_sending')
         || ($role==='admin_unit' && $isDispoToMyUnit)
         || ($role==='admin_sekretariat' && $letter->status==='pending_agenda')
@@ -145,7 +145,35 @@
         @endif
     </div>
     
-    <a href="{{ url()->previous() }}" class="btn-back ms-4"><i class="bi bi-arrow-left"></i> Kembali</a>
+    @if(in_array($role, ['kepala_unit', 'subag_persuratan']) && $letter->status === 'pending_approval')
+    <div class="action-box primary ms-4 m-0" style="background:#fff7ed; border-color:#fed7aa; width: 320px; flex-shrink: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center;">
+        <div class="action-title" style="color:#c2410c;"><i class="bi bi-check-circle-fill"></i> ACC Surat Keluar</div>
+        <div class="action-desc mb-3">Tinjau dokumen di bawah dan setujui surat untuk diteruskan ke Admin.</div>
+        <form action="{{ route('letters.approve', $letter) }}" method="POST" style="margin-top: auto;">
+            @csrf
+            <button type="submit" class="btn-custom w-100" style="background:#f97316; color:#fff; border:none; padding: 0.75rem;"><i class="bi bi-check2-all"></i> ACC Surat Ini</button>
+        </form>
+    </div>
+    @endif
+
+    @php
+        $isOutboundForUser = ($letter->sender->unit_id ?? null) === Auth::user()->unit_id;
+        $isSuratKeluar = in_array($letter->type, ['outbound', 'outbound_external']) || ($letter->type === 'internal' && $isOutboundForUser);
+    @endphp
+
+    @if(in_array($role, ['admin_sekretariat', 'subag_persuratan']) && !$hasAction && !$isSuratKeluar)
+    <div class="d-flex align-items-center gap-3 p-3 ms-4" style="background:var(--surface); border:1.5px solid var(--border); border-radius:1rem; box-shadow:0 2px 8px rgba(15,23,42,0.03); width: 320px; flex-shrink: 0; align-self: flex-start;">
+        <div style="width:36px; height:36px; background:var(--green-soft); color:var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i class="bi bi-shield-check" style="font-size:1.1rem;"></i>
+        </div>
+        <div>
+            <div style="font-size:0.85rem; font-weight:700; color:var(--text);">Semua Beres</div>
+            <div style="font-size:0.75rem; color:var(--muted);">Tidak ada tindakan yang diperlukan oleh Anda saat ini.</div>
+        </div>
+    </div>
+    @endif
+
+    <a href="{{ url()->previous() }}" class="btn-back ms-4" style="align-self: flex-start;"><i class="bi bi-arrow-left"></i> Kembali</a>
 </div>
 
 <div class="mb-4">
@@ -166,22 +194,16 @@
     @endif
 </div>
 
+@php
+    $hideLeftCol = (in_array($role, ['kepala_unit', 'subag_persuratan']) && $letter->status === 'pending_approval')
+                || (in_array($role, ['admin_sekretariat', 'subag_persuratan']) && !$hasAction);
+@endphp
 {{-- ═══ MAIN LAYOUT GRID ═══ --}}
-<div class="layout-grid">
+<div class="layout-grid" @if($hideLeftCol) style="display:block;" @endif>
     
+    @if(!$hideLeftCol)
     {{-- KOLOM KIRI (Aksi & Timeline) --}}
     <div>
-        {{-- ACC Surat Keluar (Kepala Unit & Subag Persuratan) --}}
-        @if(in_array($role, ['kepala_unit', 'subag_persuratan']) && $letter->status === 'pending_approval')
-        <div class="action-box primary" style="background:#fff7ed; border-color:#fed7aa;">
-            <div class="action-title" style="color:#c2410c;"><i class="bi bi-check-circle-fill"></i> ACC Surat Keluar</div>
-            <div class="action-desc mb-3">Tinjau dokumen dan setujui surat untuk diteruskan ke Admin.</div>
-            <form action="{{ route('letters.approve', $letter) }}" method="POST">
-                @csrf
-                <button type="submit" class="btn-custom w-100" style="background:#f97316; color:#fff; border:none;"><i class="bi bi-check2-all"></i> ACC Surat Ini</button>
-            </form>
-        </div>
-        @endif
 
         {{-- Kirim Surat (Admin Unit & Admin Sekretariat) --}}
         @if(in_array($role, ['admin_unit', 'admin_sekretariat']) && $letter->status === 'pending_sending')
@@ -301,7 +323,7 @@
         @endif
 
 
-        @if(!$hasAction)
+        @if(!$hasAction && !in_array($role, ['admin_sekretariat', 'subag_persuratan']) && !$isSuratKeluar)
         <div class="d-flex align-items-center gap-3 p-3 mb-4" style="background:var(--surface); border:1.5px solid var(--border); border-radius:1rem; box-shadow:0 2px 8px rgba(15,23,42,0.03);">
             <div style="width:36px; height:36px; background:var(--green-soft); color:var(--green); border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
                 <i class="bi bi-shield-check" style="font-size:1.1rem;"></i>
@@ -313,6 +335,7 @@
         </div>
         @endif
 
+        @if(!in_array($letter->status, ['draft', 'pending_approval', 'pending_sending']))
         {{-- Timeline --}}
         <div class="modern-panel">
             <div class="panel-title"><i class="bi bi-clock-history"></i> Disposisi Surat</div>
@@ -344,7 +367,9 @@
             </div>
             @endif
         </div>
+        @endif
     </div>
+    @endif
 
     {{-- KOLOM KANAN (Preview) --}}
     <div>

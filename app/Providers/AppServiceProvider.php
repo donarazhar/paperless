@@ -30,5 +30,44 @@ class AppServiceProvider extends ServiceProvider
 
         // Gunakan Bootstrap 5 untuk Pagination
         Paginator::useBootstrapFive();
+
+        // Global variable for sidebar task counts
+        \Illuminate\Support\Facades\View::composer('layouts.app', function ($view) {
+            $user = \Illuminate\Support\Facades\Auth::user();
+            $pendingAccCount = 0;
+            $pendingDispCount = 0;
+
+            if ($user && in_array($user->role, ['subag_persuratan', 'kepala_unit'])) {
+                // Count pending ACC
+                $qAcc = \App\Models\Letter::whereIn('type', ['internal', 'outbound_external'])
+                                          ->where('status', 'pending_approval');
+                if ($user->role === 'subag_persuratan') {
+                    $qAcc->whereHas('sender', function($sq) {
+                        $sq->where('role', 'admin_sekretariat');
+                    });
+                } else {
+                    $qAcc->whereHas('sender.organ', function($sq) use ($user) {
+                        $sq->where('unit_id', $user->unit_id);
+                    });
+                }
+                $pendingAccCount = $qAcc->count();
+
+                // Count pending Disposisi
+                $qDisp = \App\Models\Letter::query();
+                if ($user->role === 'subag_persuratan') {
+                    $qDisp->whereNotNull('agenda_number')->where('status', 'in_review_subag');
+                } else {
+                    $qDisp->whereHas('dispositions', function ($sq) use ($user) {
+                        $sq->where(function($q2) use ($user) {
+                            $q2->where('to_user_id', $user->id)
+                               ->orWhere('to_unit_id', $user->unit_id);
+                        })->where('status', 'pending');
+                    });
+                }
+                $pendingDispCount = $qDisp->count();
+            }
+
+            $view->with(compact('pendingAccCount', 'pendingDispCount'));
+        });
     }
 }
