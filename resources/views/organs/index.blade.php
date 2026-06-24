@@ -1,7 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.mailbox')
 @section('title', 'Manajemen Organ')
 
 @section('content')
+<div class="mail-scroll p-4" style="background:#f8fafc;">
 
 {{-- Hero Header --}}
 <div class="inbox-hero">
@@ -142,4 +143,5 @@
     {{ $organs->links() }}
 </div>
 
+</div>
 @endsection

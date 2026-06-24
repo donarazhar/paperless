@@ -1,7 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.mailbox')
 @section('title', 'Edit Pengguna')
 
 @section('content')
+<div class="mail-scroll p-4" style="background:#f8fafc;">
 <style>
     .form-panel { background:#fff;border:1px solid #e8edf4;border-radius:1rem;padding:2rem; }
     .form-label { font-size:0.72rem;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#64748b;margin-bottom:0.5rem; }
@@ -131,5 +132,6 @@
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.mailbox')
 @section('title', 'Laporan Surat')
 
 @section('content')

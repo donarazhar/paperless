@@ -1,7 +1,8 @@
-@extends('layouts.app')
+@extends('layouts.mailbox')
 @section('title', 'Manajemen Pengguna')
 
 @section('content')
+<div class="mail-scroll p-4" style="background:#f8fafc;">
 
 
 @php
@@ -182,4 +183,5 @@
     {{ $users->links() }}
 </div>
 
+</div>
 @endsection

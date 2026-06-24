@@ -32,10 +32,11 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
 
         // Global variable for sidebar task counts
-        \Illuminate\Support\Facades\View::composer('layouts.app', function ($view) {
+        \Illuminate\Support\Facades\View::composer(['layouts.app', 'layouts.mailbox'], function ($view) {
             $user = \Illuminate\Support\Facades\Auth::user();
             $pendingAccCount = 0;
             $pendingDispCount = 0;
+            $pendingSendingCount = 0;
 
             if ($user && in_array($user->role, ['subag_persuratan', 'kepala_unit'])) {
                 // Count pending ACC
@@ -67,7 +68,23 @@ class AppServiceProvider extends ServiceProvider
                 $pendingDispCount = $qDisp->count();
             }
 
-            $view->with(compact('pendingAccCount', 'pendingDispCount'));
+            if ($user && in_array($user->role, ['admin_sekretariat', 'admin_unit'])) {
+                // Count pending sending
+                $qSend = \App\Models\Letter::whereIn('type', ['internal', 'outbound_external'])
+                                           ->where('status', 'pending_sending');
+                if ($user->role === 'admin_sekretariat') {
+                    $qSend->whereHas('sender', function($sq) {
+                        $sq->where('role', 'admin_sekretariat');
+                    });
+                } else {
+                    $qSend->whereHas('sender.organ', function($sq) use ($user) {
+                        $sq->where('unit_id', $user->unit_id);
+                    });
+                }
+                $pendingSendingCount = $qSend->count();
+            }
+
+            $view->with(compact('pendingAccCount', 'pendingDispCount', 'pendingSendingCount'));
         });
     }
 }

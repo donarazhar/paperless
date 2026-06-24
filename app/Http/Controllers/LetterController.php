@@ -137,24 +137,50 @@ class LetterController extends Controller
             'recipientUser',
             'recipientUnit',
             'dispositions',
-        ])->where('type', 'internal');
+        ])->whereIn('type', ['internal', 'external']);
 
         // Filter out letters that haven't been sent by the sender yet
         $q->whereNotIn('status', ['draft', 'pending_approval', 'pending_sending']);
 
         // Unified Visibility Logic: User sees letters addressed to their unit OR dispositioned to them/their unit
         $q->where(function ($query) use ($user) {
-            if (in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu', 'kepala_sekretariat'])) {
-                // Sekretariat sees letters that have reached them (pending_agenda or further)
-                $query->whereNotNull('id'); // dummy condition since we already filtered out above
-            } else {
-                // Admin Unit / Kepala Unit sees direct letters to their unit or dispositions
-                $query->where('to_unit_id', $user->unit_id)
-                      ->orWhereHas('dispositions', function ($d) use ($user) {
-                          $d->where('to_user_id', $user->id)
-                            ->orWhere('to_unit_id', $user->unit_id);
-                      });
-            }
+            // Internal Logic
+            $query->where(function($qInt) use ($user) {
+                $qInt->where('type', 'internal');
+                if (in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu', 'kepala_sekretariat'])) {
+                    $qInt->whereNotNull('id');
+                } else {
+                    $qInt->where('to_unit_id', $user->unit_id)
+                         ->orWhereHas('dispositions', function ($d) use ($user) {
+                             $d->where('to_user_id', $user->id)
+                               ->orWhere('to_unit_id', $user->unit_id);
+                         });
+                }
+            });
+
+            // External Logic
+            $query->orWhere(function($qExt) use ($user) {
+                $qExt->where('type', 'external');
+                $qExt->where(function ($qE2) use ($user) {
+                    $qE2->where('created_by_user_id', $user->id); // Everyone sees what they created
+                    if (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
+                        $qE2->orWhereHas('dispositions', function ($sq) use ($user) {
+                                  $sq->where('to_user_id', $user->id)
+                                     ->orWhere('to_unit_id', $user->unit_id);
+                              })
+                              ->orWhereIn('status', ['in_review_kasubag', 'in_consideration', 'completed']);
+                    } else {
+                        $qE2->orWhere('to_unit_id', $user->unit_id)
+                              ->orWhereHas('dispositions', function ($sq) use ($user) {
+                                  $sq->where('to_user_id', $user->id)
+                                     ->orWhere('to_unit_id', $user->unit_id);
+                              });
+                        if ($user->role === 'staf_tu') {
+                            $qE2->orWhereIn('status', ['pending_agenda', 'in_consideration', 'completed']);
+                        }
+                    }
+                });
+            });
         });
 
         //— pencarian & filter seperti sebelumnya —
@@ -221,68 +247,16 @@ class LetterController extends Controller
         return view('letters.arsip', compact('letters'));
     }
 
-    public function inboundExternal(Request $request)
-    {
-        $user = Auth::user();
-        $q = Letter::with(['sender', 'dispositions', 'recipientUser', 'recipientUnit'])
-                   ->where('type', 'external');
-
-        $q->where(function ($query) use ($user) {
-            $query->where('created_by_user_id', $user->id); // Everyone sees what they created
-
-            if (in_array($user->role, ['kasubag_tu', 'kepala_sekretariat'])) {
-                // Kasubag/Kepala ONLY see it via dispositions or specific post-agenda statuses
-                $query->orWhereHas('dispositions', function ($sq) use ($user) {
-                          $sq->where('to_user_id', $user->id)
-                             ->orWhere('to_unit_id', $user->unit_id);
-                      })
-                      ->orWhereIn('status', ['in_review_kasubag', 'in_consideration', 'completed']);
-            } else {
-                // Staf Unit / Staf TU see direct letters to their unit
-                $query->orWhere('to_unit_id', $user->unit_id)
-                      ->orWhereHas('dispositions', function ($sq) use ($user) {
-                          $sq->where('to_user_id', $user->id)
-                             ->orWhere('to_unit_id', $user->unit_id);
-                      });
-
-                // Catch-all for external letters forwarded to Secretariat without explicit to_unit_id
-                if ($user->role === 'staf_tu') {
-                    $query->orWhereIn('status', ['pending_agenda', 'in_consideration', 'completed']);
-                }
-            }
-        });
-
-        if ($request->filled('search')) {
-            $s = $request->search;
-            $q->where(function ($query) use ($s) {
-                $query->where('letter_number', 'like', "%{$s}%")
-                      ->orWhere('agenda_number', 'like', "%{$s}%")
-                      ->orWhere('subject', 'like', "%{$s}%")
-                      ->orWhereHas('sender.unit', function ($sq) use ($s) {
-                          $sq->where('name', 'like', "%{$s}%");
-                      });
-            });
-        }
-
-        if ($request->filled('status')) {
-            $q->where('status', $request->status);
-        }
-
-        if ($request->filled('date_from')) {
-            $q->whereDate('created_at', '>=', $request->date_from);
-        }
-
-        if ($request->filled('date_to')) {
-            $q->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $letters = $q->latest()->paginate(15)->withQueryString();
-        return view('letters.inbox_external', compact('letters'));
-    }
-
     public function createExternal()
     {
-        return view('letters.create_external');
+        $units = \App\Models\Unit::where('id', '!=', Auth::user()->unit_id)->orderBy('name')->get();
+        $users = \App\Models\User::with('unit')
+            ->whereHas('organ', function($q) {
+                $q->where('unit_id', Auth::user()->unit_id);
+            })
+            ->where('id', '!=', Auth::id())
+            ->orderBy('name')->get();
+        return view('letters.create_external', compact('units', 'users'));
     }
 
     public function storeExternal(Request $request)
@@ -293,20 +267,52 @@ class LetterController extends Controller
             'subject'              => 'required|string|max:255',
             'body'                 => 'required|string',
             'attachments.*'        => 'file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
-            'action_type'          => 'required|in:archive,forward',
+            'action_type'          => 'required|in:archive,forward_unit,forward_personal',
+            'to_unit_id'           => 'nullable|exists:units,id',
+            'to_user_id'           => 'nullable|exists:users,id',
         ]);
+
+        $to_unit_id = null;
+        $status = 'pending_agenda';
+
+        if ($data['action_type'] === 'archive') {
+            $to_unit_id = Auth::user()->unit_id;
+            $status = 'completed';
+        } elseif (in_array($data['action_type'], ['forward_unit', 'forward_personal'])) {
+            $to_unit_id = Auth::user()->unit_id; // Kepemilikan awal
+            $status = 'in_consideration';
+        }
 
         $letter = Letter::create([
             'type'                 => 'external',
             'external_sender_name' => $data['external_sender_name'],
             'created_by_user_id'   => Auth::id(),
             'from_user_id'         => null,
-            'to_unit_id'           => ($data['action_type'] === 'archive') ? Auth::user()->unit_id : null,
+            'to_unit_id'           => $to_unit_id,
             'letter_number'        => $data['letter_number'],
             'subject'              => $data['subject'],
             'body'                 => $data['body'],
-            'status'               => ($data['action_type'] === 'archive') ? 'completed' : 'pending_agenda',
+            'status'               => $status,
         ]);
+
+        // Buat Disposisi otomatis jika memilih Unit/Personal
+        if ($data['action_type'] === 'forward_unit') {
+            \App\Models\Disposition::create([
+                'letter_id' => $letter->id,
+                'from_user_id' => Auth::id(),
+                'to_unit_id' => $data['to_unit_id'],
+                'note' => 'Disposisi langsung dari Catat Surat Fisik',
+                'status' => 'pending'
+            ]);
+        } elseif ($data['action_type'] === 'forward_personal') {
+            \App\Models\Disposition::create([
+                'letter_id' => $letter->id,
+                'from_user_id' => Auth::id(),
+                'to_user_id' => $data['to_user_id'],
+                'note' => 'Disposisi langsung dari Catat Surat Fisik',
+                'status' => 'pending'
+            ]);
+        }
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
@@ -318,11 +324,43 @@ class LetterController extends Controller
             }
         }
 
-        $msg = ($data['action_type'] === 'archive') 
-            ? 'Surat Eksternal berhasil diarsipkan.' 
-            : 'Surat Eksternal berhasil diteruskan ke Sekretariat YPIA untuk Disposisi.';
+        $msg = 'Surat Eksternal berhasil dicatat.';
+        if ($data['action_type'] === 'archive') $msg = 'Surat Eksternal berhasil diarsipkan.';
+        elseif ($data['action_type'] === 'forward_unit' || $data['action_type'] === 'forward_personal') $msg = 'Surat Eksternal berhasil didisposisikan.';
 
-        return redirect()->route('letters.inboundExternal')->with('success', $msg);
+        return redirect()->route('letters.inbound')->with('success', $msg);
+    }
+
+    public function drafts(Request $request)
+    {
+        $user = Auth::user();
+        $q = Letter::with(['recipientUser', 'recipientUnit'])
+            ->whereHas('sender.organ', function($sq) use ($user) {
+                $sq->where('unit_id', $user->unit_id);
+            })
+            ->whereIn('status', ['draft', 'pending_approval']);
+
+        // -- FILTERS --
+        if ($s = $request->search) {
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%");
+            });
+        }
+        if ($st = $request->status) {
+            $q->where('status', $st);
+        }
+        if ($from = $request->date_from) {
+            $q->whereDate('created_at', '>=', $from);
+        }
+        if ($to = $request->date_to) {
+            $q->whereDate('created_at', '<=', $to);
+        }
+
+        $letters = $q->latest()->paginate(15)->withQueryString();
+
+        return view('letters.drafts', compact('letters'));
     }
 
     public function outbound(Request $request)
@@ -332,7 +370,7 @@ class LetterController extends Controller
             ->whereHas('sender.organ', function($sq) use ($user) {
                 $sq->where('unit_id', $user->unit_id);
             })
-            ->where('type', 'internal');
+            ->whereNotIn('status', ['draft', 'pending_approval']);
 
         // -- FILTERS --
         if ($s = $request->search) {
@@ -362,7 +400,7 @@ class LetterController extends Controller
         return view('letters.outbox', compact('letters'));
     }
 
-    public function create()
+    public function create(Request $request)
     {
         $userUnitId = Auth::user()->unit_id;
         
@@ -370,38 +408,68 @@ class LetterController extends Controller
             return $query->where('id', '!=', $userUnitId);
         })->get();
 
-        return view('letters.create', compact('units'));
+        $replyTo = null;
+        $forward = null;
+
+        if ($request->has('reply_to')) {
+            $id = \Vinkla\Hashids\Facades\Hashids::decode($request->reply_to)[0] ?? null;
+            if ($id) {
+                $replyTo = \App\Models\Letter::find($id);
+            }
+        } elseif ($request->has('forward')) {
+            $id = \Vinkla\Hashids\Facades\Hashids::decode($request->forward)[0] ?? null;
+            if ($id) {
+                $forward = \App\Models\Letter::find($id);
+            }
+        }
+
+        return view('letters.create', compact('units', 'replyTo', 'forward'));
     }
 
     public function store(Request $request)
     {
-        $data = $request->validate([
+        $isExternal = $request->letter_type === 'outbound_external';
+
+        $rules = [
+            'letter_type' => 'required|in:internal,outbound_external',
             'letter_number' => 'nullable|string',
             'subject' => 'required|string',
             'body' => 'required|string',
             'action' => 'required|in:draft,send',
-            'to_unit_id' => 'required|exists:units,id',
             'attachments' => 'required|array|min:1',
             'attachments.*' => 'file|max:5120',
-        ]);
+        ];
 
-        $targetUnit = \App\Models\Unit::find($data['to_unit_id']);
-        $isSekretariat = $targetUnit && $targetUnit->is_sekretariat;
+        if ($isExternal) {
+            $rules['external_recipient_name'] = 'required|string|max:255';
+        } else {
+            $rules['to_unit_id'] = 'required|exists:units,id';
+        }
+
+        $data = $request->validate($rules);
         
         $status = 'draft';
         if ($request->action === 'send') {
             $status = 'pending_approval';
         }
 
-        $letter = Letter::create([
-            'type' => 'internal',
+        $letterData = [
+            'type' => $data['letter_type'],
             'letter_number' => $data['letter_number'] ?? '-',
             'subject' => $data['subject'],
             'body' => $data['body'],
             'from_user_id' => Auth::id(),
-            'to_unit_id' => $data['to_unit_id'],
             'status' => $status,
-        ]);
+        ];
+
+        if ($isExternal) {
+            $letterData['external_recipient_name'] = $data['external_recipient_name'];
+            $letterData['to_unit_id'] = null; // Ensuring it's null for external
+        } else {
+            $letterData['to_unit_id'] = $data['to_unit_id'];
+        }
+
+        $letter = Letter::create($letterData);
 
         if ($request->hasFile('attachments')) {
             foreach ($request->file('attachments') as $file) {
@@ -410,12 +478,12 @@ class LetterController extends Controller
                 $extension = $file->getClientOriginalExtension();
 
                 $filename = $basename . '_' . time() . '.' . $extension;
-
                 $path = $file->storeAs('attachments', $filename, 'public');
 
                 \App\Models\Attachment::create([
                     'letter_id' => $letter->id,
                     'file_path' => $path,
+                    'file_name' => $originalName
                 ]);
             }
         }
@@ -431,49 +499,10 @@ class LetterController extends Controller
         return redirect()
             ->route($request->action === 'send' ? 'letters.outbound' : 'letters.inbound')
             ->with('success', $request->action === 'send'
-                ? 'Surat berhasil dikirim.'
-                : 'Draft berhasil disimpan.');
+                ? 'Surat berhasil diajukan untuk persetujuan.'
+                : 'Draf surat berhasil disimpan.');
     }
 
-    public function createOutboundExternal()
-    {
-        return view('letters.create_outbound_external');
-    }
-
-    public function storeOutboundExternal(Request $request)
-    {
-        $data = $request->validate([
-            'external_recipient_name' => 'required|string|max:255',
-            'letter_number' => 'nullable|string|max:255',
-            'subject' => 'required|string|max:255',
-            'body' => 'nullable|string',
-            'external_notes' => 'nullable|string',
-            'attachments.*' => 'file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
-        ]);
-
-        $letter = Letter::create([
-            'type' => 'outbound_external',
-            'letter_number' => $data['letter_number'] ?? '-',
-            'subject' => $data['subject'],
-            'body' => $data['body'] ?? '-',
-            'external_recipient_name' => $data['external_recipient_name'],
-            'external_notes' => $data['external_notes'],
-            'from_user_id' => Auth::id(),
-            'status' => 'pending_approval',
-        ]);
-
-        if ($request->hasFile('attachments')) {
-            foreach ($request->file('attachments') as $file) {
-                $path = $file->store('attachments', 'public');
-                $letter->attachments()->create([
-                    'file_path' => $path,
-                    'file_name' => $file->getClientOriginalName(),
-                ]);
-            }
-        }
-
-        return redirect()->route('letters.outboundExternal')->with('success', 'Surat keluar eksternal berhasil dicatat.');
-    }
 
     public function outboundExternal(Request $request)
     {

@@ -31,18 +31,16 @@ Route::middleware('auth')->group(function () {
         Route::get('letters/create', [LetterController::class, 'create'])->name('letters.create');
         Route::post('letters', [LetterController::class, 'store'])->name('letters.store');
         
-        Route::get('letters/create-outbound-external', [LetterController::class, 'createOutboundExternal'])->name('letters.createOutboundExternal');
-        Route::post('letters/outbound-external', [LetterController::class, 'storeOutboundExternal'])->name('letters.storeOutboundExternal');
+        // Catat Surat Eksternal Masuk (Fisik)
+        Route::get('letters/create-external', [LetterController::class, 'createExternal'])->name('letters.createExternal');
+        Route::post('letters/external', [LetterController::class, 'storeExternal'])->name('letters.storeExternal');
+        
         Route::post('letters/{letter}/update-notes', [LetterController::class, 'updateExternalNotes'])->name('letters.updateExternalNotes');
     });
 
-    Route::get('letters/create-external', [LetterController::class, 'createExternal'])->name('letters.createExternal');
-    Route::post('letters/external', [LetterController::class, 'storeExternal'])->name('letters.storeExternal');
-
     Route::get('letters/inbox', [LetterController::class, 'inbound'])->name('letters.inbound');
-    Route::get('letters/inbox-external', [LetterController::class, 'inboundExternal'])->name('letters.inboundExternal');
+    Route::get('letters/drafts', [LetterController::class, 'drafts'])->name('letters.drafts');
     Route::get('letters/outbox', [LetterController::class, 'outbound'])->name('letters.outbound');
-    Route::get('letters/outbox-external', [LetterController::class, 'outboundExternal'])->name('letters.outboundExternal');
     Route::get('letters/arsip', [LetterController::class, 'arsip'])->name('letters.arsip');
     
     // New Report Routes
