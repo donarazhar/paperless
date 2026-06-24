@@ -33,6 +33,9 @@
             margin: 0;
             overflow: hidden;
         }
+        @media (min-width: 992px) {
+            body { zoom: 85%; }
+        }
 
         /* ══ HEADER ══ */
         .mb-header {
@@ -119,6 +122,9 @@
             height: 100vh;
             padding-top: var(--header-h);
             position: relative;
+        }
+        @media (min-width: 992px) {
+            .mb-app { height: 117.65vh; }
         }
 
         /* ══ SIDEBAR OVERLAY (mobile/tablet) ══ */
