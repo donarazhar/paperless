@@ -84,7 +84,109 @@ class AppServiceProvider extends ServiceProvider
                 $pendingSendingCount = $qSend->count();
             }
 
-            $view->with(compact('pendingAccCount', 'pendingDispCount', 'pendingSendingCount'));
+            $unreadInboxCount = 0;
+            $unreadDispCount = 0;
+            $unreadAccCount = 0;
+
+            if ($user) {
+                // Base Inbox Query
+                $qIn = \App\Models\Letter::whereIn('type', ['internal', 'outbound_external']);
+                if (in_array($user->role, ['kepala_unit', 'sub_unit'])) {
+                    $qIn->where(function($q) use ($user) {
+                        $q->where('to_unit_id', $user->unit_id)->orWhere('to_user_id', $user->id)
+                          ->orWhereHas('dispositions', function($dq) use ($user) {
+                              $dq->where('to_unit_id', $user->unit_id)->orWhere('to_user_id', $user->id);
+                          });
+                    });
+                } elseif (in_array($user->role, ['admin_unit', 'staf_unit'])) {
+                    $qIn->where(function($q) use ($user) {
+                        $q->where('to_unit_id', $user->unit_id)->orWhere('to_user_id', $user->id);
+                    });
+                }
+                $qIn->where('from_user_id', '!=', $user->id); // Usually don't count own sent letters in inbox unread
+                $qIn->whereDoesntHave('histories', function($q) use ($user) {
+                    $q->where('user_id', $user->id)->where('action', 'read');
+                });
+                $unreadInboxCount = $qIn->count();
+
+                // Unread Disposisi
+                if (in_array($user->role, ['subag_persuratan', 'kepala_unit', 'sub_unit', 'staf_unit'])) {
+                    $qDisp = \App\Models\Letter::query();
+                    if ($user->role === 'subag_persuratan') {
+                        $qDisp->whereNotNull('agenda_number')->where('status', 'in_review_subag');
+                    } else {
+                        $qDisp->whereHas('dispositions', function ($sq) use ($user) {
+                            $sq->where(function($q2) use ($user) {
+                                $q2->where('to_user_id', $user->id)
+                                   ->orWhere('to_unit_id', $user->unit_id);
+                            })->where('status', 'pending');
+                        });
+                    }
+                    $qDisp->where('from_user_id', '!=', $user->id);
+                    $qDisp->whereDoesntHave('histories', function($q) use ($user) {
+                        $q->where('user_id', $user->id)->where('action', 'read');
+                    });
+                    $unreadDispCount = $qDisp->count();
+                }
+
+                // Unread Kotak Disposisi (myDisposisi)
+                $unreadMyDispCount = 0;
+                if (in_array($user->role, ['kepala_sekretariat', 'sub_unit', 'bagian_tu'])) {
+                    $qMyDisp = \App\Models\Letter::query();
+                    
+                    if ($user->role === 'bagian_tu') {
+                        $qMyDisp->where(function($query) use ($user) {
+                            $query->where('status', 'in_review_bagian_tu')
+                                  ->orWhereHas('dispositions', function($sq) use ($user) {
+                                      $sq->where(function($q2) use ($user) {
+                                          $q2->where('to_user_id', $user->id)
+                                             ->orWhere('to_unit_id', $user->unit_id);
+                                      })->where('status', 'pending');
+                                  });
+                        });
+                    } else {
+                        $qMyDisp->whereHas('dispositions', function ($sq) use ($user) {
+                            $sq->where(function($q2) use ($user) {
+                                $q2->where('to_user_id', $user->id)
+                                   ->orWhere('to_unit_id', $user->unit_id);
+                            })->where('status', 'pending');
+                        });
+                    }
+                    
+                    $qMyDisp->where('from_user_id', '!=', $user->id);
+                    $qMyDisp->whereDoesntHave('histories', function($q) use ($user) {
+                        $q->where('user_id', $user->id)->where('action', 'read');
+                    });
+                    
+                    $unreadMyDispCount = $qMyDisp->count();
+                }
+
+                // Unread Acc Surat
+                if (in_array($user->role, ['subag_persuratan', 'kepala_unit'])) {
+                    $qAcc = \App\Models\Letter::whereIn('type', ['internal', 'outbound_external'])
+                                              ->where('status', 'pending_approval');
+                    if ($user->role === 'subag_persuratan') {
+                        $qAcc->whereHas('sender', function($sq) {
+                            $sq->where('role', 'admin_sekretariat');
+                        });
+                    } else {
+                        $qAcc->whereHas('sender.organ', function($sq) use ($user) {
+                            $sq->where('unit_id', $user->unit_id);
+                        });
+                    }
+                    $qAcc->where('from_user_id', '!=', $user->id);
+                    $qAcc->whereDoesntHave('histories', function($q) use ($user) {
+                        $q->where('user_id', $user->id)->where('action', 'read');
+                    });
+                    $unreadAccCount = $qAcc->count();
+                }
+                // Draft Count
+                $draftCount = \App\Models\Letter::whereHas('sender.organ', function($sq) use ($user) {
+                    $sq->where('unit_id', $user->unit_id);
+                })->whereIn('status', ['draft', 'pending_approval'])->count();
+            }
+
+            $view->with(compact('pendingAccCount', 'pendingDispCount', 'pendingSendingCount', 'unreadInboxCount', 'unreadDispCount', 'unreadMyDispCount', 'unreadAccCount', 'draftCount'));
         });
     }
 }

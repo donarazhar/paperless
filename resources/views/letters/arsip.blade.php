@@ -29,7 +29,7 @@
 <div class="mail-scroll">
     @forelse($letters as $letter)
         @php
-            $isUnread = false; // Arsip is usually read
+            $isUnread = $letter->is_unread;
             $showUrl = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
             
             // Determine type of archive

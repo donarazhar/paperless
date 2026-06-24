@@ -29,7 +29,7 @@
 <div class="mail-scroll">
     @forelse($letters as $letter)
         @php
-            $isUnread = in_array($letter->status, ['in_consideration']); // Assuming it's unread if still under consideration
+            $isUnread = $letter->is_unread;
             $showUrl = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
             
             // Get the disposition note specifically addressed to the user if any

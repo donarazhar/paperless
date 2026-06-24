@@ -342,11 +342,17 @@
                 <li class="mb-nav-item">
                     <a href="{{ route('letters.inbound') }}" class="mb-nav-link {{ request()->routeIs('letters.inbound*') ? 'active' : '' }}">
                         <i class="bi bi-inbox-fill"></i> Inbox
+                        @if(isset($unreadInboxCount) && $unreadInboxCount > 0)
+                            <span class="mb-nav-badge">{{ $unreadInboxCount }}</span>
+                        @endif
                     </a>
                 </li>
                 <li class="mb-nav-item">
                     <a href="{{ route('letters.drafts') }}" class="mb-nav-link {{ request()->routeIs('letters.drafts') ? 'active' : '' }}">
                         <i class="bi bi-file-earmark-text-fill"></i> Draft
+                        @if(isset($draftCount) && $draftCount > 0)
+                            <span class="mb-nav-badge" style="background:#f59e0b; color:#fff;">{{ $draftCount }}</span>
+                        @endif
                     </a>
                 </li>
                 <li class="mb-nav-item">
@@ -362,15 +368,15 @@
                 @if(in_array($role, ['subag_persuratan', 'kepala_unit']))
                 <li class="mb-nav-item">
                     <a href="{{ route('tugas.accSurat') }}" class="mb-nav-link {{ request()->routeIs('tugas.accSurat') ? 'active' : '' }}">
-                        <i class="bi bi-check-circle-fill"></i> ACC Surat
-                        @if(isset($pendingAccCount) && $pendingAccCount > 0)
-                        <span class="mb-nav-badge">{{ $pendingAccCount }}</span>
+                        <i class="bi bi-check2-circle"></i> Draft
+                        @if(isset($unreadAccCount) && $unreadAccCount > 0)
+                            <span class="mb-nav-badge" style="background:#dc2626;">{{ $unreadAccCount }}</span>
                         @endif
                     </a>
                 </li>
                 <li class="mb-nav-item">
                     <a href="{{ route('tugas.disposisi') }}" class="mb-nav-link {{ request()->routeIs('tugas.disposisi') ? 'active' : '' }}">
-                        <i class="bi bi-file-earmark-check-fill"></i> Disposisi Masuk
+                        <i class="bi bi-file-earmark-check-fill"></i> Disposisi
                         @if(isset($pendingDispCount) && $pendingDispCount > 0)
                         <span class="mb-nav-badge">{{ $pendingDispCount }}</span>
                         @endif
@@ -381,7 +387,10 @@
                 @if(in_array($role, ['kepala_sekretariat', 'sub_unit', 'bagian_tu']))
                 <li class="mb-nav-item">
                     <a href="{{ route('tugas.myDisposisi') }}" class="mb-nav-link {{ request()->routeIs('tugas.myDisposisi') ? 'active' : '' }}">
-                        <i class="bi bi-inboxes-fill"></i> Kotak Disposisi
+                        <i class="bi bi-inboxes-fill"></i> Disposisi
+                        @if(isset($unreadMyDispCount) && $unreadMyDispCount > 0)
+                            <span class="mb-nav-badge" style="background:#dc2626;">{{ $unreadMyDispCount }}</span>
+                        @endif
                     </a>
                 </li>
                 @endif

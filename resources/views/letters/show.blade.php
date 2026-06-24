@@ -160,7 +160,11 @@
         <a href="{{ url()->previous() }}" class="btn-back"><i class="bi bi-arrow-left"></i> Kembali ke Daftar</a>
         <div class="d-flex gap-2">
             @if(!in_array($letter->status, ['pending_approval', 'pending_sending', 'pending_agenda', 'draft']))
-                <a href="{{ route('letters.create', ['reply_to' => $encodedId]) }}" class="btn-action d-none d-sm-flex" title="Balas Surat"><i class="bi bi-reply-fill"></i> Balas</a>
+                @if($isRespondingDispo)
+                    <button class="btn-action d-none d-sm-flex" data-bs-toggle="modal" data-bs-target="#acceptModal" title="Balas / Tanggapi Disposisi"><i class="bi bi-reply-fill"></i> Balas</button>
+                @else
+                    <button class="btn-action d-none d-sm-flex" data-bs-toggle="modal" data-bs-target="#replyModal" title="Balas / Tambahkan Catatan"><i class="bi bi-reply-fill"></i> Balas</button>
+                @endif
                 @if($canDispose)
                     <button class="btn-action d-none d-sm-flex" data-bs-toggle="modal" data-bs-target="#dispoModal" title="Teruskan (Disposisi)"><i class="bi bi-forward-fill"></i> Teruskan</button>
                 @else
@@ -204,6 +208,10 @@
                         $canCompleteUnit = in_array($role, ['admin_unit', 'kepala_unit', 'sub_unit']) && $canDispose && $letter->status !== 'completed';
                     @endphp
 
+                    @if(in_array($role, ['admin_sekretariat', 'admin_unit']))
+                        <li><a class="dropdown-item py-2 fw-bold" style="color: #4f46e5;" href="{{ route('letters.printDisposition', ['letter' => $encodedId]) }}" target="_blank"><i class="bi bi-printer-fill me-2"></i>Lihat Disposisi</a></li>
+                    @endif
+
                     @if(($canCompleteSekretariat || $canCompleteUnit) && !$isRespondingDispo)
                         <li><hr class="dropdown-divider my-1"></li>
                         <li><a class="dropdown-item py-2 fw-bold text-success" href="#" onclick="event.preventDefault(); if(confirm('Tandai surat ini sebagai selesai dan arsipkan?')) document.getElementById('formComplete').submit();"><i class="bi bi-archive-fill me-2"></i>Arsipkan Selesai</a></li>
@@ -223,7 +231,7 @@
                     {{ $letter->subject }}
                 </h1>
                 <div class="mb-4">
-                    <span class="status-badge {{ $letter->status === 'pending_approval' ? 'sb-status-red' : 'sb-status' }}">{{ str_replace('_', ' ', $letter->status) }}</span>
+                    <span class="status-badge {{ $letter->status === 'pending_approval' ? 'sb-status-red' : 'sb-status' }}">{{ $letter->status_label }}</span>
                     @if($letter->agenda_number)
                         <span class="status-badge sb-agenda"><i class="bi bi-journal-text me-1"></i> Agenda: {{ $letter->agenda_number }}</span>
                     @endif
@@ -322,20 +330,28 @@
             {{-- TIMELINE HISTORY --}}
             @if($letter->histories->where('action', 'disposed')->isNotEmpty())
             <div class="history-section">
-                <div class="att-title mb-0"><i class="bi bi-clock-history me-2"></i> Lacak Riwayat Perjalanan Surat</div>
+                <div class="att-title mb-0"><i class="bi bi-clock-history me-2"></i> Lacak Disposisi</div>
                 <div class="timeline">
+                    {{-- Initial Process: Subag Persuratan --}}
+                    <div class="tl-item">
+                        <div class="tl-dot"></div>
+                        <div style="font-size: 0.9rem; color: #334155;">
+                            <span class="tl-time" style="display:inline; margin-right: 5px;">{{ $letter->created_at->locale('id')->isoFormat('D MMMM YYYY • HH:mm') }}</span>
+                            <span class="fw-bold text-dark">— Dari :</span> <span style="color: #4f46e5; font-weight: 600;">Subag Persuratan</span>
+                            <span class="fst-italic ms-1">"-"</span>
+                        </div>
+                    </div>
+
                     @foreach($letter->histories->where('action', 'disposed')->sortBy('created_at') as $h)
                         @php
                             $dispMatch = $letter->dispositions->where('from_user_id', $h->user_id)->where('note', $h->note)->first();
                         @endphp
                         <div class="tl-item">
                             <div class="tl-dot"></div>
-                            <span class="tl-time">{{ $h->created_at->locale('id')->isoFormat('D MMMM YYYY • HH:mm') }}</span>
-                            <div class="tl-title">
-                                Didisposisikan ke: <span style="color: #4f46e5;">{{ $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—') }}</span>
-                            </div>
-                            <div class="tl-note">
-                                <i class="bi bi-chat-left-text me-2 text-muted"></i> "{{ preg_replace('/^\[.*?\]\s*/', '', $h->note) }}"
+                            <div style="font-size: 0.9rem; color: #334155;">
+                                <span class="tl-time" style="display:inline; margin-right: 5px;">{{ $h->created_at->locale('id')->isoFormat('D MMMM YYYY • HH:mm') }}</span>
+                                <span class="fw-bold text-dark">— Ke :</span> <span style="color: #4f46e5; font-weight: 600;">{{ $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—') }}</span>
+                                <span class="fst-italic ms-1">"{{ preg_replace('/^\[.*?\]\s*/', '', $h->note) }}"</span>
                             </div>
                         </div>
                     @endforeach
@@ -454,6 +470,35 @@
 @endif
 
 {{-- Modal Tanggapi Disposisi --}}
+<!-- General Reply Modal -->
+<div class="modal fade" id="replyModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 1rem;">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" style="color: #0f172a;">Tambahkan Catatan / Balasan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('letters.reply', $letter->id) }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <label class="form-label fw-bold" style="font-size: 0.9rem; color: #475569;">Catatan Balasan <span class="text-danger">*</span></label>
+                        <textarea name="response_note" class="form-control" rows="4" placeholder="Tuliskan catatan atau balasan Anda di sini..." required style="padding: 1rem; border-radius: 0.75rem; border: 1.5px solid #e2e8f0; background: #f8fafc;"></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label fw-bold" style="font-size: 0.9rem; color: #475569;">Lampiran Tambahan <span class="text-muted fw-normal">(Opsional)</span></label>
+                        <input type="file" name="attachment" class="form-control" style="padding: 0.75rem; border-radius: 0.75rem; border: 1.5px solid #e2e8f0; background: #f8fafc;">
+                    </div>
+                </div>
+                <div class="modal-footer d-flex gap-2">
+                    <button type="button" class="btn btn-light px-4" data-bs-dismiss="modal" style="border-radius: 100px; font-weight: 600;">Batal</button>
+                    <button type="submit" class="btn btn-primary px-4" style="border-radius: 100px; font-weight: 600;"><i class="bi bi-send-fill me-2"></i> Kirim Balasan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @if($dispRecv)
 <div class="modal fade" id="acceptModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
@@ -462,7 +507,7 @@
                 <h5 class="modal-title fw-bold" style="color: #0f172a;">Tanggapi Instruksi Disposisi</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <form action="{{ route('letters.dispositions.respond', $dispRecv->id) }}" method="POST">
+            <form action="{{ route('letters.dispositions.respond', $dispRecv->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf @method('PUT')
                 <div class="modal-body">
                     <div class="mb-4">
@@ -475,9 +520,13 @@
                             <option value="rejected">Tolak / Informasi Tidak Valid</option>
                         </select>
                     </div>
-                    <div>
+                    <div class="mb-4">
                         <label class="form-label fw-bold" style="font-size: 0.9rem; color: #475569;">Catatan Hasil <span class="text-danger">*</span></label>
                         <textarea name="response_note" class="form-control" rows="4" placeholder="Jelaskan detail tindakan yang telah diambil..." required style="padding: 1rem; border-radius: 0.75rem; border: 1.5px solid #e2e8f0; background: #f8fafc;"></textarea>
+                    </div>
+                    <div>
+                        <label class="form-label fw-bold" style="font-size: 0.9rem; color: #475569;">Lampiran Tambahan <span class="text-muted fw-normal">(Opsional)</span></label>
+                        <input type="file" name="attachment" class="form-control" style="padding: 0.75rem; border-radius: 0.75rem; border: 1.5px solid #e2e8f0; background: #f8fafc;">
                     </div>
                 </div>
                 <div class="modal-footer d-flex gap-2">
@@ -513,8 +562,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    // Auto-open first PDF if any
-    if(pdfBtns.length > 0) pdfBtns[0].click();
+    // Auto-open first PDF is disabled by user request
 
     // Dispo Modal Toggle Logic
     const sU = document.getElementById('selectUnit');

@@ -29,7 +29,7 @@
 <div class="mail-scroll">
     @forelse($letters as $letter)
         @php
-            $isUnread = in_array($letter->status, ['pending_agenda', 'in_consideration', 'completed']); // Assuming disposisi active logic
+            $isUnread = $letter->is_unread;
             $showUrl = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
         @endphp
         <a href="{{ $showUrl }}" class="mail-item {{ $isUnread ? 'unread' : 'read' }}">

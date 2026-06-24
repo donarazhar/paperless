@@ -56,4 +56,35 @@ class Letter extends Model
     {
         return $this->hasMany(Disposition::class);
     }
+
+    public function getIsUnreadAttribute()
+    {
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!$user) return false;
+
+        if ($this->from_user_id === $user->id) return false;
+
+        if ($this->relationLoaded('histories')) {
+            return !$this->histories->where('user_id', $user->id)->where('action', 'read')->isNotEmpty();
+        }
+        
+        return !$this->histories()->where('user_id', $user->id)->where('action', 'read')->exists();
+    }
+
+    public function getStatusLabelAttribute()
+    {
+        $statuses = [
+            'draft' => 'Draft',
+            'pending_approval' => 'Menunggu Persetujuan',
+            'pending_sending' => 'Menunggu Pengiriman',
+            'pending_agenda' => 'Menunggu No. Agenda',
+            'in_review_subag' => 'Review Subag',
+            'in_review_bagian_tu' => 'Review Bagian TU',
+            'in_review_kasubag' => 'Review Kasubag',
+            'in_consideration' => 'Dalam Pertimbangan',
+            'completed' => 'Selesai / Arsip',
+        ];
+
+        return $statuses[$this->status] ?? str_replace('_', ' ', $this->status);
+    }
 }

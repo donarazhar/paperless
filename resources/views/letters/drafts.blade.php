@@ -136,6 +136,7 @@
     <div class="mail-list">
         @forelse($letters as $letter)
             @php
+                $isUnread = $letter->is_unread;
                 $showUrl = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
                 
                 $isExternal = $letter->type === 'outbound_external';
@@ -167,7 +168,7 @@
                             $sCol = $letter->status === 'pending_approval' ? '#dc2626' : '#475569';
                             $sBor = $letter->status === 'pending_approval' ? '1px solid #fecaca' : '1px solid transparent';
                         @endphp
-                        <span class="badge" style="background: {{ $sBg }}; color: {{ $sCol }}; border: {{ $sBor }}; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 4px; text-transform: uppercase; flex-shrink: 0;">{{ str_replace('_', ' ', $letter->status) }}</span>
+                        <span class="badge" style="background: {{ $sBg }}; color: {{ $sCol }}; border: {{ $sBor }}; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 4px; text-transform: uppercase; flex-shrink: 0;">{{ $letter->status_label }}</span>
                     </div>
                     <div class="d-flex align-items-center" style="width: 100%;">
                         <span class="m-subject">{{ $letter->subject ?: '(Tanpa Judul)' }}</span>

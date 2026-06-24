@@ -125,12 +125,21 @@ class DispositionController extends Controller
         $data = $request->validate([
             'action' => 'required|in:pertimbangan,accepted,rejected,followup',
             'response_note' => 'required|string',
+            'attachment' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx',
         ]);
 
         $disposition->update([
             'status' => $data['action'],
             'response_note' => $data['response_note'],
         ]);
+
+        if ($request->hasFile('attachment')) {
+            $path = $request->file('attachment')->store('attachments', 'public');
+            \App\Models\Attachment::create([
+                'letter_id' => $disposition->letter_id,
+                'file_path' => $path,
+            ]);
+        }
 
         LetterHistory::create([
             'letter_id' => $disposition->letter_id,

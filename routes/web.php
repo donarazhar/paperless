@@ -54,6 +54,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('letters/{letter}', [LetterController::class, 'show'])->name('letters.show');
     Route::get('letters/{letter}/print-disposition', [LetterController::class, 'printDisposition'])->name('letters.printDisposition');
+    Route::post('letters/{letter}/reply', [LetterController::class, 'reply'])->name('letters.reply');
     Route::post('letters/{letter}/mark-read', [LetterController::class, 'markRead'])->name('letters.markRead');
 
     // Aksi Workflow Surat

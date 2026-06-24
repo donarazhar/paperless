@@ -547,18 +547,56 @@ class LetterController extends Controller
      */
     public function show($hashedId)
     {
-        $id = Hashids::decode($hashedId)[0] ?? abort(404);
+        $id = \Vinkla\Hashids\Facades\Hashids::decode($hashedId)[0] ?? abort(404);
         $letter = Letter::findOrFail($id);
         $this->authorize('view', $letter);
+
+        // Mark as read
+        $user = \Illuminate\Support\Facades\Auth::user();
+        if (!\App\Models\LetterHistory::where('letter_id', $letter->id)->where('user_id', $user->id)->where('action', 'read')->exists()) {
+            \App\Models\LetterHistory::create([
+                'letter_id' => $letter->id,
+                'user_id' => $user->id,
+                'action' => 'read',
+            ]);
+        }
+
         return view('letters.show', compact('letter'));
     }
 
     public function printDisposition($hashedId)
     {
-        $id = Hashids::decode($hashedId)[0] ?? abort(404);
-        $letter = Letter::with(['dispositions.toUser', 'dispositions.unit', 'dispositions.fromUser'])->findOrFail($id);
-        $this->authorize('view', $letter);
+        $id = \Vinkla\Hashids\Facades\Hashids::decode($hashedId)[0] ?? null;
+        if (!$id) abort(404);
+
+        $letter = Letter::with(['dispositions.fromUser', 'dispositions.toUser', 'dispositions.unit', 'histories'])->findOrFail($id);
+        
         return view('letters.print_disposition', compact('letter'));
+    }
+
+    public function reply(Request $request, Letter $letter)
+    {
+        $data = $request->validate([
+            'response_note' => 'required|string',
+            'attachment' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx',
+        ]);
+
+        if ($request->hasFile('attachment')) {
+            $path = $request->file('attachment')->store('attachments', 'public');
+            \App\Models\Attachment::create([
+                'letter_id' => $letter->id,
+                'file_path' => $path,
+            ]);
+        }
+
+        \App\Models\LetterHistory::create([
+            'letter_id' => $letter->id,
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
+            'action' => 'replied',
+            'note' => "Catatan Tambahan: " . $data['response_note'],
+        ]);
+
+        return back()->with('success', 'Balasan/Catatan berhasil ditambahkan.');
     }
 
     public function markRead(Letter $letter)

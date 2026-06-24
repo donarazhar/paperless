@@ -73,6 +73,17 @@
         $tujuanText   = $letter->type === 'outbound_external' ? $letter->external_recipient_name : ($letter->recipientUser ? $letter->recipientUser->name : ($letter->recipientUnit->name ?? '--'));
         
         $dispoHistory = collect();
+        
+        // Proses awal: Semua surat masuk ke Subag Persuratan terlebih dahulu
+        $dispoHistory->push([
+            'sort_date' => $letter->created_at->timestamp - 1,
+            'tanggal'   => $letter->created_at->format('d-m-Y'),
+            'aksi'      => 'Disposisi',
+            'aktor'     => 'Subag Persuratan',
+            'catatan'   => '-',
+            'by'        => 'Sistem'
+        ]);
+
         foreach($letter->dispositions as $d) {
             $target = $d->toUser ? $d->toUser->name : ($d->unit ? $d->unit->name : '--');
             $actor  = $d->fromUser ? $d->fromUser->name : 'Sistem';
