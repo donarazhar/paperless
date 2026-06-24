@@ -300,16 +300,16 @@
         </div>
 
         <div class="mb-profile dropdown">
-            <a href="#" class="text-muted" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration:none;">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background: #4f46e5; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+            <a href="#" class="text-muted d-flex align-items-center gap-2" data-bs-toggle="dropdown" aria-expanded="false" style="text-decoration:none;">
+                <div class="d-none d-md-flex flex-column text-end">
+                    <span style="font-size: 0.85rem; font-weight: 700; color: #0f172a; line-height: 1.2;">{{ Auth::user()->name ?? 'User' }}</span>
+                    <span style="font-size: 0.7rem; color: #64748b; line-height: 1.2; text-transform: lowercase;">{{ Auth::user()->email ?? '' }}</span>
+                </div>
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: #4f46e5; color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0;">
                     {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
                 </div>
             </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 0.75rem; margin-top: 0.5rem; min-width: 200px;">
-                <li class="px-3 py-2 border-bottom">
-                    <div style="font-weight: 600; font-size: 0.9rem; color: #0f172a;">{{ Auth::user()->name ?? 'User' }}</div>
-                    <div style="font-size: 0.75rem; color: #64748b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ Auth::user()->email ?? '' }}</div>
-                </li>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius: 0.75rem; margin-top: 0.5rem; min-width: 180px;">
                 <li><a class="dropdown-item py-2 mt-1" href="{{ route('profile.edit') }}" style="font-size: 0.85rem;"><i class="bi bi-person me-2"></i> Profil Saya</a></li>
                 <li><hr class="dropdown-divider"></li>
                 <li>
@@ -403,8 +403,8 @@
                 </li>
                 <div class="collapse {{ $isMoreActive ? 'show' : '' }}" id="collapseMore">
                     <li class="mb-nav-item">
-                        <a href="{{ route('users.index') }}" class="mb-nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                            <i class="bi bi-people-fill"></i> Kelola Pengguna
+                        <a href="{{ route('branches.index') }}" class="mb-nav-link {{ request()->routeIs('branches.*') ? 'active' : '' }}">
+                            <i class="bi bi-geo-alt-fill"></i> Kelola Cabang
                         </a>
                     </li>
                     <li class="mb-nav-item">
@@ -413,13 +413,13 @@
                         </a>
                     </li>
                     <li class="mb-nav-item">
-                        <a href="{{ route('branches.index') }}" class="mb-nav-link {{ request()->routeIs('branches.*') ? 'active' : '' }}">
-                            <i class="bi bi-geo-alt-fill"></i> Kelola Cabang
+                        <a href="{{ route('organs.index') }}" class="mb-nav-link {{ request()->routeIs('organs.*') ? 'active' : '' }}">
+                            <i class="bi bi-diagram-3-fill"></i> Kelola Organ
                         </a>
                     </li>
                     <li class="mb-nav-item">
-                        <a href="{{ route('organs.index') }}" class="mb-nav-link {{ request()->routeIs('organs.*') ? 'active' : '' }}">
-                            <i class="bi bi-diagram-3-fill"></i> Kelola Organ
+                        <a href="{{ route('users.index') }}" class="mb-nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                            <i class="bi bi-people-fill"></i> Kelola Pengguna
                         </a>
                     </li>
                 </div>
