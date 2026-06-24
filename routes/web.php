@@ -48,11 +48,14 @@ Route::middleware('auth')->group(function () {
     Route::get('letters/report-outbound-external', [LetterController::class, 'reportOutboundExternal'])->name('letters.reportOutboundExternal');
     
     // Tugas Routes
+    Route::get('tugas', [\App\Http\Controllers\TugasController::class, 'index'])->name('tugas.index');
     Route::get('tugas/disposisi', [\App\Http\Controllers\TugasController::class, 'disposisi'])->name('tugas.disposisi');
     Route::get('tugas/acc-surat', [\App\Http\Controllers\TugasController::class, 'accSurat'])->name('tugas.accSurat');
     Route::get('tugas/my-disposisi', [\App\Http\Controllers\TugasController::class, 'myDisposisi'])->name('tugas.myDisposisi');
 
     Route::get('letters/{letter}', [LetterController::class, 'show'])->name('letters.show');
+    Route::get('letters/{letter}/edit', [LetterController::class, 'edit'])->name('letters.edit');
+    Route::put('letters/{letter}', [LetterController::class, 'update'])->name('letters.update');
     Route::get('letters/{letter}/print-disposition', [LetterController::class, 'printDisposition'])->name('letters.printDisposition');
     Route::post('letters/{letter}/reply', [LetterController::class, 'reply'])->name('letters.reply');
     Route::post('letters/{letter}/mark-read', [LetterController::class, 'markRead'])->name('letters.markRead');

@@ -14,6 +14,42 @@ class TugasController extends Controller
     }
 
     /**
+     * Halaman Task Log (Riwayat Pekerjaan)
+     * Menampilkan daftar pekerjaan yang telah diselesaikan oleh user (ACC, Disposisi, dsb)
+     */
+    public function index(Request $request)
+    {
+        $user = Auth::user();
+        $role = $user->role;
+
+        if (!in_array($role, ['subag_persuratan', 'kepala_unit', 'bagian_tu', 'kepala_sekretariat', 'sub_unit'])) {
+            abort(403);
+        }
+
+        // Ambil surat-surat di mana user ini pernah melakukan aksi:
+        // approved (ACC), disposed (Disposisi), forwarded (Teruskan), completed (Arsipkan Selesai)
+        $q = Letter::with(['sender', 'recipientUser', 'recipientUnit'])
+            ->whereHas('histories', function ($query) use ($user) {
+                $query->where('user_id', $user->id)
+                      ->whereIn('action', ['approved', 'disposed', 'forwarded', 'completed', 'agendakan']);
+            });
+
+        if ($request->filled('search')) {
+            $s = $request->search;
+            $q->where(function ($query) use ($s) {
+                $query->where('letter_number', 'like', "%{$s}%")
+                      ->orWhere('agenda_number', 'like', "%{$s}%")
+                      ->orWhere('subject', 'like', "%{$s}%");
+            });
+        }
+
+        // Urutkan berdasarkan update terakhir agar yang baru dikerjakan ada di atas
+        $letters = $q->orderBy('updated_at', 'desc')->paginate(15)->withQueryString();
+
+        return view('tugas.index', compact('letters'));
+    }
+
+    /**
      * Halaman Tugas > Disposisi untuk subag_persuratan dan kepala_unit
      */
     public function disposisi(Request $request)

@@ -538,13 +538,6 @@
                         @endif
                     </a>
                 </li>
-                <li class="mb-nav-item">
-                    <a href="{{ route('letters.arsip') }}"
-                       class="mb-nav-link {{ request()->routeIs('letters.arsip') ? 'active' : '' }}">
-                        <i class="bi bi-archive-fill"></i>
-                        <span>Arsip</span>
-                    </a>
-                </li>
                 @endif
 
                 {{-- KEPALA SEKRETARIAT / SUB UNIT / BAGIAN TU --}}
@@ -557,6 +550,17 @@
                         @if(isset($unreadMyDispCount) && $unreadMyDispCount > 0)
                             <span class="mb-nav-badge danger">{{ $unreadMyDispCount }}</span>
                         @endif
+                    </a>
+                </li>
+                @endif
+
+                {{-- TASK LOG (Semua Role Pekerja) --}}
+                @if(in_array($role, ['subag_persuratan', 'kepala_unit', 'kepala_sekretariat', 'sub_unit', 'bagian_tu']))
+                <li class="mb-nav-item">
+                    <a href="{{ route('tugas.index') }}"
+                       class="mb-nav-link {{ request()->routeIs('tugas.index') ? 'active' : '' }}">
+                        <i class="bi bi-clock-history"></i>
+                        <span>Log Task</span>
                     </a>
                 </li>
                 <li class="mb-nav-item">

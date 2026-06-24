@@ -590,6 +590,125 @@ class LetterController extends Controller
         return view('letters.show', compact('letter'));
     }
 
+    public function edit($hashedId)
+    {
+        $id = \Vinkla\Hashids\Facades\Hashids::decode($hashedId)[0] ?? abort(404);
+        $letter = Letter::with('attachments')->findOrFail($id);
+        
+        // Hanya bisa edit draft atau pending_approval (yang belum dikirim ke tujuan)
+        if (!in_array($letter->status, ['draft', 'pending_approval'])) {
+            abort(403, 'Surat tidak dapat diedit karena sudah diproses.');
+        }
+
+        // Pastikan user berhak (pembuat surat atau admin)
+        $user = Auth::user();
+        if ($letter->from_user_id !== $user->id && !in_array($user->role, ['admin_sekretariat', 'admin_unit'])) {
+            abort(403, 'Anda tidak berhak mengedit surat ini.');
+        }
+
+        $userUnitId = Auth::user()->unit_id;
+        $units = \App\Models\Unit::when($userUnitId, function($query) use ($userUnitId) {
+            return $query->where('id', '!=', $userUnitId);
+        })->get();
+
+        return view('letters.edit', compact('letter', 'units'));
+    }
+
+    public function update(Request $request, $hashedId)
+    {
+        $id = \Vinkla\Hashids\Facades\Hashids::decode($hashedId)[0] ?? abort(404);
+        $letter = Letter::findOrFail($id);
+
+        if (!in_array($letter->status, ['draft', 'pending_approval'])) {
+            abort(403, 'Surat tidak dapat diedit karena sudah diproses.');
+        }
+
+        $user = Auth::user();
+        if ($letter->from_user_id !== $user->id && !in_array($user->role, ['admin_sekretariat', 'admin_unit'])) {
+            abort(403, 'Anda tidak berhak mengedit surat ini.');
+        }
+
+        $isExternal = $request->letter_type === 'outbound_external';
+
+        $rules = [
+            'letter_type' => 'required|in:internal,outbound_external',
+            'letter_number' => 'nullable|string',
+            'subject' => 'required|string',
+            'body' => 'required|string',
+            'action' => 'required|in:draft,send',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:5120',
+        ];
+
+        if ($isExternal) {
+            $rules['external_recipient_name'] = 'required|string|max:255';
+        } else {
+            $rules['to_unit_id'] = 'required|exists:units,id';
+        }
+
+        $data = $request->validate($rules);
+        
+        $status = 'draft';
+        if ($request->action === 'send') {
+            $status = 'pending_approval';
+        }
+
+        $letterData = [
+            'type' => $data['letter_type'],
+            'letter_number' => $data['letter_number'] ?? '-',
+            'subject' => $data['subject'],
+            'body' => $data['body'],
+            'status' => $status,
+        ];
+
+        if ($isExternal) {
+            $letterData['external_recipient_name'] = $data['external_recipient_name'];
+            $letterData['to_unit_id'] = null;
+        } else {
+            $letterData['to_unit_id'] = $data['to_unit_id'];
+            $letterData['external_recipient_name'] = null;
+        }
+
+        $letter->update($letterData);
+
+        if ($request->hasFile('attachments')) {
+            // Hapus lampiran lama
+            foreach ($letter->attachments as $att) {
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($att->file_path);
+                $att->delete();
+            }
+
+            // Simpan lampiran baru
+            foreach ($request->file('attachments') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $basename = pathinfo($originalName, PATHINFO_FILENAME);
+                $extension = $file->getClientOriginalExtension();
+
+                $filename = $basename . '_' . time() . '.' . $extension;
+                $path = $file->storeAs('attachments', $filename, 'public');
+
+                \App\Models\Attachment::create([
+                    'letter_id' => $letter->id,
+                    'file_path' => $path,
+                    'file_name' => $originalName
+                ]);
+            }
+        }
+
+        LetterHistory::create([
+            'letter_id' => $letter->id,
+            'user_id' => Auth::id(),
+            'action' => 'updated',
+            'note' => 'Surat diedit dan disimpan sebagai ' . ($status == 'draft' ? 'draft' : 'diajukan'),
+        ]);
+
+        return redirect()
+            ->route($request->action === 'send' ? 'letters.outbound' : 'letters.drafts')
+            ->with('success', $request->action === 'send'
+                ? 'Surat berhasil diperbarui dan diajukan untuk persetujuan.'
+                : 'Draf surat berhasil diperbarui.');
+    }
+
     public function printDisposition($hashedId)
     {
         $id = \Vinkla\Hashids\Facades\Hashids::decode($hashedId)[0] ?? null;
@@ -619,7 +738,7 @@ class LetterController extends Controller
             'letter_id' => $letter->id,
             'user_id' => \Illuminate\Support\Facades\Auth::id(),
             'action' => 'replied',
-            'note' => "Catatan Tambahan: " . $data['response_note'],
+            'note' => $data['response_note'],
         ]);
 
         return back()->with('success', 'Balasan/Catatan berhasil ditambahkan.');

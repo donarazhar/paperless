@@ -360,7 +360,7 @@
                 {{-- Hover quick-actions --}}
                 @if($isDraft)
                 <div class="m-actions" onclick="event.stopPropagation()">
-                    <button onclick="window.location='{{ $showUrl }}'" class="m-act-btn">
+                    <button onclick="window.location='{{ route('letters.edit', \Vinkla\Hashids\Facades\Hashids::encode($letter->id)) }}'" class="m-act-btn">
                         <i class="bi bi-pencil"></i> Edit
                     </button>
                     <form method="POST" action="{{ route('letters.submitDraft', $letter->id) }}" onsubmit="return confirm('Ajukan draft ini untuk proses ACC Pimpinan?');" style="display:inline;">
@@ -372,6 +372,9 @@
                 </div>
                 @elseif($isPending)
                 <div class="m-actions" onclick="event.stopPropagation()">
+                    <button onclick="window.location='{{ route('letters.edit', \Vinkla\Hashids\Facades\Hashids::encode($letter->id)) }}'" class="m-act-btn">
+                        <i class="bi bi-pencil"></i> Edit
+                    </button>
                     <button onclick="window.location='{{ $showUrl }}'" class="m-act-btn">
                         <i class="bi bi-eye"></i> Lihat
                     </button>

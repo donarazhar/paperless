@@ -85,10 +85,24 @@
         ]);
 
         foreach($letter->dispositions as $d) {
+            if (\Illuminate\Support\Str::contains($d->note, 'Diteruskan kepada personal terkait di unit')) continue;
+            
             $target = $d->toUser ? $d->toUser->name : ($d->unit ? $d->unit->name : '--');
             $actor  = $d->fromUser ? $d->fromUser->name : 'Sistem';
             $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d-m-Y'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$d->note ?? '-','by'=>$actor]);
         }
+
+        foreach($letter->histories->where('action', 'replied') as $h) {
+            $dispoHistory->push([
+                'sort_date' => $h->created_at->timestamp,
+                'tanggal' => $h->created_at->format('d-m-Y'),
+                'aksi' => 'Catatan',
+                'aktor' => 'Catatan oleh: ' . ($h->user->name ?? 'User'),
+                'catatan' => $h->note,
+                'by' => $h->user->name ?? 'User'
+            ]);
+        }
+
         $historiesList = $dispoHistory->sortBy('sort_date')->values();
     @endphp
 

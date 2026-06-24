@@ -30,7 +30,6 @@
     /* ── Subject & Badges ── */
     .show-subject-row {
         display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1.5rem;
-        padding-left: 3.5rem; /* Sejajar dengan teks, offset avatar */
     }
     .show-subject {
         font-size: 1.35rem; font-weight: 400; color: #1f1f1f; margin: 0; line-height: 1.3;
@@ -69,8 +68,8 @@
 
     /* ── Body ── */
     .show-body {
-        padding-left: 3.5rem; font-size: .9rem; color: #1f1f1f; line-height: 1.6;
-        white-space: pre-wrap; margin-bottom: 2rem;
+        font-size: .95rem; color: #1f1f1f; line-height: 1.6;
+        white-space: pre-line; margin-bottom: 2rem; text-align: left; text-indent: 0;
     }
     .ext-notes {
         margin-top: 1.5rem; padding: 1rem; background: #fff8e1; border: 1px solid #ffecb3;
@@ -80,7 +79,7 @@
 
     /* ── Attachments ── */
     .att-area {
-        padding-left: 3.5rem; margin-bottom: 2rem;
+        margin-bottom: 2rem;
     }
     .att-count { font-size: .8rem; font-weight: 600; color: #444746; margin-bottom: .75rem; }
     .att-chips { display: flex; flex-wrap: wrap; gap: .75rem; }
@@ -111,7 +110,7 @@
 
     /* ── Timeline ── */
     .tl-area {
-        padding-left: 3.5rem; margin-top: 2rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem;
+        margin-top: 2rem; border-top: 1px solid #f1f5f9; padding-top: 1.5rem;
     }
     .tl-title { font-size: .85rem; font-weight: 600; color: #444746; margin-bottom: 1rem; }
     .tl-list {
@@ -137,11 +136,25 @@
     }
     .btn-action-reply:hover { background: #f1f5f9; }
 
+    /* ── Top Primary Action Buttons (Gmail Style) ── */
+    .top-action-btn {
+        display: inline-flex; align-items: center; gap: .35rem;
+        padding: .45rem 1.25rem; border: none; border-radius: 100px;
+        font-size: .85rem; font-weight: 600; cursor: pointer;
+        transition: all .15s; margin-right: .5rem; text-decoration: none;
+    }
+    .top-action-btn.acc { background: #b3261e; color: #fff; } /* Gmail red */
+    .top-action-btn.acc:hover { background: #8c1d18; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+    
+    .top-action-btn.send { background: #0b57d0; color: #fff; } /* Gmail blue */
+    .top-action-btn.send:hover { background: #0842a0; box-shadow: 0 1px 3px rgba(0,0,0,.15); }
+
+    .top-action-btn.agenda { background: #eef2ff; color: #4f46e5; border: 1px solid #c7d2fe; }
+    .top-action-btn.agenda:hover { background: #e0e7ff; }
+
     /* Responsive */
     @media(max-width: 768px) {
         .show-scroll { padding: 1rem; }
-        .show-subject-row { padding-left: 0; }
-        .show-body, .att-area, .tl-area { padding-left: 0; }
         .sender-date { margin-left: auto; }
     }
 </style>
@@ -195,15 +208,18 @@
         <div class="tb-divider"></div>
 
         @if(!in_array($letter->status, ['pending_approval', 'pending_sending', 'pending_agenda', 'draft']))
-            @if($isRespondingDispo)
-                <button class="tb-btn" data-bs-toggle="modal" data-bs-target="#acceptModal" title="Tanggapi Disposisi"><i class="bi bi-reply-fill"></i></button>
-            @else
-                <button class="tb-btn" data-bs-toggle="modal" data-bs-target="#replyModal" title="Balas"><i class="bi bi-reply-fill"></i></button>
+            @php $hideCatatanAndModifyDispo = $role === 'admin_unit' && $isDispoToMyUnit; @endphp
+            @if(!$hideCatatanAndModifyDispo)
+                @if($isRespondingDispo)
+                    <button class="btn-action-reply" data-bs-toggle="modal" data-bs-target="#acceptModal"><i class="bi bi-reply"></i> Balas</button>
+                @else
+                    <button class="btn-action-reply" data-bs-toggle="modal" data-bs-target="#replyModal"><i class="bi bi-chat-left-text"></i> Catatan</button>
+                @endif
             @endif
             @if($canDispose)
-                <button class="tb-btn" data-bs-toggle="modal" data-bs-target="#dispoModal" title="Teruskan"><i class="bi bi-forward-fill"></i></button>
+                <button class="btn-action-reply" data-bs-toggle="modal" data-bs-target="#dispoModal"><i class="bi bi-forward"></i> {{ $hideCatatanAndModifyDispo ? 'Meneruskan' : 'Mendisposisikan' }}</button>
             @else
-                <a href="{{ route('letters.create', ['forward' => $encodedId]) }}" class="tb-btn" title="Teruskan"><i class="bi bi-forward-fill"></i></a>
+                <a href="{{ route('letters.create', ['forward' => $encodedId]) }}" class="btn-action-reply"><i class="bi bi-forward"></i> Teruskan</a>
             @endif
         @endif
 
@@ -212,38 +228,26 @@
         @endif
 
         <div class="ms-auto d-flex align-items-center">
-            @if($hasAction || in_array($role, ['kepala_unit', 'subag_persuratan', 'admin_unit', 'admin_sekretariat', 'bagian_tu', 'sub_unit']))
-            <div class="dropdown">
-                <button class="tb-btn" type="button" data-bs-toggle="dropdown"><i class="bi bi-three-dots-vertical"></i></button>
-                <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="border-radius:8px; border:1px solid #e2e8f0;">
-                    @if(in_array($role, ['kepala_unit', 'subag_persuratan']) && $letter->status === 'pending_approval')
-                        <li><a class="dropdown-item py-2 fw-bold text-danger" href="#" onclick="event.preventDefault(); document.getElementById('formApprove').submit();"><i class="bi bi-check-lg me-2"></i>ACC Surat</a></li>
-                    @endif
-
-                    @if(in_array($role, ['admin_unit', 'admin_sekretariat']) && $letter->status === 'pending_sending')
-                        <li><a class="dropdown-item py-2 fw-bold text-primary" href="#" onclick="event.preventDefault(); document.getElementById('formSendFinal').submit();"><i class="bi bi-send me-2"></i>Kirim Surat Fisik</a></li>
-                    @endif
-
-                    @if($role==='admin_sekretariat' && $letter->status==='pending_agenda')
-                        <li><a class="dropdown-item py-2" href="#" data-bs-toggle="modal" data-bs-target="#agendaModal"><i class="bi bi-journal-plus me-2"></i>Beri Nomor Agenda</a></li>
-                    @endif
-
-                    @if($role==='subag_persuratan' && $letter->status==='in_review_subag' && !$isRespondingDispo)
-                        <li><a class="dropdown-item py-2" href="#" onclick="event.preventDefault(); document.getElementById('formForwardTU').submit();"><i class="bi bi-arrow-right me-2"></i>Teruskan ke Tata Usaha</a></li>
-                    @endif
-
-                    @php
-                        $canCompleteSekretariat = in_array($role, ['bagian_tu', 'subag_persuratan']) && $letter->status !== 'completed' && !in_array($letter->status, ['draft', 'pending_approval', 'pending_sending', 'pending_agenda']);
-                        $canCompleteUnit = in_array($role, ['admin_unit', 'kepala_unit', 'sub_unit']) && $canDispose && $letter->status !== 'completed';
-                    @endphp
-
-                    @if(($canCompleteSekretariat || $canCompleteUnit) && !$isRespondingDispo)
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item py-2 fw-bold text-success" href="#" onclick="event.preventDefault(); if(confirm('Tandai selesai?')) document.getElementById('formComplete').submit();"><i class="bi bi-archive me-2"></i>Arsipkan Selesai</a></li>
-                    @endif
-                </ul>
-            </div>
+            
+            {{-- Primary Top Actions --}}
+            @if(in_array($role, ['kepala_unit', 'subag_persuratan']) && $letter->status === 'pending_approval')
+                <button onclick="event.preventDefault(); document.getElementById('formApprove').submit();" class="top-action-btn acc">
+                    <i class="bi bi-check2-circle" style="font-size: 1rem;"></i> ACC Surat
+                </button>
             @endif
+
+            @if(in_array($role, ['admin_unit', 'admin_sekretariat']) && $letter->status === 'pending_sending')
+                <button onclick="event.preventDefault(); document.getElementById('formSendFinal').submit();" class="top-action-btn send">
+                    <i class="bi bi-send-fill" style="font-size: .95rem;"></i> Kirim Fisik
+                </button>
+            @endif
+
+            @if($role==='admin_sekretariat' && $letter->status==='pending_agenda')
+                <button data-bs-toggle="modal" data-bs-target="#agendaModal" class="top-action-btn agenda">
+                    <i class="bi bi-journal-plus"></i> Beri Agenda
+                </button>
+            @endif
+
         </div>
     </div>
 
@@ -262,29 +266,41 @@
             </div>
         </div>
 
-        {{-- Sender Info --}}
+        {{-- Sender/Recipient Info --}}
         @php
             $isExt = in_array($letter->type, ['outbound_external', 'external']);
             if($letter->type==='outbound_external') {
                 $senderName = $letter->sender->name ?? 'Sistem';
-                $senderMeta = $letter->external_recipient_name;
+                $recipientName = $letter->external_recipient_name;
             } else if($letter->type==='internal') {
                 $senderName = $letter->sender->unit->name ?? ($letter->sender->name ?? 'Sistem');
-                $senderMeta = $letter->recipientUnit->name ?? ($letter->recipientUser->name ?? '—');
+                $recipientName = $letter->recipientUnit->name ?? ($letter->recipientUser->name ?? '—');
             } else { 
                 $senderName = $letter->external_sender_name;
-                $senderMeta = 'Unit Tujuan (Sistem)';
+                $recipientName = 'Unit Tujuan (Sistem)';
             }
-            $initial = mb_substr($senderName, 0, 1);
+
+            // Determine if the letter is outbound from the perspective of the current user's unit
+            $isMyUnitOutbound = ($letter->sender && $letter->sender->unit_id === Auth::user()->unit_id);
+
+            if ($isMyUnitOutbound) {
+                $primaryName = 'Ke: ' . $recipientName;
+                $secondaryText = 'dari ' . $senderName;
+                $initial = mb_substr($recipientName, 0, 1);
+            } else {
+                $primaryName = $senderName;
+                $secondaryText = 'kepada ' . $recipientName;
+                $initial = mb_substr($senderName, 0, 1);
+            }
         @endphp
         <div class="sender-row">
             <div class="sender-avatar {{ $isExt ? 'av-ext' : 'av-int' }}">{{ mb_strtoupper($initial) }}</div>
             <div class="sender-info">
                 <div class="sender-name-wrap">
-                    <span class="sender-name">{{ $senderName }}</span>
+                    <span class="sender-name">{{ $primaryName }}</span>
                     <span class="sender-email">&lt;{{ $isExt ? 'external' : 'internal' }}&gt;</span>
                 </div>
-                <div class="sender-to">kepada {{ $senderMeta }}</div>
+                <div class="sender-to">{{ $secondaryText }}</div>
             </div>
             <div class="sender-date">
                 {{ $letter->created_at->format('d M Y, H:i') }}
@@ -293,11 +309,7 @@
 
         {{-- Body --}}
         <div class="show-body">
-            @if($letter->body && $letter->body !== '-')
-                {!! nl2br(e($letter->body)) !!}
-            @else
-                <em style="color:#94a3b8;">(Tidak ada teks pengantar dalam surat ini)</em>
-            @endif
+@if($letter->body && $letter->body !== '-'){!! nl2br(e(trim($letter->body))) !!}@else<em style="color:#94a3b8;">(Tidak ada teks pengantar dalam surat ini)</em>@endif
 
             @if($letter->type==='outbound_external' && $letter->external_notes)
                 <div class="ext-notes">
@@ -347,10 +359,11 @@
         @endif
 
         {{-- Timeline / History --}}
-        @if($letter->histories->where('action', 'disposed')->isNotEmpty())
+        @if($letter->histories->whereIn('action', ['disposed', 'replied'])->isNotEmpty())
         <div class="tl-area">
-            <div class="tl-title">Alur Disposisi</div>
+            <div class="tl-title">Riwayat & Catatan</div>
             <div class="tl-list">
+                @if($letter->histories->where('action', 'disposed')->isNotEmpty())
                 <div class="tl-item">
                     <div class="tl-dot"></div>
                     <div class="tl-item-text">
@@ -359,38 +372,36 @@
                     </div>
                     <div class="tl-time">{{ $letter->created_at->format('d M, H:i') }}</div>
                 </div>
-                @foreach($letter->histories->where('action', 'disposed')->sortBy('created_at') as $h)
-                    @php
-                        $dispMatch = $letter->dispositions->where('from_user_id', $h->user_id)->where('note', $h->note)->first();
-                    @endphp
-                    <div class="tl-item">
-                        <div class="tl-dot" style="background:#eef2ff; border-color:#4f46e5;"></div>
-                        <div class="tl-item-text">
-                            <strong>Ke: {{ $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—') }}</strong>
-                            <span class="text-muted ms-1">— "{{ preg_replace('/^\[.*?\]\s*/', '', $h->note) }}"</span>
+                @endif
+                @foreach($letter->histories->whereIn('action', ['disposed', 'replied'])->sortBy('created_at') as $h)
+                    @if($h->action === 'disposed' && !Str::contains($h->note, 'Diteruskan kepada personal terkait di unit'))
+                        @php
+                            $dispMatch = $letter->dispositions->where('from_user_id', $h->user_id)->where('note', $h->note)->first();
+                        @endphp
+                        <div class="tl-item">
+                            <div class="tl-dot" style="background:#eef2ff; border-color:#4f46e5;"></div>
+                            <div class="tl-item-text">
+                                <strong>Disposisi oleh {{ $h->user->name ?? 'User' }} ke: {{ $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—') }}</strong>
+                                <span class="text-muted ms-1">— "{{ preg_replace('/^\[.*?\]\s*/', '', $h->note) }}"</span>
+                            </div>
+                            <div class="tl-time">{{ $h->created_at->format('d M, H:i') }}</div>
                         </div>
-                        <div class="tl-time">{{ $h->created_at->format('d M, H:i') }}</div>
-                    </div>
+                    @elseif($h->action === 'replied')
+                        <div class="tl-item">
+                            <div class="tl-dot" style="background:#fff7ed; border-color:#ea580c;"></div>
+                            <div class="tl-item-text">
+                                <strong>Catatan dari {{ $h->user->name ?? 'User' }}</strong>
+                                <span class="text-muted ms-1">— "{{ $h->note }}"</span>
+                            </div>
+                            <div class="tl-time">{{ $h->created_at->format('d M, H:i') }}</div>
+                        </div>
+                    @endif
                 @endforeach
             </div>
         </div>
         @endif
 
-        {{-- Quick action di bawah --}}
-        <div style="padding-left: 3.5rem; margin-top: 1.5rem;">
-            @if(!in_array($letter->status, ['pending_approval', 'pending_sending', 'pending_agenda', 'draft']))
-                @if($isRespondingDispo)
-                    <button class="btn-action-reply" data-bs-toggle="modal" data-bs-target="#acceptModal"><i class="bi bi-reply"></i> Balas</button>
-                @else
-                    <button class="btn-action-reply" data-bs-toggle="modal" data-bs-target="#replyModal"><i class="bi bi-reply"></i> Balas</button>
-                @endif
-                @if($canDispose)
-                    <button class="btn-action-reply" data-bs-toggle="modal" data-bs-target="#dispoModal"><i class="bi bi-forward"></i> Teruskan</button>
-                @else
-                    <a href="{{ route('letters.create', ['forward' => $encodedId]) }}" class="btn-action-reply"><i class="bi bi-forward"></i> Teruskan</a>
-                @endif
-            @endif
-        </div>
+
 
     </div>
 </div>
@@ -415,12 +426,15 @@
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold">Buat Disposisi Baru</h5>
+                <h5 class="modal-title fw-bold">{{ isset($hideCatatanAndModifyDispo) && $hideCatatanAndModifyDispo ? 'Teruskan Surat' : 'Buat Disposisi Baru' }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('letters.dispositions.store', $letter) }}" method="POST">
                 @csrf
                 <div class="modal-body">
+                    @if(isset($hideCatatanAndModifyDispo) && $hideCatatanAndModifyDispo)
+                        <input type="hidden" name="recipient_type" value="user">
+                    @else
                     <div class="d-flex gap-3 mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="recipient_type" id="typeUnit" value="unit" checked>
@@ -431,6 +445,8 @@
                             <label class="form-check-label fw-bold" for="typeUser">Ke Personal</label>
                         </div>
                     </div>
+                    @endif
+                    @if(!isset($hideCatatanAndModifyDispo) || !$hideCatatanAndModifyDispo)
                     <div class="mb-3" id="selectUnit">
                         <select name="to_unit_id" class="form-select">
                             <option value="">— Daftar Unit —</option>
@@ -439,8 +455,9 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="mb-3" id="selectUser" style="display:none;">
-                        <select name="to_user_id" class="form-select">
+                    @endif
+                    <div class="mb-3" id="selectUser" style="{{ isset($hideCatatanAndModifyDispo) && $hideCatatanAndModifyDispo ? '' : 'display:none;' }}">
+                        <select name="to_user_id" class="form-select" {{ isset($hideCatatanAndModifyDispo) && $hideCatatanAndModifyDispo ? 'required' : '' }}>
                             <option value="">— Daftar Pegawai di Unit Anda —</option>
                             @php $myUnit = \App\Models\Unit::with('organs.users')->find($user->unit_id); @endphp
                             @if($myUnit && $myUnit->organs->isNotEmpty())
@@ -452,7 +469,12 @@
                             @endif
                         </select>
                     </div>
-                    <textarea name="note" class="form-control" rows="3" placeholder="Tulis instruksi disposisi..." required></textarea>
+                    
+                    @if(isset($hideCatatanAndModifyDispo) && $hideCatatanAndModifyDispo)
+                        <input type="hidden" name="note" value="Diteruskan kepada personal terkait di unit">
+                    @else
+                        <textarea name="note" class="form-control" rows="3" placeholder="Tulis instruksi disposisi..." required></textarea>
+                    @endif
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
@@ -488,22 +510,22 @@
 </div>
 @endif
 
-{{-- Modal Tanggapan / Balas --}}
+{{-- Modal Tambah Catatan --}}
 <div class="modal fade" id="replyModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title fw-bold">Catatan / Balasan</h5>
+                <h5 class="modal-title fw-bold">Tambahkan Catatan</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form action="{{ route('letters.reply', $letter->id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="modal-body">
-                    <textarea name="response_note" class="form-control mb-3" rows="3" placeholder="Balasan..." required></textarea>
+                    <textarea name="response_note" class="form-control mb-3" rows="3" placeholder="Isi catatan Anda..." required></textarea>
                     <input type="file" name="attachment" class="form-control">
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary"><i class="bi bi-send-fill"></i> Kirim</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Simpan Catatan</button>
                 </div>
             </form>
         </div>

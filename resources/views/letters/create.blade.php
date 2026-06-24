@@ -433,21 +433,43 @@
         const body = document.getElementById('body');
         if (body) autoResize(body);
 
-        /* File attachment preview */
+        /* File attachment preview & accumulation */
         const input     = document.getElementById('attachmentInput');
         const drop      = document.getElementById('attachDrop');
         const chips     = document.getElementById('fileChips');
         const label     = document.getElementById('attachLabel');
+        const defaultLabel = label.textContent;
+        let allFiles = [];
 
         input.addEventListener('change', function () {
+            const newFiles = Array.from(this.files);
+            // Append newly selected files
+            allFiles = allFiles.concat(newFiles);
+            updateFileInputAndUI();
+        });
+
+        /* Drag-and-drop highlight */
+        drop.addEventListener('dragover',  function (e) { e.preventDefault(); drop.classList.add('has-files'); });
+        drop.addEventListener('dragleave', function ()  { if (!allFiles.length) drop.classList.remove('has-files'); });
+        drop.addEventListener('drop', function (e) { 
+            e.preventDefault(); 
+            const newFiles = Array.from(e.dataTransfer.files);
+            allFiles = allFiles.concat(newFiles);
+            updateFileInputAndUI();
+        });
+
+        function updateFileInputAndUI() {
+            const dt = new DataTransfer();
+            allFiles.forEach(f => dt.items.add(f));
+            input.files = dt.files;
+
             chips.innerHTML = '';
-            const files = Array.from(this.files);
 
-            if (files.length > 0) {
+            if (allFiles.length > 0) {
                 drop.classList.add('has-files');
-                label.textContent = files.length + ' file dipilih';
+                label.textContent = allFiles.length + ' file dipilih';
 
-                files.forEach(function (file) {
+                allFiles.forEach(function (file, index) {
                     const ext = file.name.split('.').pop().toLowerCase();
                     let iconClass = '', iconBi = 'file-earmark';
                     if (ext === 'pdf')                    { iconClass = 'pdf'; iconBi = 'file-earmark-pdf-fill'; }
@@ -456,19 +478,29 @@
 
                     const chip = document.createElement('div');
                     chip.className = 'file-chip ' + iconClass;
-                    chip.innerHTML = `<i class="bi bi-${iconBi}"></i><span class="chip-name">${file.name}</span>`;
+                    chip.innerHTML = `
+                        <i class="bi bi-${iconBi}"></i>
+                        <span class="chip-name">${file.name}</span>
+                        <i class="bi bi-x-circle-fill remove-file" data-index="${index}" style="cursor:pointer; color:#ef4444; margin-left:.25rem; font-size:.85rem;"></i>
+                    `;
                     chips.appendChild(chip);
+                });
+
+                // Attach remove event
+                document.querySelectorAll('.remove-file').forEach(btn => {
+                    btn.addEventListener('click', function(e) {
+                        e.stopPropagation(); // Prevent triggering the file input click
+                        e.preventDefault();
+                        const idx = parseInt(this.getAttribute('data-index'));
+                        allFiles.splice(idx, 1);
+                        updateFileInputAndUI();
+                    });
                 });
             } else {
                 drop.classList.remove('has-files');
-                label.textContent = 'Lampirkan dokumen (PDF, DOC, JPG, PNG)';
+                label.textContent = defaultLabel;
             }
-        });
-
-        /* Drag-and-drop highlight */
-        drop.addEventListener('dragover',  function (e) { e.preventDefault(); drop.classList.add('has-files'); });
-        drop.addEventListener('dragleave', function ()  { if (!input.files.length) drop.classList.remove('has-files'); });
-        drop.addEventListener('drop',      function (e) { e.preventDefault(); input.files = e.dataTransfer.files; input.dispatchEvent(new Event('change')); });
+        }
     });
 </script>
 @endpush

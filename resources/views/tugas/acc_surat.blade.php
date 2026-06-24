@@ -111,12 +111,17 @@
     .av-int { background: #fee2e2; color: #b91c1c; }
     .av-ext { background: #fce7f3; color: #be185d; }
 
-    /* Sender name */
-    .m-sender {
+    /* Recipient name */
+    .m-to {
         width: 170px; flex-shrink: 0;
         font-size: .875rem; font-weight: 700;
         overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
         color: #0f172a;
+    }
+    .m-to .to-label {
+        font-size: .68rem; font-weight: 700;
+        color: #94a3b8; text-transform: uppercase;
+        margin-right: .25rem; letter-spacing: .04em;
     }
 
     /* Content */
@@ -201,7 +206,7 @@
     /* Responsive */
     @media (max-width: 768px) {
         .m-row     { height: auto; padding: .75rem 1rem; flex-wrap: wrap; gap: .5rem; position: relative; }
-        .m-sender  { width: calc(100% - 70px); }
+        .m-to      { width: calc(100% - 70px); }
         .m-content { width: 100%; }
         .m-subject { max-width: 100%; }
         .m-snippet { display: none; }
@@ -212,7 +217,7 @@
     }
     @media (max-width: 480px) {
         .m-avatar { display: none; }
-        .m-sender { width: calc(100% - 60px); }
+        .m-to     { width: calc(100% - 60px); }
     }
 </style>
 
@@ -268,8 +273,10 @@
                 $isUnread     = $letter->is_unread;
                 $isExternal   = $letter->type === 'outbound_external';
                 $showUrl      = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
-                $senderUnit   = $letter->sender->unit->name ?? ($letter->sender->name ?? 'Unknown');
-                $initial      = mb_strtoupper(mb_substr($senderUnit, 0, 1));
+                $recipientName = $isExternal
+                    ? ($letter->external_recipient_name ?: 'Tanpa Tujuan Eksternal')
+                    : ($letter->recipientUnit->name ?? ($letter->recipientUser->name ?? 'Internal'));
+                $initial      = mb_strtoupper(mb_substr($recipientName, 0, 1));
             @endphp
 
             <div onclick="window.location='{{ $showUrl }}'"
@@ -282,7 +289,9 @@
                     {{ $initial }}
                 </div>
 
-                <span class="m-sender">{{ $senderUnit }}</span>
+                <span class="m-to">
+                    <span class="to-label">Ke:</span>{{ $recipientName }}
+                </span>
 
                 <div class="m-content">
                     {{-- Badges --}}
