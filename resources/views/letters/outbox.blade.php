@@ -1,202 +1,406 @@
 @extends('layouts.mailbox')
-
 @section('title', 'Kotak Keluar')
 
 @section('content')
 <style>
-    .page-container { padding: 0; display: flex; flex-direction: column; height: 100%; background: #f8fafc; }
-    
-    /* Modern Header */
-    .inbox-header {
-        background: #ffffff;
-        padding: 1.5rem 2rem;
-        border-bottom: 1px solid #e2e8f0;
+    /* ══ OUTBOX GMAIL-STYLE (konsisten dengan inbox) ══ */
+    .outbox-wrap {
         display: flex;
-        justify-content: space-between;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 1rem;
+        flex-direction: column;
+        height: 100%;
+        overflow: hidden;
+        background: #fff;
     }
-    .ih-title { font-size: 1.5rem; font-weight: 800; color: #0f172a; margin: 0; letter-spacing: -0.02em; }
-    .ih-sub { font-size: 0.85rem; color: #64748b; margin-top: 0.2rem; }
-    
-    /* Toolbar */
-    .mail-toolbar {
-        background: #ffffff;
-        padding: 0.75rem 2rem;
-        border-bottom: 1px solid #e2e8f0;
+
+    /* ── Toolbar ── */
+    .outbox-toolbar {
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        gap: .5rem;
+        padding: .6rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fff;
+        flex-shrink: 0;
         position: sticky;
         top: 0;
         z-index: 10;
     }
+    .tb-check {
+        width: 16px; height: 16px;
+        accent-color: #4f46e5; cursor: pointer; flex-shrink: 0;
+    }
     .tb-btn {
-        background: transparent; border: none; color: #64748b;
-        width: 36px; height: 36px; border-radius: 8px;
+        width: 34px; height: 34px; border: none; background: none;
+        color: #64748b; border-radius: 8px; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s; cursor: pointer;
+        font-size: .95rem; transition: all .15s;
     }
     .tb-btn:hover { background: #f1f5f9; color: #0f172a; }
-    .page-info { font-size: 0.85rem; font-weight: 600; color: #64748b; }
-    
-    /* Mail List */
-    .mail-list { flex: 1; overflow-y: auto; background: #ffffff; }
-    .m-item {
-        display: flex; align-items: center; padding: 0.85rem 2rem;
-        border-bottom: 1px solid #f1f5f9; transition: all 0.2s;
-        text-decoration: none; color: inherit; position: relative;
-    }
-    .m-item::before {
-        content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
-        background: transparent; transition: all 0.2s;
-    }
-    .m-item:hover { background: #f8fafc; box-shadow: 0 2px 5px rgba(0,0,0,0.02); z-index: 2; transform: translateY(-1px); }
-    .m-item:hover::before { background: #cbd5e1; }
-    
-    .m-item.unread { background: #ffffff; font-weight: 700; }
-    .m-item.unread::before { background: #4f46e5; }
-    .m-item.unread .m-subject { color: #0f172a; font-weight: 700; }
-    .m-item.unread .m-sender { color: #0f172a; font-weight: 700; }
-    
-    .m-item.read { background: #f8fafc; color: #475569; }
-    .m-item.read .m-subject { color: #334155; font-weight: 500; }
-    .m-item.read .m-sender { color: #475569; font-weight: 500; }
-    
-    /* Avatars & Elements */
-    .m-avatar {
-        width: 38px; height: 38px; border-radius: 10px;
+    .tb-divider { width: 1px; height: 20px; background: #e2e8f0; margin: 0 .25rem; flex-shrink: 0; }
+    .tb-spacer  { flex: 1; }
+    .tb-page-info { font-size: .8rem; font-weight: 600; color: #94a3b8; white-space: nowrap; }
+    .tb-page-btn {
+        width: 30px; height: 30px; border: none; background: none;
+        color: #64748b; border-radius: 6px; cursor: pointer;
         display: flex; align-items: center; justify-content: center;
-        font-weight: 700; font-size: 0.9rem; flex-shrink: 0; margin-right: 1rem;
+        font-size: .85rem; transition: all .15s; text-decoration: none;
     }
-    .av-int { background: #e0e7ff; color: #4338ca; }
-    .av-ext { background: #fce7f3; color: #be185d; }
-    
-    .m-sender { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 220px; flex-shrink: 0; }
-    .m-content { flex: 1; min-width: 0; display: flex; flex-direction: column; justify-content: center; gap: 0.2rem; padding-right: 1rem; }
-    .m-subject { font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 40%; }
-    .m-snippet { font-size: 0.85rem; color: #94a3b8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 400; flex: 1; }
-    
-    .m-date { font-size: 0.8rem; color: #64748b; font-weight: 500; white-space: nowrap; width: 80px; text-align: right; flex-shrink: 0; }
-    
-    .badge-type {
-        font-size: 0.65rem; font-weight: 700; padding: 0.2rem 0.5rem; border-radius: 6px; letter-spacing: 0.05em; margin-left: 0.5rem;
+    .tb-page-btn:hover { background: #f1f5f9; color: #0f172a; }
+    .tb-page-btn.disabled { opacity: .35; pointer-events: none; }
+
+    /* ── Filter tabs ── */
+    .outbox-tabs {
+        display: flex;
+        border-bottom: 1px solid #f1f5f9;
+        background: #fff;
+        flex-shrink: 0;
+        overflow-x: auto;
+        scrollbar-width: none;
     }
-    .bt-ext { background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; }
+    .outbox-tabs::-webkit-scrollbar { display: none; }
+    .outbox-tab {
+        display: flex; align-items: center; gap: .4rem;
+        padding: .65rem 1.25rem;
+        font-size: .8rem; font-weight: 600;
+        color: #64748b;
+        border-bottom: 2px solid transparent;
+        white-space: nowrap; text-decoration: none;
+        transition: all .15s; cursor: pointer;
+    }
+    .outbox-tab:hover { color: #10b981; background: #f0fdf4; }
+    .outbox-tab.active { color: #059669; border-bottom-color: #10b981; background: #fff; }
+    .tab-badge {
+        font-size: .62rem; font-weight: 700;
+        padding: .1rem .38rem; border-radius: 10px;
+        min-width: 18px; text-align: center;
+    }
+    .tab-total   { background: #e2e8f0; color: #64748b; }
+    .tab-wait    { background: #fef3c7; color: #92400e; }
+    .tab-sent    { background: #d1fae5; color: #065f46; }
 
-    /* Custom Checkbox */
-    .m-check { width: 18px; height: 18px; accent-color: #4f46e5; cursor: pointer; margin-right: 1rem; }
-    
-    /* Empty State */
-    .empty-state { text-align: center; padding: 5rem 2rem; background: #fff; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-    .empty-state i { font-size: 4rem; color: #e2e8f0; margin-bottom: 1rem; }
-    .empty-title { font-size: 1.25rem; font-weight: 700; color: #0f172a; margin-bottom: 0.5rem; }
-    .empty-desc { color: #64748b; font-size: 0.95rem; max-width: 400px; margin: 0 auto; }
+    /* ── Mail list ── */
+    .mail-list { flex: 1; overflow-y: auto; }
 
+    /* ── Mail row — sama persis dengan inbox ── */
+    .m-row {
+        display: flex;
+        flex-wrap: nowrap !important;
+        align-items: center;
+        padding: 0 1rem;
+        height: 52px;
+        border-bottom: 1px solid #f8fafc;
+        transition: background .12s;
+        text-decoration: none;
+        color: inherit;
+        position: relative;
+        cursor: pointer;
+        gap: .65rem;
+        overflow: hidden;
+    }
+    .m-row::before {
+        content: '';
+        position: absolute; left: 0; top: 0; bottom: 0;
+        width: 3px; background: transparent; transition: background .15s;
+    }
+    /* Status-based left border */
+    .m-row.st-pending_approval::before  { background: #f59e0b; }
+    .m-row.st-pending_sending::before   { background: #3b82f6; }
+    .m-row.st-pending_agenda::before    { background: #8b5cf6; }
+    .m-row.st-completed::before         { background: #10b981; }
+    .m-row.st-in_consideration::before  { background: #6366f1; }
+    .m-row { background: #fff; }
+    .m-row:hover { background: #f1f5f9; }
+    .m-row:hover .m-actions { opacity: 1; }
+
+    /* Avatar */
+    .m-avatar {
+        width: 34px; height: 34px; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .8rem; font-weight: 800; flex-shrink: 0;
+    }
+    .av-int  { background: #d1fae5; color: #065f46; }
+    .av-ext  { background: #fce7f3; color: #be185d; }
+
+    /* "Ke:" recipient */
+    .m-to {
+        width: 170px; flex-shrink: 0;
+        font-size: .875rem; font-weight: 500;
+        overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+        color: #374151;
+    }
+    .m-to .to-label {
+        font-size: .68rem; font-weight: 700;
+        color: #94a3b8; text-transform: uppercase;
+        margin-right: .25rem; letter-spacing: .04em;
+    }
+
+    /* Content */
+    .m-content {
+        flex: 1; min-width: 0;
+        display: flex; align-items: center; gap: .5rem;
+    }
+    .m-subject {
+        font-size: .875rem; font-weight: 500;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        color: #374151; flex-shrink: 0; max-width: 240px;
+    }
+    .m-sep { color: #cbd5e1; font-size: .8rem; flex-shrink: 0; }
+    .m-snippet {
+        font-size: .82rem; color: #94a3b8;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        font-weight: 400; flex: 1; min-width: 0;
+    }
+
+    /* Badges */
+    .m-badge {
+        display: inline-flex; align-items: center; gap: .2rem;
+        font-size: .6rem; font-weight: 700;
+        padding: .15rem .45rem; border-radius: 4px;
+        letter-spacing: .04em; flex-shrink: 0; text-transform: uppercase;
+    }
+    .mb-ext      { background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; }
+    .mb-agenda   { background: #eef2ff; color: #4f46e5; border: 1px solid #e0e7ff; }
+    .mb-pending  { background: #fef3c7; color: #92400e; border: 1px solid #fde68a; }
+    .mb-sending  { background: #eff6ff; color: #1d4ed8; border: 1px solid #bfdbfe; }
+    .mb-done     { background: #f0fdf4; color: #15803d; border: 1px solid #bbf7d0; }
+    .mb-consider { background: #ede9fe; color: #5b21b6; border: 1px solid #ddd6fe; }
+    .mb-review   { background: #fff7ed; color: #c2410c; border: 1px solid #fed7aa; }
+    .mb-default  { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    /* Date */
+    .m-date {
+        font-size: .78rem; color: #94a3b8; font-weight: 500;
+        white-space: nowrap; flex-shrink: 0; text-align: right;
+        margin-left: auto !important;
+        width: 65px;
+        display: block;
+    }
+
+    /* Hover actions */
+    .m-actions {
+        display: flex; align-items: center; gap: .25rem;
+        position: absolute; right: 1rem; top: 50%; transform: translateY(-50%);
+        background: #f1f5f9;
+        padding-left: .75rem;
+        opacity: 0; transition: opacity .15s; z-index: 5;
+    }
+    .m-act-btn {
+        width: 32px; height: 32px; border: none; background: #fff;
+        border-radius: 50%; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: .9rem; color: #64748b; transition: all .15s;
+        box-shadow: 0 1px 3px rgba(0,0,0,.08); text-decoration: none;
+    }
+    .m-act-btn:hover { background: #d1fae5; color: #065f46; }
+
+    /* Checkbox */
+    .m-check {
+        width: 15px; height: 15px; accent-color: #4f46e5;
+        cursor: pointer; flex-shrink: 0; opacity: 0; transition: opacity .15s;
+    }
+    .m-row:hover .m-check,
+    .m-check:checked { opacity: 1; }
+
+    /* Empty state */
+    .empty-outbox {
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        text-align: center; padding: 4rem 2rem;
+        height: 100%; gap: .75rem;
+    }
+    .empty-outbox i { font-size: 3.5rem; color: #e2e8f0; }
+    .empty-outbox h3 { font-size: 1.1rem; font-weight: 700; color: #94a3b8; margin: 0; }
+    .empty-outbox p  { font-size: .85rem; color: #cbd5e1; margin: 0; max-width: 300px; }
+
+    /* Responsive */
     @media (max-width: 768px) {
-        .m-item { padding: 1rem; flex-wrap: wrap; }
-        .m-sender { width: 100%; margin-bottom: 0.25rem; }
-        .m-content { width: 100%; padding-right: 0; display: block; }
-        .m-subject { max-width: 100%; margin-bottom: 0.2rem; }
+        .m-row   { height: auto; padding: .75rem 1rem; flex-wrap: wrap !important; gap: .5rem; position: relative; }
+        .m-to    { width: calc(100% - 70px); }
+        .m-content { width: 100%; }
+        .m-subject { max-width: 100%; }
         .m-snippet { display: none; }
-        .m-date { position: absolute; right: 1rem; top: 1rem; }
-        .m-check, .tb-btn { display: none; }
-        .m-avatar { width: 32px; height: 32px; font-size: 0.8rem; }
+        .m-actions { display: none !important; }
+        .m-date  { position: absolute; right: 1rem; top: 1rem; margin-left: 0 !important; width: auto; }
+        .m-check { opacity: 0 !important; display: none; }
+        .outbox-tabs .outbox-tab { padding: .55rem .85rem; font-size: .75rem; }
+    }
+    @media (max-width: 480px) {
+        .m-avatar { display: none; }
+        .m-to     { width: calc(100% - 60px); }
     }
 </style>
 
-<div class="page-container">
-    <div class="inbox-header">
-        <div>
-            <h1 class="ih-title">Kotak Keluar</h1>
-            <div class="ih-sub">Pusat pemantauan surat yang telah Anda kirimkan</div>
-        </div>
-        <div style="background: #eef2ff; color: #4f46e5; padding: 0.5rem 1rem; border-radius: 10px; font-weight: 700; font-size: 0.85rem;">
-            <i class="bi bi-send-fill me-2"></i>{{ $letters->total() }} Pesan
-        </div>
+@php
+    $filterStatus = request('status', 'all');
+
+    /* count per status untuk tab badge */
+    $waitCount = $letters->whereIn('status', ['pending_approval','pending_sending','pending_agenda','in_consideration'])->count();
+    $sentCount  = $letters->whereIn('status', ['completed'])->count();
+@endphp
+
+<div class="outbox-wrap">
+
+    {{-- ── Toolbar ── --}}
+    <div class="outbox-toolbar">
+        <input type="checkbox" class="tb-check" id="checkAll" title="Pilih Semua">
+        <div class="tb-divider"></div>
+        <button class="tb-btn" title="Muat Ulang" onclick="window.location.reload()">
+            <i class="bi bi-arrow-clockwise"></i>
+        </button>
+        <button class="tb-btn" title="Opsi">
+            <i class="bi bi-three-dots-vertical"></i>
+        </button>
+        <div class="tb-spacer"></div>
+        <span class="tb-page-info">
+            @if($letters->total() > 0)
+                {{ $letters->firstItem() }}–{{ $letters->lastItem() }} dari {{ $letters->total() }}
+            @else
+                0 pesan
+            @endif
+        </span>
+        <a href="{{ $letters->previousPageUrl() }}"
+           class="tb-page-btn {{ $letters->onFirstPage() ? 'disabled' : '' }}"
+           style="color:inherit;">
+            <i class="bi bi-chevron-left"></i>
+        </a>
+        <a href="{{ $letters->nextPageUrl() }}"
+           class="tb-page-btn {{ !$letters->hasMorePages() ? 'disabled' : '' }}"
+           style="color:inherit;">
+            <i class="bi bi-chevron-right"></i>
+        </a>
     </div>
 
-    <div class="mail-toolbar">
-        <div class="d-flex align-items-center gap-1">
-            <input type="checkbox" class="m-check" style="margin-right: 1.5rem;" title="Pilih Semua">
-            <button class="tb-btn" title="Muat Ulang" onclick="window.location.reload()"><i class="bi bi-arrow-clockwise"></i></button>
-            <button class="tb-btn" title="Opsi Lainnya"><i class="bi bi-three-dots-vertical"></i></button>
-        </div>
-        <div class="d-flex align-items-center gap-3">
-            <span class="page-info">
-                @if($letters->total() > 0)
-                    {{ $letters->firstItem() }}-{{ $letters->lastItem() }} dari {{ $letters->total() }}
-                @else
-                    0 dari 0
-                @endif
-            </span>
-            <div class="d-flex gap-1">
-                <a href="{{ $letters->previousPageUrl() }}" class="tb-btn {{ $letters->onFirstPage() ? 'disabled opacity-50' : '' }}" style="text-decoration:none;"><i class="bi bi-chevron-left"></i></a>
-                <a href="{{ $letters->nextPageUrl() }}" class="tb-btn {{ !$letters->hasMorePages() ? 'disabled opacity-50' : '' }}" style="text-decoration:none;"><i class="bi bi-chevron-right"></i></a>
-            </div>
-        </div>
+    {{-- ── Filter tabs ── --}}
+    <div class="outbox-tabs">
+        <a href="{{ route('letters.outbound', ['status'=>'all']) }}"
+           class="outbox-tab {{ $filterStatus === 'all' ? 'active' : '' }}">
+            <i class="bi bi-send"></i> Semua
+            @if($letters->total() > 0)
+                <span class="tab-badge tab-total">{{ $letters->total() }}</span>
+            @endif
+        </a>
+        <a href="{{ route('letters.outbound', ['status'=>'waiting']) }}"
+           class="outbox-tab {{ $filterStatus === 'waiting' ? 'active' : '' }}">
+            <i class="bi bi-hourglass-split"></i> Menunggu
+            @if($waitCount > 0)
+                <span class="tab-badge tab-wait">{{ $waitCount }}</span>
+            @endif
+        </a>
+        <a href="{{ route('letters.outbound', ['status'=>'completed']) }}"
+           class="outbox-tab {{ $filterStatus === 'completed' ? 'active' : '' }}">
+            <i class="bi bi-check-circle-fill"></i> Terkirim
+            @if($sentCount > 0)
+                <span class="tab-badge tab-sent">{{ $sentCount }}</span>
+            @endif
+        </a>
+        <a href="{{ route('letters.outbound', ['type'=>'outbound_external']) }}"
+           class="outbox-tab {{ request('type') === 'outbound_external' ? 'active' : '' }}">
+            <i class="bi bi-globe"></i> Eksternal
+        </a>
     </div>
 
+    {{-- ── Mail list ── --}}
     <div class="mail-list">
         @forelse($letters as $letter)
             @php
-                $isUnread = $letter->is_unread;
-                $showUrl = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
-                
-                $isExternal = $letter->type === 'outbound_external';
-                $senderName = $isExternal ? $letter->external_recipient_name : ($letter->recipientUnit->name ?? ($letter->recipientUser->name ?? 'Internal'));
-                $avatarInitials = mb_strtoupper(mb_substr($senderName, 0, 1));
+                $isExternal   = $letter->type === 'outbound_external';
+                $showUrl      = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
+                $recipientName = $isExternal
+                    ? ($letter->external_recipient_name ?: 'Pihak Luar')
+                    : ($letter->recipientUnit->name ?? ($letter->recipientUser->name ?? 'Internal'));
+                $initial = mb_strtoupper(mb_substr($recipientName, 0, 1));
+
+                /* status badge class & label */
+                $sbClass = match($letter->status) {
+                    'pending_approval'  => 'mb-pending',
+                    'pending_sending'   => 'mb-sending',
+                    'pending_agenda'    => 'mb-review',
+                    'in_consideration'  => 'mb-consider',
+                    'completed'         => 'mb-done',
+                    default             => 'mb-default',
+                };
+                $rowClass = 'st-' . $letter->status;
             @endphp
-            <a href="{{ $showUrl }}" class="m-item {{ $isUnread ? 'unread' : 'read' }}">
-                
-                <input type="checkbox" class="m-check" onclick="event.stopPropagation()">
-                
+
+            <div onclick="window.location='{{ $showUrl }}'"
+               class="m-row {{ $rowClass }}">
+
+                <input type="checkbox" class="m-check mail-check" onclick="event.stopPropagation()">
+
                 <div class="m-avatar {{ $isExternal ? 'av-ext' : 'av-int' }}">
-                    {{ $avatarInitials }}
+                    {{ $initial }}
                 </div>
-                
-                <div class="m-sender">
-                    Ke: {{ $senderName }}
-                </div>
-                
+
+                <span class="m-to">
+                    <span class="to-label">Ke:</span>{{ $recipientName }}
+                </span>
+
                 <div class="m-content">
-                    <div class="d-flex align-items-center gap-1">
+                    {{-- Badges --}}
+                    <div class="d-flex align-items-center gap-1 flex-shrink-0 me-2">
                         @if($isExternal)
-                            <span class="badge" style="background: #fdf2f8; color: #db2777; border: 1px solid #fbcfe8; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 4px; letter-spacing: 0.05em; flex-shrink: 0;"><i class="bi bi-globe me-1"></i>EKSTERNAL</span>
+                            <span class="m-badge mb-ext">EXT</span>
                         @endif
                         @if($letter->agenda_number)
-                            <span class="badge" style="background: #eef2ff; color: #4f46e5; border: 1px solid #e0e7ff; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 4px; flex-shrink: 0;"><i class="bi bi-journal-text me-1"></i>{{ $letter->agenda_number }}</span>
+                            <span class="m-badge mb-agenda">{{ $letter->agenda_number }}</span>
                         @endif
-                        @php
-                            $sBg = $letter->status === 'pending_approval' ? '#fef2f2' : '#f1f5f9';
-                            $sCol = $letter->status === 'pending_approval' ? '#dc2626' : '#475569';
-                            $sBor = $letter->status === 'pending_approval' ? '1px solid #fecaca' : '1px solid transparent';
-                        @endphp
-                        <span class="badge" style="background: {{ $sBg }}; color: {{ $sCol }}; border: {{ $sBor }}; font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 4px; text-transform: uppercase; flex-shrink: 0;">{{ $letter->status_label }}</span>
+                        <span class="m-badge {{ $sbClass }}">{{ $letter->status_label }}</span>
                     </div>
-                    <div class="d-flex align-items-center" style="width: 100%;">
-                        <span class="m-subject">{{ $letter->subject }}</span>
-                        <span class="text-muted mx-2" style="font-size: 0.85rem; font-weight: 400;">—</span>
-                        <span class="m-snippet">{!! Str::limit(strip_tags($letter->body), 90) !!}</span>
-                    </div>
+
+                    <span class="m-subject">{{ $letter->subject }}</span>
+                    <span class="m-sep">—</span>
+                    <span class="m-snippet">{!! Str::limit(strip_tags($letter->body), 80) !!}</span>
                 </div>
-                
-                <div class="m-date">
+
+                {{-- Hover quick-action --}}
+                <div class="m-actions" onclick="event.stopPropagation()">
+                    <button onclick="window.location='{{ $showUrl }}'" class="m-act-btn" title="Lihat Detail">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+
+                <span class="m-date">
                     @if($letter->created_at->isToday())
-                        <strong style="color: #0f172a;">{{ $letter->created_at->format('H:i') }}</strong>
-                    @else
+                        {{ $letter->created_at->format('H:i') }}
+                    @elseif($letter->created_at->isCurrentYear())
                         {{ $letter->created_at->format('d M') }}
+                    @else
+                        {{ $letter->created_at->format('d/m/y') }}
                     @endif
-                </div>
-            </a>
+                </span>
+            </div>
         @empty
-            <div class="empty-state">
-                <i class="bi bi-send-fill" style="background: linear-gradient(135deg, #e2e8f0, #cbd5e1); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
-                <div class="empty-title">Kotak Keluar Kosong</div>
-                <div class="empty-desc">Belum ada surat yang Anda kirimkan untuk saat ini.</div>
+            <div class="empty-outbox">
+                <i class="bi bi-send"></i>
+                <h3>
+                    @if($filterStatus === 'waiting') Tidak Ada Surat Menunggu
+                    @elseif($filterStatus === 'completed') Belum Ada Surat Terkirim
+                    @else Kotak Keluar Kosong
+                    @endif
+                </h3>
+                <p>
+                    @if($filterStatus === 'waiting')
+                        Tidak ada surat yang sedang menunggu proses persetujuan atau pengiriman.
+                    @else
+                        Belum ada surat keluar dari unit Anda.
+                    @endif
+                </p>
             </div>
         @endforelse
     </div>
 </div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checkAll = document.getElementById('checkAll');
+    const checks   = document.querySelectorAll('.mail-check');
+    if (checkAll) {
+        checkAll.addEventListener('change', function () {
+            checks.forEach(c => c.checked = this.checked);
+        });
+    }
+});
+</script>
+@endpush
 @endsection

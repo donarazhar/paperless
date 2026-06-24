@@ -1,354 +1,555 @@
 @extends('layouts.mailbox')
-@section('title', 'Catat Surat Eksternal')
+@section('title', 'Catat Surat Fisik Masuk')
 
 @section('content')
 <style>
-    /* Form Styles */
-    .form-panel { 
-        background: #ffffff; 
-        border: 1px solid rgba(0,0,0,0.04); 
-        border-radius: 1.5rem; 
-        padding: 2.5rem; 
-        box-shadow: 0 10px 40px rgba(0,0,0,0.03); 
-    }
-    .form-control, .form-select { 
-        border-radius: 0.75rem; 
-        border: 1.5px solid #e2e8f0; 
-        background: #f8fafc; 
-        font-size: 0.95rem; 
-        font-weight: 500; 
-        color: #0f172a; 
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
-    }
-    textarea.form-control { min-height: 120px; }
-    .form-control:focus, .form-select:focus { 
-        border-color: #4f46e5; 
-        background: #ffffff; 
-        box-shadow: 0 0 0 4px rgba(79,70,229,0.1); 
-        outline: none; 
-    }
-    
-    /* Floating Labels tweak */
-    .form-floating > label { color: #64748b; font-weight: 500; padding-left: 1.25rem; }
-    .form-floating > .form-control { padding-left: 1.25rem; }
-    .form-floating > .form-select { padding-left: 1.25rem; padding-top: 1.625rem; padding-bottom: 0.625rem; }
-    .form-floating > .form-control:focus ~ label,
-    .form-floating > .form-control:not(:placeholder-shown) ~ label,
-    .form-floating > .form-select ~ label { 
-        color: #4f46e5; 
-        font-weight: 600; 
-        transform: scale(0.85) translateY(-0.75rem) translateX(0.15rem); 
-    }
-    
-    /* Radio Cards */
-    .radio-card { position: relative; display: block; cursor: pointer; height: 100%; }
-    .radio-card input { position: absolute; opacity: 0; }
-    .rc-content { 
-        border: 2px solid #e2e8f0; 
-        border-radius: 1rem; 
-        padding: 1.25rem; 
-        display: flex; 
-        align-items: center; 
-        gap: 1.25rem; 
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); 
-        background: #ffffff; 
+    /* ══ CATAT SURAT EKSTERNAL — Gmail Compose Style ══ */
+    .ce-wrap {
+        display: flex;
+        flex-direction: column;
         height: 100%;
+        overflow: hidden;
+        background: #f8fafc;
     }
-    .rc-icon {
-        width: 48px; height: 48px; border-radius: 12px;
-        background: #f1f5f9; display: flex; align-items: center; justify-content: center;
-        transition: all 0.2s; flex-shrink: 0;
+
+    /* ── Top bar (seperti header compose Gmail) ── */
+    .ce-topbar {
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        padding: .65rem 1.25rem;
+        background: #fff;
+        border-bottom: 1px solid #f1f5f9;
+        flex-shrink: 0;
     }
-    .rc-icon i { font-size: 1.5rem; color: #64748b; transition: all 0.2s; }
-    .rc-text strong { display: block; font-size: 1.05rem; color: #0f172a; margin-bottom: 0.2rem; }
-    .rc-text span { font-size: 0.8rem; color: #64748b; line-height: 1.3; display: block; }
-    
-    .radio-card input:checked + .rc-content { border-color: #4f46e5; background: #eef2ff; box-shadow: 0 4px 15px rgba(79,70,229,0.1); }
-    .radio-card input:checked + .rc-content .rc-icon { background: #4f46e5; }
-    .radio-card input:checked + .rc-content .rc-icon i { color: #ffffff; }
-    
-    .radio-card:hover .rc-content { border-color: #cbd5e1; }
-    .radio-card input:checked:hover + .rc-content { border-color: #4338ca; }
-
-    /* Page Header */
-    .page-title { font-size: 1.75rem; font-weight: 800; color: #0f172a; letter-spacing: -0.03em; margin-bottom: 0.25rem; }
-    .page-sub { font-size: 0.9rem; color: #64748b; }
-    .btn-back { 
-        display: inline-flex; align-items: center; gap: 0.5rem; 
-        background: #ffffff; border: 1.5px solid #e2e8f0; color: #475569; 
-        border-radius: 100px; padding: 0.5rem 1.25rem; font-size: 0.85rem; font-weight: 600; 
-        text-decoration: none; transition: all 0.2s; 
+    .ce-back-btn {
+        width: 34px; height: 34px; border: none; background: none;
+        color: #64748b; border-radius: 8px; cursor: pointer;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1rem; transition: all .15s; text-decoration: none;
+        flex-shrink: 0;
     }
-    .btn-back:hover { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-    
-    /* Error Alert */
-    .err-alert { background: #fef2f2; border: 1px solid #fecaca; border-radius: 1rem; padding: 1.25rem 1.5rem; color: #991b1b; display: flex; gap: 1rem; align-items: flex-start; margin-bottom: 2rem; box-shadow: 0 4px 6px rgba(220,38,38,0.05); }
-    .err-alert i { font-size: 1.25rem; color: #dc2626; }
-    .err-alert ul { margin: 0; padding-left: 1.25rem; font-size: 0.85rem; margin-top: 0.25rem; }
-
-    /* Upload Box */
-    .upload-box {
-        border: 2px dashed #cbd5e1; border-radius: 1rem; background: #f8fafc;
-        text-align: center; padding: 2.5rem 1rem; cursor: pointer; position: relative;
-        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
+    .ce-back-btn:hover { background: #f1f5f9; color: #0f172a; }
+    .ce-topbar-title {
+        font-size: .9rem; font-weight: 700; color: #0f172a;
     }
-    .upload-box:hover { border-color: #4f46e5; background: #f1f5f9; }
-    .upload-input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-    .ub-icon { color: #94a3b8; transition: all 0.2s; }
-    .upload-box:hover .ub-icon { color: #4f46e5; transform: translateY(-5px); }
-    .ub-title { font-weight: 700; color: #334155; margin-top: 1rem; font-size: 1.05rem; }
+    .ce-topbar-sub {
+        font-size: .75rem; color: #94a3b8; font-weight: 400;
+    }
 
-    /* Preview Items */
-    .file-preview-item { background:#fff;border:1px solid #e2e8f0;border-radius:0.75rem;padding:0.75rem 1rem;display:flex;align-items:center;gap:1rem;margin-bottom:0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-    .fpi-icon { width:36px;height:36px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.1rem; }
-    .fpi-icon.pdf { background:#fef2f2;color:#dc2626; }
-    .fpi-icon.doc { background:#eef2ff;color:#4f46e5; }
-    .fpi-icon.other { background:#f8fafc;color:#64748b; }
-    .fpi-info { flex-grow:1;overflow:hidden; }
-    .fpi-name { font-weight:600;font-size:0.85rem;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis; }
-    .fpi-meta { font-size:0.7rem;color:#64748b;margin-top:2px; }
+    /* ── Scrollable compose area ── */
+    .ce-scroll {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+    }
 
-    /* Buttons */
-    .btn-submit { background: linear-gradient(135deg, #4f46e5 0%, #4338ca 100%); color: #fff; border: none; border-radius: 0.75rem; padding: 0.85rem 1.5rem; font-weight: 600; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 12px rgba(79,70,229,0.2); }
-    .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(79,70,229,0.3); color: #fff; }
-    
-    .section-title { font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; }
-    .section-title::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
+    /* ── Compose card ── */
+    .ce-card {
+        width: 100%;
+        max-width: 720px;
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 4px 24px rgba(15,23,42,.07);
+        border: 1px solid #e2e8f0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+    }
+
+    /* Card header */
+    .ce-card-header {
+        padding: .85rem 1.25rem;
+        background: #f8fafc;
+        border-bottom: 1px solid #f1f5f9;
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+    }
+    .ce-card-icon {
+        width: 32px; height: 32px;
+        background: linear-gradient(135deg, #f59e0b, #d97706);
+        border-radius: 8px;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .ce-card-icon i { color: #fff; font-size: .9rem; }
+    .ce-card-title  { font-size: .85rem; font-weight: 700; color: #0f172a; }
+    .ce-card-sub    { font-size: .72rem; color: #94a3b8; }
+
+    /* Error alert */
+    .ce-error {
+        margin: 1rem 1.25rem 0;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 10px;
+        padding: .85rem 1.1rem;
+        display: flex; gap: .75rem; align-items: flex-start;
+        color: #991b1b; font-size: .82rem;
+    }
+    .ce-error i { color: #dc2626; flex-shrink: 0; margin-top: .1rem; }
+    .ce-error ul { margin: 0; padding-left: 1.1rem; }
+
+    /* ── Inline field rows (Gmail style) ── */
+    .ce-field {
+        display: flex;
+        align-items: center;
+        border-bottom: 1px solid #f1f5f9;
+        min-height: 44px;
+        padding: 0 1.25rem;
+        transition: background .12s;
+    }
+    .ce-field:focus-within { background: #fafbff; }
+    .ce-field-label {
+        font-size: .78rem; font-weight: 700; color: #94a3b8;
+        text-transform: uppercase; letter-spacing: .05em;
+        width: 110px; flex-shrink: 0;
+    }
+    .ce-field-label.required::after {
+        content: ' *'; color: #dc2626;
+    }
+    .ce-field input,
+    .ce-field select {
+        flex: 1; border: none; background: none;
+        font-family: inherit; font-size: .875rem;
+        color: #0f172a; font-weight: 500;
+        padding: .6rem 0;
+        outline: none;
+        min-width: 0;
+    }
+    .ce-field input::placeholder { color: #cbd5e1; font-weight: 400; }
+    .ce-field select { cursor: pointer; }
+    .ce-field select option[value=""] { color: #94a3b8; }
+
+    /* ── Body textarea ── */
+    .ce-body {
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .ce-body textarea {
+        width: 100%; border: none; background: none;
+        font-family: inherit; font-size: .875rem;
+        color: #0f172a; font-weight: 400;
+        resize: none; outline: none;
+        min-height: 100px; line-height: 1.6;
+    }
+    .ce-body textarea::placeholder { color: #cbd5e1; }
+
+    /* ── Divider label ── */
+    .ce-section-label {
+        display: flex; align-items: center; gap: .6rem;
+        padding: .75rem 1.25rem .4rem;
+        font-size: .7rem; font-weight: 700;
+        color: #94a3b8; text-transform: uppercase; letter-spacing: .06em;
+    }
+    .ce-section-label::after {
+        content: ''; flex: 1; height: 1px; background: #f1f5f9;
+    }
+
+    /* ── Tindakan (Action cards — compact) ── */
+    .action-group {
+        display: flex;
+        gap: .5rem;
+        padding: .6rem 1.25rem .75rem;
+        flex-wrap: wrap;
+    }
+    .action-card {
+        flex: 1; min-width: 120px;
+        position: relative; cursor: pointer;
+    }
+    .action-card input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .action-card-body {
+        display: flex; align-items: center; gap: .6rem;
+        padding: .6rem .85rem;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        background: #f8fafc;
+        transition: all .15s;
+        font-size: .8rem; font-weight: 600; color: #475569;
+    }
+    .action-card-body i { font-size: .9rem; color: #94a3b8; flex-shrink: 0; }
+    .action-card input:checked + .action-card-body {
+        border-color: #4f46e5;
+        background: #eef2ff;
+        color: #3730a3;
+    }
+    .action-card input:checked + .action-card-body i { color: #4f46e5; }
+    .action-card:hover .action-card-body { border-color: #c7d2fe; }
+
+    /* ── Target selectors (unit/personal) ── */
+    .ce-target {
+        padding: .5rem 1.25rem .75rem;
+        animation: slideIn .2s ease;
+    }
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .ce-target select {
+        width: 100%;
+        padding: .6rem .9rem;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        background: #f8fafc;
+        font-size: .875rem; font-family: inherit; color: #0f172a;
+        outline: none; transition: all .15s; cursor: pointer;
+    }
+    .ce-target select:focus {
+        border-color: #4f46e5;
+        background: #fff;
+        box-shadow: 0 0 0 3px rgba(79,70,229,.1);
+    }
+
+    /* ── Attachment drop zone (compact) ── */
+    .ce-attach-zone {
+        margin: 0 1.25rem .75rem;
+        border: 1.5px dashed #e2e8f0;
+        border-radius: 10px;
+        padding: .85rem 1rem;
+        background: #f8fafc;
+        cursor: pointer;
+        transition: all .15s;
+        position: relative;
+        text-align: center;
+    }
+    .ce-attach-zone:hover { border-color: #4f46e5; background: #eef2ff; }
+    .ce-attach-zone.has-files { border-style: solid; border-color: #10b981; background: #f0fdf4; }
+    .ce-attach-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 2; }
+    .ce-attach-label {
+        display: flex; align-items: center; justify-content: center; gap: .5rem;
+        font-size: .8rem; font-weight: 600; color: #64748b;
+    }
+    .ce-attach-label i { font-size: 1rem; }
+
+    /* File chips */
+    .ce-chips {
+        display: flex; flex-wrap: wrap; gap: .4rem;
+        padding: 0 1.25rem .75rem;
+    }
+    .ce-chip {
+        display: inline-flex; align-items: center; gap: .35rem;
+        background: #f1f5f9; border: 1px solid #e2e8f0;
+        border-radius: 100px; padding: .25rem .7rem;
+        font-size: .75rem; font-weight: 600; color: #374151;
+        max-width: 200px; overflow: hidden;
+    }
+    .ce-chip i { font-size: .75rem; color: #10b981; flex-shrink: 0; }
+    .ce-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* PDF preview */
+    .ce-pdf-preview {
+        margin: 0 1.25rem .75rem;
+        border-radius: 10px; overflow: hidden;
+        border: 1px solid #e2e8f0;
+    }
+    .ce-pdf-preview iframe {
+        width: 100%; height: 500px; border: none; display: block;
+    }
+
+    /* ── Bottom toolbar (like Gmail send bar) ── */
+    .ce-footer {
+        display: flex;
+        align-items: center;
+        gap: .6rem;
+        padding: .75rem 1.25rem;
+        background: #f8fafc;
+        border-top: 1px solid #f1f5f9;
+        flex-shrink: 0;
+    }
+    .btn-save {
+        display: inline-flex; align-items: center; gap: .45rem;
+        background: #4f46e5; color: #fff;
+        border: none; border-radius: 100px;
+        padding: .55rem 1.4rem; font-size: .85rem; font-weight: 700;
+        cursor: pointer; transition: all .2s;
+        box-shadow: 0 2px 8px rgba(79,70,229,.25);
+    }
+    .btn-save:hover { background: #4338ca; transform: translateY(-1px); }
+    .ce-footer-hint {
+        font-size: .75rem; color: #94a3b8;
+        display: flex; align-items: center; gap: .3rem;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+        .ce-field-label { width: 80px; font-size: .7rem; }
+        .action-group { gap: .35rem; }
+        .action-card { min-width: 90px; }
+        .action-card-body { padding: .5rem .65rem; font-size: .75rem; }
+        .ce-card { border-radius: 12px; }
+        .ce-scroll { padding: .75rem .5rem; }
+    }
 </style>
 
-<div class="mail-scroll p-4">
-    <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-3" style="max-width: 900px; margin: 0 auto;">
+<div class="ce-wrap">
+
+    {{-- ── Top bar ── --}}
+    <div class="ce-topbar">
+        <a href="{{ route('letters.inbound') }}" class="ce-back-btn" title="Kembali ke Inbox">
+            <i class="bi bi-arrow-left"></i>
+        </a>
         <div>
-            <h1 class="page-title">Catat Surat Fisik Masuk</h1>
-            <p class="page-sub">Rekam surat dari instansi luar untuk didisposisikan atau diarsipkan.</p>
+            <div class="ce-topbar-title">Catat Surat Fisik Masuk</div>
+            <div class="ce-topbar-sub">Rekam surat dari instansi luar untuk diarsipkan atau didisposisikan</div>
         </div>
-        <a href="{{ route('letters.inbound') }}" class="btn-back"><i class="bi bi-arrow-left"></i> Kembali</a>
     </div>
 
-    <div style="max-width: 900px; margin: 0 auto;">
-        @if($errors->any())
-            <div class="err-alert">
+    {{-- ── Scrollable area ── --}}
+    <div class="ce-scroll">
+        <div class="ce-card">
+
+            {{-- Card header --}}
+            <div class="ce-card-header">
+                <div class="ce-card-icon"><i class="bi bi-envelope-arrow-down-fill"></i></div>
+                <div>
+                    <div class="ce-card-title">Surat Masuk Eksternal</div>
+                    <div class="ce-card-sub">Surat fisik dari pihak di luar organisasi</div>
+                </div>
+            </div>
+
+            {{-- Error alert --}}
+            @if($errors->any())
+            <div class="ce-error">
                 <i class="bi bi-exclamation-octagon-fill"></i>
                 <div>
-                    <strong>Gagal menyimpan surat</strong>
-                    <ul>
+                    <strong style="font-size:.83rem;">Terdapat kesalahan pada form:</strong>
+                    <ul class="mt-1">
                         @foreach($errors->all() as $err)
                             <li>{{ $err }}</li>
                         @endforeach
                     </ul>
                 </div>
             </div>
-        @endif
+            @endif
 
-        <form action="{{ route('letters.storeExternal') }}" method="POST" enctype="multipart/form-data" class="form-panel" id="createForm">
-            @csrf
+            {{-- ── FORM ── --}}
+            <form action="{{ route('letters.storeExternal') }}"
+                  method="POST"
+                  enctype="multipart/form-data"
+                  id="ceForm">
+                @csrf
 
-            <div class="section-title">Informasi Pengirim</div>
+                {{-- Pengirim --}}
+                <div class="ce-section-label"><i class="bi bi-person-vcard"></i> Pengirim</div>
 
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <div class="form-floating">
-                        <input type="text" name="external_sender_name" class="form-control" value="{{ old('external_sender_name') }}" placeholder="Pengirim" required>
-                        <label>Nama/Instansi Pengirim <span class="text-danger">*</span></label>
+                <div class="ce-field">
+                    <span class="ce-field-label required">Dari</span>
+                    <input type="text"
+                           name="external_sender_name"
+                           value="{{ old('external_sender_name') }}"
+                           placeholder="Nama instansi atau pihak pengirim..."
+                           required>
+                </div>
+                <div class="ce-field">
+                    <span class="ce-field-label required">No. Surat</span>
+                    <input type="text"
+                           name="letter_number"
+                           value="{{ old('letter_number') }}"
+                           placeholder="Nomor surat resmi..."
+                           required>
+                </div>
+
+                {{-- Detail --}}
+                <div class="ce-section-label mt-1"><i class="bi bi-file-earmark-text"></i> Isi Surat</div>
+
+                <div class="ce-field">
+                    <span class="ce-field-label required">Perihal</span>
+                    <input type="text"
+                           name="subject"
+                           value="{{ old('subject') }}"
+                           placeholder="Perihal / judul surat..."
+                           required>
+                </div>
+
+                <div class="ce-body">
+                    <textarea name="body"
+                              id="ceBody"
+                              placeholder="Isi ringkas atau catatan tambahan mengenai surat ini..."
+                              required>{{ old('body') }}</textarea>
+                </div>
+
+                {{-- Lampiran --}}
+                <div class="ce-section-label"><i class="bi bi-paperclip"></i> Lampiran</div>
+
+                <div class="ce-attach-zone" id="attachZone">
+                    <input type="file"
+                           name="attachments[]"
+                           id="attachInput"
+                           multiple required
+                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                    <div class="ce-attach-label" id="attachLabel">
+                        <i class="bi bi-cloud-upload"></i>
+                        <span>Klik atau seret file hasil scan (PDF, DOCX, JPG, PNG)</span>
                     </div>
                 </div>
-                <div class="col-md-6">
-                    <div class="form-floating">
-                        <input type="text" name="letter_number" class="form-control" value="{{ old('letter_number') }}" placeholder="Nomor Surat" required>
-                        <label>Nomor Surat Resmi <span class="text-danger">*</span></label>
-                    </div>
-                </div>
-            </div>
+                <div id="ceChips" class="ce-chips"></div>
+                <div id="cePdfPreview"></div>
 
-            <div class="section-title mt-4 pt-2">Detail Pesan</div>
+                {{-- Tindakan --}}
+                <div class="ce-section-label"><i class="bi bi-arrow-right-circle"></i> Tindakan Selanjutnya</div>
 
-            <div class="form-floating mb-4">
-                <input type="text" name="subject" class="form-control" value="{{ old('subject') }}" placeholder="Perihal" required>
-                <label>Perihal / Judul Surat <span class="text-danger">*</span></label>
-            </div>
-
-            <div class="form-floating mb-4">
-                <textarea name="body" class="form-control" placeholder="Keterangan..." required style="height: 150px">{{ old('body') }}</textarea>
-                <label>Isi Ringkas / Catatan Tambahan <span class="text-danger">*</span></label>
-            </div>
-
-            <div class="section-title mt-4 pt-2">Lampiran Dokumen Fisik</div>
-
-            <div class="mb-4">
-                <div class="upload-box" id="uploadBox">
-                    <i class="bi bi-cloud-arrow-up-fill ub-icon" style="font-size:2.5rem;"></i>
-                    <div class="ub-title">Pilih atau Tarik File Hasil Scan</div>
-                    <div class="ub-desc text-muted mt-1" style="font-size:0.8rem;">Format yang didukung: PDF, DOCX, JPG, PNG</div>
-                    <input type="file" name="attachments[]" class="upload-input" id="attachmentInput" multiple required>
-                </div>
-                <div id="previewList" class="mt-3"></div>
-            </div>
-
-            <div class="section-title mt-4 pt-3">Tindakan Selanjutnya</div>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-4">
-                    <label class="radio-card">
-                        <input type="radio" name="action_type" value="archive" onchange="toggleActionOptions()" checked>
-                        <div class="rc-content">
-                            <div class="rc-icon"><i class="bi bi-archive-fill"></i></div>
-                            <div class="rc-text">
-                                <strong>Arsip Selesai</strong>
-                                <span>Simpan langsung.</span>
-                            </div>
+                <div class="action-group">
+                    <label class="action-card">
+                        <input type="radio" name="action_type" value="archive"
+                               onchange="toggleTarget()" {{ old('action_type','archive')==='archive' ? 'checked' : '' }}>
+                        <div class="action-card-body">
+                            <i class="bi bi-archive-fill"></i> Arsip Selesai
+                        </div>
+                    </label>
+                    <label class="action-card">
+                        <input type="radio" name="action_type" value="forward_unit"
+                               onchange="toggleTarget()" {{ old('action_type')==='forward_unit' ? 'checked' : '' }}>
+                        <div class="action-card-body">
+                            <i class="bi bi-diagram-3-fill"></i> Disposisi Unit
+                        </div>
+                    </label>
+                    <label class="action-card">
+                        <input type="radio" name="action_type" value="forward_personal"
+                               onchange="toggleTarget()" {{ old('action_type')==='forward_personal' ? 'checked' : '' }}>
+                        <div class="action-card-body">
+                            <i class="bi bi-person-fill"></i> Disposisi Personal
                         </div>
                     </label>
                 </div>
-                <div class="col-md-4">
-                    <label class="radio-card">
-                        <input type="radio" name="action_type" value="forward_unit" onchange="toggleActionOptions()">
-                        <div class="rc-content">
-                            <div class="rc-icon"><i class="bi bi-diagram-3-fill"></i></div>
-                            <div class="rc-text">
-                                <strong>Disposisi Unit</strong>
-                                <span>Teruskan ke unit kerja.</span>
-                            </div>
-                        </div>
-                    </label>
-                </div>
-                <div class="col-md-4">
-                    <label class="radio-card">
-                        <input type="radio" name="action_type" value="forward_personal" onchange="toggleActionOptions()">
-                        <div class="rc-content">
-                            <div class="rc-icon"><i class="bi bi-person-fill"></i></div>
-                            <div class="rc-text">
-                                <strong>Disposisi Personal</strong>
-                                <span>Teruskan ke pegawai.</span>
-                            </div>
-                        </div>
-                    </label>
-                </div>
-            </div>
 
-            <!-- Pilihan Unit -->
-            <div id="targetUnitContainer" class="mb-4" style="display: none; animation: fadeIn 0.3s;">
-                <div class="form-floating">
-                    <select name="to_unit_id" class="form-select">
+                {{-- Target Unit --}}
+                <div id="targetUnit" class="ce-target" style="display:none;">
+                    <select name="to_unit_id" id="toUnitSelect">
                         <option value="">— Pilih Unit Tujuan —</option>
                         @foreach($units as $u)
-                            <option value="{{ $u->id }}">{{ $u->name }}</option>
+                            <option value="{{ $u->id }}" {{ old('to_unit_id') == $u->id ? 'selected' : '' }}>
+                                {{ $u->name }}
+                            </option>
                         @endforeach
                     </select>
-                    <label>Pilih Unit Kerja <span class="text-danger">*</span></label>
                 </div>
-            </div>
 
-            <!-- Pilihan Personal -->
-            <div id="targetPersonalContainer" class="mb-4" style="display: none; animation: fadeIn 0.3s;">
-                <div class="form-floating">
-                    <select name="to_user_id" class="form-select">
+                {{-- Target Personal --}}
+                <div id="targetPersonal" class="ce-target" style="display:none;">
+                    <select name="to_user_id" id="toUserSelect">
                         <option value="">— Pilih Pegawai Tujuan —</option>
                         @foreach($users as $usr)
-                            <option value="{{ $usr->id }}">{{ $usr->name }} ({{ $usr->unit->name ?? 'Tanpa Unit' }})</option>
+                            <option value="{{ $usr->id }}" {{ old('to_user_id') == $usr->id ? 'selected' : '' }}>
+                                {{ $usr->name }} ({{ $usr->unit->name ?? 'Tanpa Unit' }})
+                            </option>
                         @endforeach
                     </select>
-                    <label>Pilih Pegawai <span class="text-danger">*</span></label>
                 </div>
-            </div>
 
-            <div class="d-flex justify-content-end pt-4 mt-4" style="border-top: 1px solid #f1f5f9;">
-                <button type="submit" class="btn-submit px-5 py-3">
-                    <i class="bi bi-send-fill me-2"></i> Simpan & Lanjutkan
-                </button>
-            </div>
-        </form>
+                {{-- Footer actions --}}
+                <div class="ce-footer">
+                    <button type="submit" class="btn-save">
+                        <i class="bi bi-send-fill"></i> Simpan & Lanjutkan
+                    </button>
+                    <span class="ce-footer-hint">
+                        <i class="bi bi-shield-check"></i>
+                        Data tersimpan sesuai tindakan yang dipilih
+                    </span>
+                </div>
+
+            </form>
+        </div>
     </div>
 </div>
 
-<style>
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-</style>
-
 @push('scripts')
 <script>
-function toggleActionOptions() {
-    const val = document.querySelector('input[name="action_type"]:checked').value;
-    
-    const unitContainer = document.getElementById('targetUnitContainer');
-    const personalContainer = document.getElementById('targetPersonalContainer');
-    
-    const unitSelect = unitContainer.querySelector('select');
-    const personalSelect = personalContainer.querySelector('select');
+/* ── Toggle target selector ── */
+function toggleTarget() {
+    const val = document.querySelector('input[name="action_type"]:checked')?.value;
+    const unitDiv     = document.getElementById('targetUnit');
+    const personalDiv = document.getElementById('targetPersonal');
+    const unitSel     = document.getElementById('toUnitSelect');
+    const userSel     = document.getElementById('toUserSelect');
 
-    if(val === 'forward_unit') {
-        unitContainer.style.display = 'block';
-        personalContainer.style.display = 'none';
-        unitSelect.setAttribute('required', 'required');
-        personalSelect.removeAttribute('required');
-    } else if(val === 'forward_personal') {
-        unitContainer.style.display = 'none';
-        personalContainer.style.display = 'block';
-        personalSelect.setAttribute('required', 'required');
-        unitSelect.removeAttribute('required');
+    if (val === 'forward_unit') {
+        unitDiv.style.display     = 'block';
+        personalDiv.style.display = 'none';
+        unitSel.setAttribute('required', 'required');
+        userSel.removeAttribute('required');
+    } else if (val === 'forward_personal') {
+        unitDiv.style.display     = 'none';
+        personalDiv.style.display = 'block';
+        userSel.setAttribute('required', 'required');
+        unitSel.removeAttribute('required');
     } else {
-        unitContainer.style.display = 'none';
-        personalContainer.style.display = 'none';
-        unitSelect.removeAttribute('required');
-        personalSelect.removeAttribute('required');
+        unitDiv.style.display     = 'none';
+        personalDiv.style.display = 'none';
+        unitSel.removeAttribute('required');
+        userSel.removeAttribute('required');
     }
 }
 
-// Trigger on load
-document.addEventListener('DOMContentLoaded', () => {
-    toggleActionOptions();
-    
-    // File upload handler
-    document.getElementById('attachmentInput').addEventListener('change', function () {
-        const files = this.files;
-        const previewList = document.getElementById('previewList');
-        const uploadBox = document.getElementById('uploadBox');
-        
-        previewList.innerHTML = '';
+document.addEventListener('DOMContentLoaded', function () {
+    /* Init toggle */
+    toggleTarget();
 
-        if (files.length === 0) {
-            uploadBox.style.borderColor = '#cbd5e1';
-            uploadBox.style.background = '#f8fafc';
-            uploadBox.querySelector('.ub-title').textContent = 'Pilih atau Tarik File Hasil Scan';
+    /* ── Auto-resize textarea ── */
+    const ta = document.getElementById('ceBody');
+    if (ta) {
+        ta.addEventListener('input', function () {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+    }
+
+    /* ── Attachment handler ── */
+    const input      = document.getElementById('attachInput');
+    const zone       = document.getElementById('attachZone');
+    const chipsEl    = document.getElementById('ceChips');
+    const pdfPreview = document.getElementById('cePdfPreview');
+    const labelEl    = document.getElementById('attachLabel');
+
+    input.addEventListener('change', function () {
+        const files = this.files;
+        chipsEl.innerHTML    = '';
+        pdfPreview.innerHTML = '';
+
+        if (!files.length) {
+            zone.classList.remove('has-files');
+            labelEl.innerHTML = '<i class="bi bi-cloud-upload"></i><span>Klik atau seret file hasil scan</span>';
             return;
         }
 
-        uploadBox.style.borderColor = '#4f46e5';
-        uploadBox.style.background = '#eef2ff';
-        uploadBox.querySelector('.ub-title').textContent = files.length + ' File Dipilih';
+        zone.classList.add('has-files');
+        labelEl.innerHTML = `<i class="bi bi-check-circle-fill" style="color:#10b981;"></i><span>${files.length} file dipilih</span>`;
 
-        const fileListDiv = document.createElement('div');
-        fileListDiv.className = 'd-flex flex-wrap gap-2 mb-3';
-        previewList.appendChild(fileListDiv);
+        Array.from(files).forEach(file => {
+            const ext  = file.name.split('.').pop().toLowerCase();
+            const size = (file.size / 1024 / 1024).toFixed(2);
 
-        Array.from(files).forEach((file) => {
-            const ext = file.name.split('.').pop().toLowerCase();
-            const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-            
-            let typeClass = 'other';
-            let iconName = 'bi-file-earmark';
-            if (ext === 'pdf') { typeClass = 'pdf'; iconName = 'bi-file-earmark-pdf-fill'; }
-            else if (['doc','docx'].includes(ext)) { typeClass = 'doc'; iconName = 'bi-file-earmark-word-fill'; }
+            let icon = 'bi-file-earmark';
+            if (ext === 'pdf')                   icon = 'bi-file-earmark-pdf-fill';
+            else if (['doc','docx'].includes(ext)) icon = 'bi-file-earmark-word-fill';
+            else if (['jpg','jpeg','png'].includes(ext)) icon = 'bi-file-earmark-image-fill';
 
-            const item = document.createElement('div');
-            item.className = 'file-preview-item flex-fill';
-            item.innerHTML = `
-                <div class="fpi-icon ${typeClass}"><i class="bi ${iconName}"></i></div>
-                <div class="fpi-info">
-                    <div class="fpi-name" title="${file.name}">${file.name}</div>
-                    <div class="fpi-meta">${sizeMB} MB &bull; File ${ext.toUpperCase()}</div>
-                </div>
-                <i class="bi bi-check-circle-fill text-success ms-2"></i>
-            `;
-            fileListDiv.appendChild(item);
+            const chip = document.createElement('div');
+            chip.className = 'ce-chip';
+            chip.innerHTML = `<i class="bi ${icon}"></i><span title="${file.name}">${file.name}</span><span style="color:#94a3b8;margin-left:.2rem;">${size}MB</span>`;
+            chipsEl.appendChild(chip);
 
+            /* PDF inline preview untuk 1 file */
             if (files.length === 1 && ext === 'pdf') {
-                const url = URL.createObjectURL(file);
+                const wrap = document.createElement('div');
+                wrap.className = 'ce-pdf-preview';
                 const frame = document.createElement('iframe');
-                frame.src = url;
-                frame.style.cssText = 'width:100%;height:650px;border:1px solid #e8edf4;border-radius:0.75rem;background:#fff;';
-                previewList.appendChild(frame);
+                frame.src = URL.createObjectURL(file);
+                wrap.appendChild(frame);
+                pdfPreview.appendChild(wrap);
             }
         });
+    });
+
+    /* ── Drag & drop support ── */
+    zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('has-files'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('has-files'));
+    zone.addEventListener('drop', e => {
+        e.preventDefault();
+        input.files = e.dataTransfer.files;
+        input.dispatchEvent(new Event('change'));
     });
 });
 </script>

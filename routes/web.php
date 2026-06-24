@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     // Aksi Workflow Surat
     Route::post('letters/{letter}/approve', [LetterController::class, 'approve'])->name('letters.approve');
     Route::post('letters/{letter}/send-final', [LetterController::class, 'sendFinal'])->name('letters.sendFinal');
+    Route::post('letters/{letter}/submit-draft', [LetterController::class, 'submitDraft'])->name('letters.submitDraft');
     Route::post('letters/{letter}/agenda', [DispositionController::class, 'agenda'])->name('letters.agenda');
     Route::post('letters/{letter}/forward-tu', [DispositionController::class, 'forwardToBagianTu'])->name('letters.forwardToBagianTu');
     Route::post('letters/{letter}/forward-kepala', [DispositionController::class, 'forwardDispositionToKepala'])->name('letters.dispositions.forwardToKepala');

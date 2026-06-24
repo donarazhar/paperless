@@ -204,6 +204,18 @@ class LetterController extends Controller
             $q->whereDate('created_at', '<=', $to);
         }
 
+        // Filter tabs: type param (all / unread / internal / external)
+        $filterType = $request->get('type', 'all');
+        if ($filterType === 'internal') {
+            $q->where('type', 'internal');
+        } elseif ($filterType === 'external') {
+            $q->where('type', 'external');
+        } elseif ($filterType === 'unread') {
+            $q->whereDoesntHave('histories', function ($hq) {
+                $hq->where('user_id', Auth::id())->where('action', 'read');
+            });
+        }
+
         $letters = $q->latest()->paginate(15)->withQueryString();
 
         return view('letters.inbox', compact('letters'));
@@ -383,14 +395,28 @@ class LetterController extends Controller
                       });
             });
         }
-        if ($st = $request->status) {
-            $q->where('status', $st);
-        }
         if ($from = $request->date_from) {
             $q->whereDate('created_at', '>=', $from);
         }
         if ($to = $request->date_to) {
             $q->whereDate('created_at', '<=', $to);
+        }
+
+        // Filter tabs dari view
+        $filterStatus = $request->get('status', 'all');
+        $filterType   = $request->get('type');
+
+        if ($filterStatus === 'waiting') {
+            $q->whereIn('status', ['pending_sending', 'pending_agenda', 'in_consideration', 'in_review_kasubag']);
+        } elseif ($filterStatus === 'completed') {
+            $q->where('status', 'completed');
+        } elseif ($filterStatus !== 'all' && $filterStatus) {
+            // fallback: filter status spesifik
+            $q->where('status', $filterStatus);
+        }
+
+        if ($filterType) {
+            $q->where('type', $filterType);
         }
 
         $letters = $q->latest()
@@ -628,6 +654,27 @@ class LetterController extends Controller
         LetterHistory::create(['letter_id' => $letter->id, 'user_id' => Auth::id(), 'action' => 'approved', 'note' => 'Disetujui ' . $roleName]);
         
         return redirect()->route('tugas.accSurat')->with('success', 'Surat berhasil di-ACC. Menunggu Admin untuk mengirim fisik surat.');
+    }
+
+    public function submitDraft(Letter $letter)
+    {
+        $this->authorize('view', $letter);
+        $user = Auth::user();
+        
+        if ($letter->status !== 'draft') {
+            abort(403);
+        }
+        
+        $letter->update(['status' => 'pending_approval']);
+        
+        LetterHistory::create([
+            'letter_id' => $letter->id,
+            'user_id' => Auth::id(),
+            'action' => 'pending_approval',
+            'note' => 'Draft diajukan untuk proses ACC'
+        ]);
+        
+        return redirect()->route('letters.drafts')->with('success', 'Draft surat berhasil diajukan untuk proses ACC.');
     }
 
     public function sendFinal(Letter $letter)
