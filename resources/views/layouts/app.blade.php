@@ -278,6 +278,9 @@
                 @if(in_array($role, ['kepala_sekretariat', 'sub_unit', 'bagian_tu']))
                 <a class="nav-link-item {{ request()->routeIs('tugas.myDisposisi') ? 'active' : '' }}" href="{{ route('tugas.myDisposisi') }}">
                     <i class="bi bi-inboxes-fill"></i> Disposisi
+                    @if(isset($pendingMyDispCount) && $pendingMyDispCount > 0)
+                        <span class="badge bg-danger ms-1" style="padding:0.35em 0.5em; border-radius:10px;">{{ $pendingMyDispCount }}</span>
+                    @endif
                 </a>
                 @endif
 
@@ -419,7 +422,12 @@
         @if(in_array($role, ['kepala_sekretariat', 'sub_unit', 'bagian_tu']))
         <div class="mm-section">
             <a class="mm-link {{ request()->routeIs('tugas.myDisposisi') ? 'active' : '' }}" href="{{ route('tugas.myDisposisi') }}">
-                <i class="bi bi-inboxes-fill"></i> Disposisi
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-inboxes-fill"></i> Disposisi
+                </div>
+                @if(isset($pendingMyDispCount) && $pendingMyDispCount > 0)
+                    <span class="badge bg-danger ms-auto">{{ $pendingMyDispCount }}</span>
+                @endif
             </a>
         </div>
         @endif

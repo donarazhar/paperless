@@ -537,8 +537,8 @@
                        class="mb-nav-link {{ request()->routeIs('tugas.accSurat') ? 'active' : '' }}">
                         <i class="bi bi-file-earmark-text-fill"></i>
                         <span>Draft</span>
-                        @if(isset($unreadAccCount) && $unreadAccCount > 0)
-                            <span class="mb-nav-badge danger">{{ $unreadAccCount }}</span>
+                        @if(isset($pendingAccCount) && $pendingAccCount > 0)
+                            <span class="mb-nav-badge danger">{{ $pendingAccCount }}</span>
                         @endif
                     </a>
                 </li>
@@ -561,8 +561,8 @@
                        class="mb-nav-link {{ request()->routeIs('tugas.myDisposisi') ? 'active' : '' }}">
                         <i class="bi bi-inboxes-fill"></i>
                         <span>{{ $role === 'bagian_tu' ? 'Disposisi' : 'Disposisi Saya' }}</span>
-                        @if(isset($unreadMyDispCount) && $unreadMyDispCount > 0)
-                            <span class="mb-nav-badge danger">{{ $unreadMyDispCount }}</span>
+                        @if(isset($pendingMyDispCount) && $pendingMyDispCount > 0)
+                            <span class="mb-nav-badge danger">{{ $pendingMyDispCount }}</span>
                         @endif
                     </a>
                 </li>
