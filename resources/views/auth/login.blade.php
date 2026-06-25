@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Login – Paperless Mail</title>
+    <title>Login – Al Azhar Paperless System</title>
     <link rel="icon" href="{{ asset('img/logo.png') }}" type="image/png">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
@@ -217,7 +217,7 @@
     <div class="login-wrapper">
         <div class="login-header">
             <img src="{{ asset('img/logo.png') }}" alt="Logo" class="login-logo">
-            <h1 class="login-title">Paperless Mail</h1>
+            <h1 class="login-title">Al Azhar Paperless System</h1>
             <p class="login-subtitle">Masuk untuk mengelola persuratan Anda</p>
         </div>
 

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>@yield('title') - Paperless Mail</title>
+    <title>@yield('title') - Al Azhar Paperless System</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -412,7 +412,7 @@
         <a href="{{ route('dashboard') }}" class="mb-brand">
             <img src="{{ asset('img/logo.png') }}" alt="Logo">
             <div class="d-flex flex-column" style="line-height:1.2;">
-                <span>Paperless Mail</span>
+                <span>Al Azhar Paperless System</span>
                 <span class="mb-brand-sub">YPI Al Azhar v.1.0</span>
             </div>
         </a>

@@ -1,8 +1,8 @@
-# 📩 Paperless Mail — Sistem Informasi Persuratan Digital
+# 📩 Al Azhar Paperless System — Sistem Informasi Persuratan Digital
 
 **Yayasan Pesantren Islam (YPI) Al Azhar**
 
-> Aplikasi persuratan berbasis **Paperless** dengan arsitektur **Satu Pintu (Sentralisasi)** melalui Sekretariat YPI Al Azhar. Dibangun dengan **Laravel 12**, menangani surat internal, surat masuk eksternal, surat keluar eksternal, disposisi berjenjang, dan arsip digital terpusat.
+> Aplikasi persuratan berbasis **Paperless** dengan arsitektur **Satu Pintu (Sentralisasi)** melalui Sekretariat YPI Al Azhar. Mengambil konsep paperless yang ada di Gmail, aplikasi ini menawarkan antarmuka bergaya *mailbox* (Kotak Masuk, Kotak Keluar, Draf) yang intuitif, rapi, dan responsif. Setiap pergerakan surat diperlakukan layaknya pesan elektronik lengkap dengan pelacakan riwayat (*audit trail*) dan lampiran digital, menggantikan sepenuhnya kebutuhan dokumen fisik. Dibangun dengan **Laravel 12**, sistem ini menangani surat internal, surat masuk eksternal, surat keluar eksternal, disposisi berjenjang, dan arsip digital terpusat.
 
 ---
 
@@ -12,8 +12,7 @@
 - [Alur Kerja (Workflow)](#-alur-kerja-workflow)
 - [Hak Akses & Peran (Roles)](#-hak-akses--peran-roles)
 - [Fitur Lengkap](#-fitur-lengkap)
-- [Skema Database (ERD)](#-skema-database-erd)
-- [Struktur Routing & API](#-struktur-routing--api)
+- [Skema Database (ERD) & Status](#-skema-database-erd--status)
 - [Instalasi & Pengaturan](#-instalasi--pengaturan)
 - [Akun Default Pengujian](#-akun-default-pengujian)
 - [Catatan Teknis & Keamanan](#-catatan-teknis--keamanan)
@@ -29,46 +28,56 @@ Aplikasi ini menerapkan prinsip **Sentralisasi Satu Pintu**: seluruh pergerakan 
 3. **Paperless** — Dokumen fisik didigitalisasi sebagai lampiran (PDF, DOCX, gambar) di dalam sistem.
 4. **Audit Trail** — Setiap tindakan (kirim, ACC, agenda, disposisi, tanggapan, selesai) tercatat permanen di riwayat surat.
 
-### Hierarki Organisasi Terkini
+### Konsep Multi-Cabang & Multi-Peran
+
+Aplikasi ini didesain agar sangat fleksibel dan *scalable* untuk menampung struktur organisasi berskala besar. Sistem mendukung konsep **Multi-Cabang** dan **Multi-Peran (Multi-Role)** dengan struktur dasar sebagai berikut:
 
 ```text
-Kampus Pusat
-├── Sekretariat YPI Al Azhar (Pusat Kendali Surat)
-│   ├── Admin Sekretariat (Penerima & Agenda)
-│   ├── Subag Persuratan (Review & Distribusi)
-│   ├── Bagian TU (Manajer Disposisi Pusat)
-│   └── Kepala Sekretariat (Pemantau)
-├── Direktorat Keuangan
-├── Masjid Agung Al Azhar
-├── Bagian ITTD
-└── Direktorat Dakwah Sosial
-
-Kampus Bandung
-├── Unit SD Islam Al Azhar 1
-│   ├── Admin Unit
-│   ├── Kepala Unit
-│   └── Sub Unit
-
-Kampus Cikarang
-└── (Tersedia untuk ekspansi)
+Cabang (Branch)
+├── Unit Pusat (Pusat Kendali / Sekretariat Utama)
+│   ├── Admin Pusat (Penerima & Agenda)
+│   ├── Sub-Bagian Review
+│   ├── Bagian Distribusi (Manajer Disposisi Utama)
+│   └── Pimpinan Pusat (Pemantau)
+├── Unit Cabang / Unit Kerja Biasa 1
+│   ├── Admin Unit (Pengelola Surat Unit)
+│   ├── Kepala Unit (Pemberi ACC & Disposisi)
+│   └── Sub Unit / Staf (Pelaksana Disposisi)
+└── Unit Cabang / Unit Kerja Biasa 2
+    └── ... (Struktur peran mengikuti standar)
 ```
 
-*(Catatan: Setiap unit non-sekretariat rata-rata memiliki 3 peran: Admin Unit, Kepala Unit, dan Sub Unit).*
+**Keterangan:**
+- **Multi-Cabang**: Sistem mampu menaungi banyak wilayah operasional sekaligus secara terpusat.
+- **Multi-Unit**: Setiap cabang memiliki unit-unit spesifik, dengan satu "Unit Pusat" yang difungsikan sebagai poros lalu lintas agenda (Sentralisasi Satu Pintu).
+- **Multi-Peran (Role)**: Di dalam setiap unit, terdapat jabatan dan kewenangan hierarkis (*Admin*, *Kepala*, *Sub Unit*) sehingga kerahasiaan draf surat terjaga dan tugas didistribusikan kepada pihak yang tepat.
 
 ---
 
 ## 🔄 Alur Kerja (Workflow)
 
+Berikut adalah diagram visual alur kerja pada aplikasi Al Azhar Paperless System berdasarkan jenis suratnya.
+
 ### 1. Surat Internal (Antar Unit)
 
-Surat yang dibuat oleh sebuah unit dan ditujukan ke unit lain dalam YPI Al Azhar.
+Surat yang dibuat oleh sebuah unit dan ditujukan ke unit lain dalam YPI Al Azhar. Proses ini wajib melewati pusat (Sekretariat) untuk pendataan nomor agenda.
 
-```text
-┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐     ┌─────────────┐
-│ Admin Unit  │────▶│ Admin Sekre │────▶│ Subag / TU  │────▶│ Admin Unit  │────▶│ Selesai /   │
-│ (Pengirim)  │     │ (Beri Agenda│     │ (Disposisi) │     │ (Penerima)  │     │ Arsip       │
-│ Kirim Surat │     │  & Teruskan)│     │             │     │ (Disposisi) │     │ (Terkirim)  │
-└─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘     └─────────────┘
+```mermaid
+flowchart TD
+    A([Admin Unit Pengirim]) -->|1. Buat Draft| B{Butuh ACC<br>Kepala Unit?}
+    B -- Ya --> C([Kepala Unit Pengirim])
+    C -->|2. ACC Surat| D([Admin Unit Pengirim])
+    B -- Tidak --> D
+    D -->|3. Klik Kirim| E([Admin Sekretariat Pusat])
+    E -->|4. Beri Nomor Agenda| F([Subag Persuratan Pusat])
+    F -->|5. Review & Distribusi| G([Bagian TU Pusat])
+    G -->|6. Disposisi ke Unit Tujuan| H([Admin Unit Penerima])
+    H --> I{Perlu Disposisi<br>Lanjutan?}
+    I -- Ya --> J([Kepala Unit Penerima])
+    J -->|7. Disposisi Internal| K([Sub Unit Penerima])
+    K -->|8. Tindak Lanjut| L([Selesai / Arsip])
+    I -- Tidak --> L
+    H -->|Langsung Arsip| L
 ```
 
 **Aturan Penting Alur Internal:**
@@ -76,21 +85,34 @@ Surat yang dibuat oleh sebuah unit dan ditujukan ke unit lain dalam YPI Al Azhar
 - **Penomoran Agenda**: Semua surat antar-unit harus melalui Admin Sekretariat untuk diberikan Nomor Agenda sebelum didisposisikan oleh Bagian TU ke unit tujuan.
 - **Otonomi Penerima**: Setelah surat sampai ke unit tujuan, **Admin Unit penerima** dapat:
   1. Melakukan disposisi internal di dalam unitnya (meneruskan ke Kepala Unit / Sub Unit).
-  2. Langsung mengarsipkan surat (Tandai Selesai) jika surat tersebut dirasa cukup sampai di Admin Unit saja.
+  2. Langsung mengarsipkan surat (Tandai Selesai) jika dirasa cukup di level Admin Unit saja.
 
 ### 2. Surat Masuk Eksternal
 
-Surat dari pihak luar (eksternal) yang diterima oleh organisasi.
-1. Diinput oleh Admin Sekretariat atau Admin Unit.
-2. Melewati proses agenda dan review yang sama.
-3. Berujung pada status **Selesai**.
+Surat dari pihak luar (eksternal) yang diterima oleh organisasi. Surat ini masuk ke satu pintu Sekretariat untuk kemudian didistribusikan.
+
+```mermaid
+flowchart TD
+    A(Pihak Luar / Eksternal) -->|Kirim Fisik / Email| B([Admin Sekretariat])
+    B -->|1. Input Surat & Agenda| C([Subag Persuratan])
+    C -->|2. Review| D([Bagian TU])
+    D -->|3. Disposisi ke Unit| E([Admin Unit Tujuan])
+    E -->|4. Teruskan Disposisi| F([Kepala Unit / Sub Unit])
+    F -->|5. Tindak Lanjut| G([Selesai / Arsip])
+```
 
 ### 3. Surat Keluar Eksternal
 
-Surat yang ditujukan ke luar organisasi (eksternal).
-1. Dibuat oleh Admin Unit, melalui proses ACC Kepala Unit.
-2. Dikirimkan.
-3. Status langsung berubah menjadi **Terkirim**. Unit dapat memperbarui kolom "Keterangan" (misal: "Resi JNE: 12345").
+Surat yang ditujukan ke luar organisasi (eksternal). Tidak perlu melalui sentralisasi Sekretariat (nomor surat dan agenda dikelola sendiri oleh unit jika ada kebijakan masing-masing).
+
+```mermaid
+flowchart TD
+    A([Admin Unit]) -->|1. Buat Draft Eksternal| B([Kepala Unit])
+    B -->|2. ACC Surat| C([Admin Unit])
+    C -->|3. Kirim Fisik / Email ke Eksternal| D([Status Terkirim])
+    D -.->|Update Keterangan Resi| D
+```
+*Status langsung berubah menjadi **Terkirim**. Unit dapat memperbarui kolom "Keterangan" (misal: "Resi JNE: 12345").*
 
 ---
 
@@ -98,7 +120,7 @@ Surat yang ditujukan ke luar organisasi (eksternal).
 
 | Role | Tanggung Jawab Utama |
 |------|----------------------|
-| **`admin_sekretariat`** | Mengelola agenda surat, membuat surat masuk eksternal pusat. |
+| **`admin_sekretariat`** | Mengelola agenda surat, membuat surat masuk eksternal pusat, memberikan nomor agenda ke surat internal. |
 | **`subag_persuratan`** | Merekap laporan/history surat, review surat dari admin sekretariat sebelum ke Bagian TU. |
 | **`bagian_tu`** | Mendisposisikan surat beragenda ke unit-unit tujuan di seluruh cabang. |
 | **`kepala_sekretariat`** | Memantau seluruh laju surat masuk dan keluar secara *read-only*. |
@@ -113,23 +135,18 @@ Surat yang ditujukan ke luar organisasi (eksternal).
 ### 📬 Manajemen & Tracking Surat
 - **Laporan & History Terpusat**: Menu History untuk memantau semua surat yang sedang berproses disposisi (khusus role Sekretariat).
 - **Inbox & Outbox Cerdas**: Filter otomatis memblokir surat draf/menunggu pengiriman agar tidak membingungkan penerima.
-- **Badge Status Dinamis**: Menampilkan label "Terkirim" untuk surat keluar dan "Selesai" untuk surat masuk eksternal agar konteks tata bahasa lebih sesuai.
+- **Badge Status Dinamis**: Menampilkan label "Terkirim" untuk surat keluar dan "Selesai" untuk surat masuk eksternal.
 - **Notifikasi "Tugas"**: Menu sidebar akan memunculkan *badge* notifikasi merah berisikan angka jika ada tugas ACC atau Disposisi yang menunggu tindakan.
 
 ### 📋 Disposisi Lanjutan
 - **Disposisi Lintas Unit & Personal**: Disposisi dapat ditujukan ke Unit (organisasi) maupun langsung ke Personal (jabatan/orang).
 - **Cetak Lembar Disposisi**: Halaman *print-friendly* untuk mencetak riwayat dan arahan disposisi secara fisik.
 
-### 📊 Dashboard Cerdas
-- Menampilkan metrik surat masuk, keluar, dan tugas pending.
-- Menampilkan grafik laju surat 7 hari terakhir (*Chart.js*).
 
----
-
-## 🗄 Skema Database (ERD)
+## 🗄 Skema Database (ERD) & Status
 
 **Status Lifecycle (Surat Internal):**
-`draft` → `pending_approval` → `pending_sending` → `pending_agenda` → `in_review_subag` → `in_review_bagian_tu` → `in_consideration` → `completed`
+`draft` → `pending_approval` (Menunggu ACC) → `pending_sending` (Menunggu Dikirim Admin) → `pending_agenda` (Menunggu Agenda Pusat) → `in_review_subag` (Review Subag) → `in_review_bagian_tu` (Review TU) → `in_consideration` (Dipertimbangkan Unit Tujuan) → `completed` (Selesai/Arsip)
 
 *(Catatan: Saat surat `completed`, label yang tampil di UI bisa berupa **Selesai** atau **Terkirim** tergantung jenis dan asal surat).*
 

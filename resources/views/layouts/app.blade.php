@@ -6,7 +6,7 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link rel="icon" href="{{ asset('img/logo.png') }}" type="image/png">
-    <title>@yield('title') – Paperless Mail | YPI Al Azhar</title>
+    <title>@yield('title') – Al Azhar Paperless System | YPI Al Azhar</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
@@ -216,7 +216,7 @@
             <a class="nav-brand" href="{{ route('dashboard') }}">
                 <img src="{{ asset('img/logo.png') }}" alt="Logo">
                 <div>
-                    <div class="nav-brand-name">Paperless Mail</div>
+                    <div class="nav-brand-name">Al Azhar Paperless System</div>
                     <div class="nav-brand-sub">YPI Al Azhar</div>
                 </div>
             </a>
