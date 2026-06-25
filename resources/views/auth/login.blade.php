@@ -74,29 +74,31 @@
 
         .form-label {
             display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #334155;
-            margin-bottom: 0.5rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #475569;
+            margin-bottom: 0.2rem;
         }
 
         .form-control {
             width: 100%;
-            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            height: 2.8rem;
+            border: none;
+            border-bottom: 1.5px solid #e2e8f0;
+            border-radius: 0;
+            padding: 0.25rem 0 0.25rem 2.2rem;
             font-size: 0.95rem;
             font-family: inherit;
             color: #0f172a;
-            background: #f1f5f9;
-            border: 1px solid transparent;
-            border-radius: 0.75rem;
+            background: transparent;
+            outline: none;
             transition: all 0.2s;
         }
 
         .form-control:focus {
-            outline: none;
-            background: #ffffff;
             border-color: #6366f1;
-            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
         .form-control::placeholder {
@@ -106,7 +108,7 @@
         .input-icon {
             position: absolute;
             bottom: 0.75rem;
-            left: 1rem;
+            left: 0.2rem;
             color: #64748b;
             font-size: 1.1rem;
         }
@@ -114,10 +116,60 @@
         .btn-submit {
             width: 100%;
             padding: 0.75rem;
-            background: #4f46e5;
+            background: #6366f1;
             color: #ffffff;
             border: none;
-            border-radius: 0.75rem;
+            border-radius: 100px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1.5rem;
+            box-shadow: 0 2px 10px rgba(99, 102, 241, 0.25);
+        }
+
+        .btn-submit:hover {
+            background: #4f46e5;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .login-divider {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 1.5rem 0;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .login-divider::before,
+        .login-divider::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .login-divider span {
+            padding: 0 0.75rem;
+        }
+
+        .btn-google {
+            width: 100%;
+            padding: 0.75rem;
+            background: #ffffff;
+            color: #334155;
+            border: 1px solid #cbd5e1;
+            border-radius: 100px;
             font-size: 0.95rem;
             font-weight: 600;
             cursor: pointer;
@@ -126,17 +178,14 @@
             align-items: center;
             justify-content: center;
             gap: 0.5rem;
-            margin-top: 1rem;
+            text-decoration: none;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
 
-        .btn-submit:hover {
-            background: #4338ca;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
-        }
-
-        .btn-submit:active {
-            transform: translateY(0);
+        .btn-google:hover {
+            background: #f8fafc;
+            border-color: #94a3b8;
+            color: #0f172a;
         }
 
         .error-message {
@@ -176,7 +225,7 @@
             @if(session('error') || $errors->any())
                 <div class="error-message">
                     <i class="bi bi-exclamation-circle-fill"></i>
-                    <span>Email atau kata sandi tidak valid.</span>
+                    <span>{{ session('error') ?? 'Email atau kata sandi tidak valid.' }}</span>
                 </div>
             @endif
 
@@ -198,6 +247,15 @@
                     Masuk <i class="bi bi-arrow-right"></i>
                 </button>
             </form>
+
+            <div class="login-divider">
+                <span>Atau</span>
+            </div>
+
+            <a href="{{ route('google.login') }}" class="btn-google">
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" style="width: 18px; height: 18px;">
+                Masuk dengan Google
+            </a>
         </div>
     </div>
 
