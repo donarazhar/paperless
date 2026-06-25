@@ -213,19 +213,68 @@
 
     /* Responsive */
     @media (max-width: 768px) {
-        .m-row { height: auto; padding: .75rem 1rem; flex-wrap: wrap !important; gap: .5rem; position: relative; }
-        .m-sender { width: calc(100% - 100px); }
-        .m-content { width: 100%; }
-        .m-subject { max-width: 100%; }
-        .m-snippet { display: none; }
-        .m-actions { display: none !important; }
-        .m-date { position: absolute; right: 1rem; top: 1rem; margin-left: 0 !important; width: auto; }
-        .m-check { opacity: 0 !important; display: none; }
+        .m-row {
+            height: auto;
+            padding: .85rem 1rem;
+            display: grid;
+            grid-template-columns: 40px 1fr auto;
+            grid-template-areas:
+                "avatar sender date"
+                "avatar content content";
+            gap: 2px 12px;
+            align-items: start;
+        }
+        .m-check { display: none; }
+        .m-avatar {
+            grid-area: avatar;
+            width: 40px; height: 40px;
+            margin-top: 2px;
+        }
+        .m-sender {
+            grid-area: sender;
+            width: 100%;
+            font-size: .95rem;
+            color: #0f172a;
+        }
+        .m-date {
+            grid-area: date;
+            position: static;
+            margin: 0;
+            margin-top: 3px;
+        }
+        .m-content {
+            grid-area: content;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: 100%;
+            gap: 3px;
+            min-width: 0;
+        }
+        .m-content > .d-flex {
+            margin-bottom: 2px;
+            flex-wrap: wrap;
+        }
+        .m-subject {
+            max-width: 100%;
+            font-size: .85rem;
+            width: 100%;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            min-width: 0;
+        }
+        .m-sep { display: none; }
+        .m-snippet {
+            flex: none;
+            display: block;
+            width: 100%;
+            font-size: .85rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            min-width: 0;
+        }
+        .m-actions {
+            display: none !important;
+        }
         .inbox-tabs .inbox-tab { padding: .55rem .85rem; font-size: .75rem; }
-    }
-    @media (max-width: 480px) {
-        .m-avatar { display: none; }
-        .m-sender { width: calc(100% - 60px); }
     }
 </style>
 
