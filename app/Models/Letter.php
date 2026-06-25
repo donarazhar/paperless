@@ -57,6 +57,11 @@ class Letter extends Model
         return $this->hasMany(Disposition::class);
     }
 
+    public function reads()
+    {
+        return $this->hasMany(LetterRead::class);
+    }
+
     public function getIsUnreadAttribute()
     {
         $user = \Illuminate\Support\Facades\Auth::user();
@@ -64,11 +69,11 @@ class Letter extends Model
 
         if ($this->from_user_id === $user->id) return false;
 
-        if ($this->relationLoaded('histories')) {
-            return !$this->histories->where('user_id', $user->id)->where('action', 'read')->isNotEmpty();
+        if ($this->relationLoaded('reads')) {
+            return !$this->reads->where('user_id', $user->id)->isNotEmpty();
         }
         
-        return !$this->histories()->where('user_id', $user->id)->where('action', 'read')->exists();
+        return !$this->reads()->where('user_id', $user->id)->exists();
     }
 
     public function getStatusLabelAttribute()

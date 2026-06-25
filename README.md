@@ -2,7 +2,7 @@
 
 **Yayasan Pesantren Islam (YPI) Al Azhar**
 
-> Aplikasi persuratan berbasis **Paperless** dengan arsitektur **Satu Pintu (Sentralisasi)** melalui Sekretariat YPI Al Azhar. Mengambil konsep paperless yang ada di Gmail, aplikasi ini menawarkan antarmuka bergaya *mailbox* (Kotak Masuk, Kotak Keluar, Draf) yang intuitif, rapi, dan responsif. Setiap pergerakan surat diperlakukan layaknya pesan elektronik lengkap dengan pelacakan riwayat (*audit trail*) dan lampiran digital, menggantikan sepenuhnya kebutuhan dokumen fisik. Dibangun dengan **Laravel 12**, sistem ini menangani surat internal, surat masuk eksternal, surat keluar eksternal, disposisi berjenjang, dan arsip digital terpusat.
+> Aplikasi persuratan berbasis **Paperless** dengan arsitektur **Terdesentralisasi (Peer-to-Peer)** antar unit di lingkungan YPI Al Azhar. Mengambil konsep paperless yang ada di Gmail, aplikasi ini menawarkan antarmuka bergaya *mailbox* (Kotak Masuk, Kotak Keluar, Draf) yang intuitif, rapi, dan responsif. Setiap pergerakan surat diperlakukan layaknya pesan elektronik lengkap dengan pelacakan riwayat (*audit trail*) dan lampiran digital, menggantikan sepenuhnya kebutuhan dokumen fisik. Dibangun dengan **Laravel 12**, sistem ini menangani surat internal, surat masuk eksternal, surat keluar eksternal, disposisi berjenjang secara mandiri per-unit, dan arsip digital.
 
 ---
 
@@ -21,9 +21,9 @@
 
 ## 🏛 Arsitektur & Filosofi Sistem
 
-Aplikasi ini menerapkan prinsip **Sentralisasi Satu Pintu**: seluruh pergerakan surat antar-unit/cabang terpantau dan difasilitasi melalui Sekretariat YPI Al Azhar sebagai pusat kendali.
+Aplikasi ini menerapkan prinsip **Terdesentralisasi (Peer-to-Peer)**: unit-unit kerja memiliki otonomi penuh untuk saling mengirim dan merespons surat secara langsung, tanpa harus melewati birokrasi satu pintu (Sekretariat Pusat). 
 
-1. **Kontrol Terpusat** — Setiap surat internal maupun eksternal mendapatkan nomor agenda resmi dan terlacak riwayatnya secara penuh.
+1. **Otonomi Unit (Peer-to-Peer)** — Surat internal dapat dikirimkan langsung dari Unit A ke Unit B. Admin dari masing-masing unit penerima memiliki wewenang penuh untuk memberikan Nomor Agenda Masuk secara lokal dan mengatur alur disposisinya sendiri.
 2. **Hierarki Cabang & Unit** — Data terstruktur rapi: **Cabang → Unit → Organ (Jabatan) → Pengguna**.
 3. **Paperless** — Dokumen fisik didigitalisasi sebagai lampiran (PDF, DOCX, gambar) di dalam sistem.
 4. **Audit Trail** — Setiap tindakan (kirim, ACC, agenda, disposisi, tanggapan, selesai) tercatat permanen di riwayat surat.
@@ -81,11 +81,25 @@ flowchart TD
 ```
 
 **Aturan Penting Alur Internal:**
-- **Privasi Kotak Masuk**: Surat **tidak akan muncul** di kotak masuk (inbox) unit penerima selama Admin Unit pengirim belum mengeklik tombol "Kirim" (masih berstatus *Draft*, *Menunggu ACC*, atau *Menunggu Dikirim*).
-- **Penomoran Agenda**: Semua surat antar-unit harus melalui Admin Sekretariat untuk diberikan Nomor Agenda sebelum didisposisikan oleh Bagian TU ke unit tujuan.
-- **Otonomi Penerima**: Setelah surat sampai ke unit tujuan, **Admin Unit penerima** dapat:
-  1. Melakukan disposisi internal di dalam unitnya (meneruskan ke Kepala Unit / Sub Unit).
-  2. Langsung mengarsipkan surat (Tandai Selesai) jika dirasa cukup di level Admin Unit saja.
+### 1. Surat Internal (Antar Unit / Sekretariat)
+
+Surat yang dibuat oleh satu unit untuk dikirim ke unit lain, atau ke Sekretariat Pusat. Surat internal kini wajib diberikan **Nomor Agenda** oleh **Unit Penerima** saat surat tiba di Inbox mereka.
+
+**Alur Desentralisasi Penomoran Agenda:**
+1. Semua surat internal yang telah di-ACC oleh Kepala Unit pengirim dan dikirim, akan masuk ke Inbox unit tujuan dengan status **Menunggu Agenda (pending_agenda)**.
+2. Jika surat masuk ke **Sekretariat**, maka `admin_sekretariat` hanya akan memberikan Nomor Agenda, dan sistem otomatis meneruskannya ke Subag Persuratan untuk didisposisikan.
+3. Jika surat masuk ke **Unit Kerja**, maka `admin_unit` akan memberikan Nomor Agenda lokasinya sendiri, dan secara bersamaan dalam pop-up yang sama, `admin_unit` dapat langsung memulai disposisi (meneruskan ke personal di unitnya).
+4. Pemegang hak disposisi (`bagian_tu`, `kepala_sekretariat`, `kepala_unit`, `sub_unit`) kemudian akan memproses surat (disposisi ke bawahannya atau membalas/menyelesaikan).
+
+```mermaid
+flowchart TD
+    A([Admin Unit Pengirim]) -->|1. Draft & Kirim ACC| B([Kepala Unit Pengirim])
+    B -->|2. ACC| A
+    A -->|3. Kirim Surat Final| C([Inbox Unit Tujuan - Pending Agenda])
+    C -->|4. Beri Agenda & Teruskan| D([Admin Unit Penerima])
+    D -->|5. Disposisi ke Personal| E([Kepala Unit / Staf Tujuan])
+    E -->|6. Tindak Lanjut| F([Selesai / Arsip])
+```
 
 ### 2. Surat Masuk Eksternal
 
@@ -120,13 +134,13 @@ flowchart TD
 
 | Role | Tanggung Jawab Utama |
 |------|----------------------|
-| **`admin_sekretariat`** | Mengelola agenda surat, membuat surat masuk eksternal pusat, memberikan nomor agenda ke surat internal. |
-| **`subag_persuratan`** | Merekap laporan/history surat, review surat dari admin sekretariat sebelum ke Bagian TU. |
-| **`bagian_tu`** | Mendisposisikan surat beragenda ke unit-unit tujuan di seluruh cabang. |
-| **`kepala_sekretariat`** | Memantau seluruh laju surat masuk dan keluar secara *read-only*. |
-| **`admin_unit`** | Membuat surat internal/eksternal unitnya, membagikan disposisi internal unit, atau langsung mengarsipkan surat masuk. |
-| **`kepala_unit`** | Memberikan persetujuan (ACC) surat keluar unitnya, menerima disposisi, memberi arahan ke Sub Unit. |
-| **`sub_unit`** | Menerima instruksi disposisi dari Kepala Unit dan melaksanakannya. |
+| **`admin_sekretariat`** | Memberikan nomor agenda, meneruskan disposisi surat yang masuk ke sekretariat ke personal yang ada di sekretariat, membuat surat, dan mengarsipkan surat khusus sekretariat. |
+| **`admin_unit`** | Membuat surat, memberikan nomor agenda, memulai proses disposisi, meneruskan disposisi surat yang masuk ke unitnya, dan mengarsipkan surat khusus unitnya. |
+| **`subag_persuratan`** | Meng-ACC surat dari admin_sekretariat, memulai proses disposisi, dan mendisposisi surat yang spesifik ditujukan kepadanya. |
+| **`bagian_tu`** | Mendisposisikan surat yang spesifik ditujukan kepadanya. |
+| **`kepala_unit`** | Mendisposisikan surat yang spesifik ditujukan kepadanya (termasuk ACC surat keluar unitnya). |
+| **`sub_unit`** | Mendisposisikan surat yang spesifik ditujukan kepadanya (melaksanakan tugas). |
+| **`kepala_sekretariat`** | Memantau seluruh laju surat masuk dan keluar secara *read-only*, dan menerima/membuat disposisi. |
 
 ---
 

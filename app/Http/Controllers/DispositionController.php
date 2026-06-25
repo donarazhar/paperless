@@ -17,16 +17,26 @@ class DispositionController extends Controller
 
     public function agenda(Request $request, Letter $letter)
     {
-        if (Auth::user()->role !== 'admin_sekretariat') abort(403);
+        $role = Auth::user()->role;
+        if (!in_array($role, ['admin_sekretariat', 'admin_unit'])) abort(403);
         
-        $data = $request->validate([
+        $rules = [
             'agenda_number' => 'required|string',
             'note' => 'nullable|string',
-        ]);
+        ];
+
+        if ($role === 'admin_unit') {
+            $rules['to_user_id'] = 'required|exists:users,id';
+        }
+
+        $data = $request->validate($rules);
+
+        $newStatus = ($role === 'admin_unit') ? 'in_consideration' : 'in_review_subag';
+        $successMsg = ($role === 'admin_unit') ? 'Surat berhasil diagendakan dan didisposisikan.' : 'Surat berhasil diagendakan dan diteruskan ke Subag Persuratan.';
 
         $letter->update([
             'agenda_number' => $data['agenda_number'],
-            'status' => 'in_review_subag'
+            'status' => $newStatus
         ]);
 
         LetterHistory::create([
@@ -36,11 +46,29 @@ class DispositionController extends Controller
             'note' => 'Agenda: ' . $data['agenda_number'],
         ]);
 
+        if ($role === 'admin_unit') {
+            \App\Models\Disposition::create([
+                'letter_id' => $letter->id,
+                'from_user_id' => Auth::id(),
+                'to_unit_id' => null,
+                'to_user_id' => $data['to_user_id'],
+                'note' => $data['note'] ?: 'Surat diagendakan & diteruskan.',
+                'status' => 'pending',
+            ]);
+
+            LetterHistory::create([
+                'letter_id' => $letter->id,
+                'user_id' => Auth::id(),
+                'action' => 'disposed',
+                'note' => $data['note'] ?: 'Surat diagendakan & diteruskan.',
+            ]);
+        }
+
         $route = $letter->type === 'external' ? 'letters.inboundExternal' : 'letters.inbound';
 
         return redirect()
             ->route($route)
-            ->with('success', 'Surat berhasil diagendakan dan diteruskan ke Subag Persuratan.');
+            ->with('success', $successMsg);
     }
 
     public function forwardToBagianTu(Request $request, Letter $letter)
@@ -64,6 +92,10 @@ class DispositionController extends Controller
         $user = Auth::user();
         if (!in_array($user->role, ['bagian_tu', 'kepala_sekretariat', 'kepala_unit', 'sub_unit', 'admin_unit', 'subag_persuratan'])) {
             abort(403, 'Anda tidak memiliki akses untuk membuat disposisi.');
+        }
+
+        if ($user->role === 'admin_unit' && empty($letter->agenda_number)) {
+            return back()->withErrors(['note' => 'Surat ini belum memiliki No. Agenda. Silakan beri nomor agenda terlebih dahulu.']);
         }
 
         $data = $request->validate([

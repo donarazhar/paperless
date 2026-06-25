@@ -577,13 +577,12 @@ class LetterController extends Controller
         $letter = Letter::findOrFail($id);
         $this->authorize('view', $letter);
 
-        // Mark as read
+        // Mark as read in LetterRead
         $user = \Illuminate\Support\Facades\Auth::user();
-        if (!\App\Models\LetterHistory::where('letter_id', $letter->id)->where('user_id', $user->id)->where('action', 'read')->exists()) {
-            \App\Models\LetterHistory::create([
+        if ($user && $letter->from_user_id !== $user->id) {
+            \App\Models\LetterRead::firstOrCreate([
                 'letter_id' => $letter->id,
                 'user_id' => $user->id,
-                'action' => 'read',
             ]);
         }
 
@@ -805,12 +804,12 @@ class LetterController extends Controller
             abort(403);
         }
         
-        if ($letter->type === 'outbound_external' || $user->role === 'admin_sekretariat') {
+        if ($letter->type === 'outbound_external') {
             $newStatus = 'completed';
-            $note = ($letter->type === 'outbound_external') ? 'Surat eksternal telah dikirim.' : 'Surat internal telah dikirim.';
+            $note = 'Surat eksternal telah dikirim.';
         } else {
             $newStatus = 'pending_agenda';
-            $note = 'Surat dikirim ke Sekretariat untuk diagendakan.';
+            $note = 'Surat telah dikirim ke tujuan untuk diagendakan.';
         }
         
         $letter->update(['status' => $newStatus]);

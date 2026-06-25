@@ -101,7 +101,7 @@
     $hasAction = $letter->status !== 'completed' && (
         (in_array($role, ['kepala_unit', 'subag_persuratan']) && $letter->status==='pending_approval')
         || ($role==='admin_unit' && $letter->status==='pending_sending')
-        || ($role==='admin_unit' && $isDispoToMyUnit)
+        || (in_array($role, ['admin_unit', 'admin_sekretariat']) && $isDispoToMyUnit)
         || ($role==='admin_sekretariat' && $letter->status==='pending_agenda')
         || ($role==='subag_persuratan' && $letter->status==='in_review_subag')
         || ($role==='bagian_tu' && $letter->status==='in_review_bagian_tu')
@@ -127,7 +127,7 @@
                     <a href="{{ route('letters.printDisposition', ['letter' => $encodedId]) }}" target="_blank" class="btn-action btn-secondary-custom"><i class="bi bi-printer"></i> Cetak PDF</a>
                 @endif
                 @if(!in_array($letter->status, ['pending_approval', 'pending_sending', 'pending_agenda', 'draft']))
-                    @php $hideCatatanAndModifyDispo = $role === 'admin_unit' && $isDispoToMyUnit; @endphp
+                    @php $hideCatatanAndModifyDispo = in_array($role, ['admin_unit', 'admin_sekretariat']) && $isDispoToMyUnit; @endphp
                     @if(!$hideCatatanAndModifyDispo)
                         @if($isRespondingDispo)
                             <button class="btn-action btn-secondary-custom" data-bs-toggle="modal" data-bs-target="#acceptModal"><i class="bi bi-reply"></i> Balas</button>
@@ -147,7 +147,7 @@
                 @if(in_array($role, ['admin_unit', 'admin_sekretariat']) && $letter->status === 'pending_sending')
                     <button onclick="event.preventDefault(); document.getElementById('formSendFinal').submit();" class="btn-action btn-success-custom"><i class="bi bi-send-fill"></i> Kirim Fisik</button>
                 @endif
-                @if($role==='admin_sekretariat' && $letter->status==='pending_agenda')
+                @if(($role==='admin_sekretariat' || $role==='admin_unit') && $letter->status==='pending_agenda' && $letter->to_unit_id === $user->unit_id)
                     <button data-bs-toggle="modal" data-bs-target="#agendaModal" class="btn-action btn-primary-custom"><i class="bi bi-journal-plus"></i> Beri Agenda</button>
                 @endif
             </div>
@@ -247,22 +247,21 @@
                     <h5 class="card-title-custom"><i class="bi bi-clock-history me-1"></i> Riwayat & Catatan</h5>
                 </div>
                 <div class="card-body-custom pt-2">
-                    @if($letter->histories->whereIn('action', ['disposed', 'replied'])->isNotEmpty())
+                    @if($letter->histories->whereIn('action', ['agenda_assigned', 'disposed', 'replied'])->isNotEmpty())
                         <div class="tl-list">
-                            @if($letter->histories->where('action', 'disposed')->isNotEmpty())
-                            <div class="tl-item">
-                                <div class="tl-dot blue"></div>
-                                <div class="tl-content">
-                                    <div class="tl-header">
-                                        <span class="tl-actor">Subag Persuratan</span>
-                                        <span class="tl-time">{{ $letter->created_at->format('d M, H:i') }}</span>
+                            @foreach($letter->histories->whereIn('action', ['agenda_assigned', 'disposed', 'replied'])->sortBy('created_at') as $h)
+                                @if($h->action === 'agenda_assigned')
+                                    <div class="tl-item">
+                                        <div class="tl-dot blue"></div>
+                                        <div class="tl-content">
+                                            <div class="tl-header">
+                                                <span class="tl-actor">{{ $h->user->role === 'admin_sekretariat' ? 'Subag Persuratan' : ($h->user->unit->name ?? 'Admin Unit') }}</span>
+                                                <span class="tl-time">{{ $h->created_at->format('d M, H:i') }}</span>
+                                            </div>
+                                            <div class="tl-note">Mengagendakan surat</div>
+                                        </div>
                                     </div>
-                                    <div class="tl-note">Mengagendakan surat</div>
-                                </div>
-                            </div>
-                            @endif
-                            @foreach($letter->histories->whereIn('action', ['disposed', 'replied'])->sortBy('created_at') as $h)
-                                @if($h->action === 'disposed' && !Str::contains($h->note, 'Diteruskan kepada personal terkait di unit'))
+                                @elseif($h->action === 'disposed' && !Str::contains($h->note, 'Diteruskan kepada personal terkait di unit'))
                                     @php
                                         $dispMatch = $letter->dispositions->where('from_user_id', $h->user_id)->where('note', $h->note)->first();
                                         $targetName = $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—');
@@ -391,7 +390,7 @@
 @endif
 
 {{-- Modal Beri Agenda --}}
-@if($role==='admin_sekretariat' && $letter->status==='pending_agenda')
+@if(($role==='admin_sekretariat' || $role==='admin_unit') && $letter->status==='pending_agenda' && $letter->to_unit_id === $user->unit_id)
 <div class="modal fade" id="agendaModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -403,10 +402,28 @@
                 @csrf
                 <div class="modal-body">
                     <input type="text" name="agenda_number" class="form-control mb-3" placeholder="Contoh: 123/YPIA/2026" required>
-                    <textarea name="note" class="form-control" rows="2" placeholder="Catatan (Opsional)"></textarea>
+                    
+                    @if($role === 'admin_unit')
+                    <div class="mb-3">
+                        <label class="form-label text-muted small fw-bold">Teruskan ke (Personal Unit)</label>
+                        <select name="to_user_id" class="form-select" required>
+                            <option value="">— Pilih Pegawai di Unit Anda —</option>
+                            @php $myUnit = \App\Models\Unit::with('organs.users')->find($user->unit_id); @endphp
+                            @if($myUnit && $myUnit->organs->isNotEmpty())
+                                @foreach($myUnit->organs as $organ)
+                                    @foreach($organ->users as $u)
+                                        @if($u->id !== $user->id) <option value="{{ $u->id }}">{{ $u->name }}</option> @endif
+                                    @endforeach
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+                    @endif
+
+                    <textarea name="note" class="form-control" rows="2" placeholder="Catatan Disposisi/Agenda (Opsional)"></textarea>
                 </div>
                 <div class="modal-footer">
-                    <button type="submit" class="btn btn-primary">Simpan Agenda</button>
+                    <button type="submit" class="btn btn-primary"><i class="bi {{ $role === 'admin_unit' ? 'bi-send-fill' : 'bi-save' }}"></i> {{ $role === 'admin_unit' ? 'Simpan Agenda & Teruskan' : 'Simpan Agenda' }}</button>
                 </div>
             </form>
         </div>

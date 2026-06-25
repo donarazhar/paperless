@@ -99,7 +99,11 @@
         transition: background .15s;
     }
     .m-row.read { background: #fafafa; }
-    .m-row:hover { background: #fef2f2; }
+    .m-row.read::before { background: transparent; }
+    .m-row.read .m-to { font-weight: 500; color: #374151; }
+    .m-row.read .m-subject { font-weight: 500; color: #374151; }
+    .m-row.read .m-date { font-weight: 500; }
+    .m-row:hover { background: #fef2f2; box-shadow: 0 1px 4px rgba(0,0,0,.04); z-index: 2; }
     .m-row:hover .m-actions { opacity: 1; }
 
     /* Avatar */

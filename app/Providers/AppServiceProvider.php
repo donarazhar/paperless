@@ -104,8 +104,9 @@ class AppServiceProvider extends ServiceProvider
                     });
                 }
                 $qIn->where('from_user_id', '!=', $user->id); // Usually don't count own sent letters in inbox unread
-                $qIn->whereDoesntHave('histories', function($q) use ($user) {
-                    $q->where('user_id', $user->id)->where('action', 'read');
+                // Unread logic: tidak ada di tabel letter_reads untuk user ini
+                $qIn->whereDoesntHave('reads', function($q) use ($user) {
+                    $q->where('user_id', $user->id);
                 });
                 $unreadInboxCount = $qIn->count();
 
@@ -129,8 +130,8 @@ class AppServiceProvider extends ServiceProvider
                     $unreadDispCount = $qDisp->count();
                 }
 
-                // Unread Kotak Disposisi (myDisposisi)
-                $unreadMyDispCount = 0;
+                // Pending Kotak Disposisi (myDisposisi)
+                $pendingMyDispCount = 0;
                 if (in_array($user->role, ['kepala_sekretariat', 'sub_unit', 'bagian_tu'])) {
                     $qMyDisp = \App\Models\Letter::query();
                     
@@ -153,12 +154,7 @@ class AppServiceProvider extends ServiceProvider
                         });
                     }
                     
-                    $qMyDisp->where('from_user_id', '!=', $user->id);
-                    $qMyDisp->whereDoesntHave('histories', function($q) use ($user) {
-                        $q->where('user_id', $user->id)->where('action', 'read');
-                    });
-                    
-                    $unreadMyDispCount = $qMyDisp->count();
+                    $pendingMyDispCount = $qMyDisp->count();
                 }
 
                 // Unread Acc Surat
@@ -186,7 +182,7 @@ class AppServiceProvider extends ServiceProvider
                 })->whereIn('status', ['draft', 'pending_approval'])->count();
             }
 
-            $view->with(compact('pendingAccCount', 'pendingDispCount', 'pendingSendingCount', 'unreadInboxCount', 'unreadDispCount', 'unreadMyDispCount', 'unreadAccCount', 'draftCount'));
+            $view->with(compact('pendingAccCount', 'pendingDispCount', 'pendingSendingCount', 'unreadInboxCount', 'pendingMyDispCount', 'draftCount'));
         });
     }
 }
