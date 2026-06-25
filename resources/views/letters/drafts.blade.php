@@ -273,15 +273,20 @@
             flex-wrap: wrap;
         }
         .m-subject {
-            font-size: .95rem;
             max-width: 100%;
-            white-space: normal;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+            font-size: .85rem;
+            width: 100%;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            min-width: 0;
         }
+        .m-sep { display: none; }
         .m-snippet {
-            display: none;
+            flex: none;
+            display: block;
+            width: 100%;
+            font-size: .85rem;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            min-width: 0;
         }
         .m-actions {
             display: none !important;
