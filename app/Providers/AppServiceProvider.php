@@ -90,7 +90,8 @@ class AppServiceProvider extends ServiceProvider
 
             if ($user) {
                 // Base Inbox Query
-                $qIn = \App\Models\Letter::whereIn('type', ['internal', 'outbound_external']);
+                $qIn = \App\Models\Letter::whereIn('type', ['internal', 'external'])
+                                         ->whereNotIn('status', ['draft', 'pending_approval', 'pending_sending']);
                 if (in_array($user->role, ['kepala_unit', 'sub_unit'])) {
                     $qIn->where(function($q) use ($user) {
                         $q->where('to_unit_id', $user->unit_id)->orWhere('to_user_id', $user->id)
