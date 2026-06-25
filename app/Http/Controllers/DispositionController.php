@@ -87,6 +87,18 @@ class DispositionController extends Controller
             }
         }
 
+        // Tutup disposisi sebelumnya yang tertuju pada user/unit ini (tandai forwarded)
+        \App\Models\Disposition::where('letter_id', $letter->id)
+            ->where(function($q) use ($user) {
+                $q->where('to_user_id', $user->id)
+                  ->orWhere('to_unit_id', $user->unit_id);
+            })
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'forwarded',
+                'response_note' => 'Didisposisikan kembali: ' . $data['note']
+            ]);
+
         Disposition::create([
             'letter_id' => $letter->id,
             'from_user_id' => Auth::id(),
