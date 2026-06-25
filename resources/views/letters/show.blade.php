@@ -223,7 +223,7 @@
                                     elseif(in_array($ext, ['jpg','jpeg','png'])) $icon = 'img';
                                 @endphp
                                 <div class="col-sm-6 col-md-4">
-                                    <a href="{{ $url }}" target="_blank" class="att-card {{ $ext === 'pdf' ? 'view-pdf' : '' }}" {{ $ext === 'pdf' ? 'data-src='.$url.' onclick="event.preventDefault();"' : '' }}>
+                                    <a href="{{ $url }}" target="_blank" class="att-card">
                                         <div class="att-icon {{ $icon }}">
                                             <i class="bi {{ $icon==='pdf' ? 'bi-file-pdf-fill' : ($icon==='img' ? 'bi-file-image-fill' : 'bi-file-word-fill') }}"></i>
                                         </div>
@@ -234,15 +234,6 @@
                                     </a>
                                 </div>
                             @endforeach
-                        </div>
-
-                        {{-- PDF Inline Preview --}}
-                        <div id="pdfInlinePreview" style="display:none;" class="mt-4 border rounded overflow-hidden">
-                            <div class="bg-light p-2 border-bottom d-flex justify-content-between align-items-center">
-                                <span class="fw-bold text-secondary ms-2"><i class="bi bi-file-pdf"></i> Pratinjau Dokumen</span>
-                                <button class="btn btn-sm btn-light" onclick="document.getElementById('pdfInlinePreview').style.display='none'"><i class="bi bi-x-lg"></i></button>
-                            </div>
-                            <iframe id="pdfInlineFrame" style="width: 100%; height: 600px; border: none; display: block; background:#f1f5f9;"></iframe>
                         </div>
                     @endif
                 </div>
@@ -478,20 +469,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    // PDF Viewer Logic
-    const prev = document.getElementById('pdfInlinePreview');
-    const frame = document.getElementById('pdfInlineFrame');
-    const pdfBtns = document.querySelectorAll('.view-pdf');
-
-    pdfBtns.forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            if(!frame || !prev) return;
-            frame.src = btn.dataset.src;
-            prev.style.display = 'block';
-            if(e.isTrusted) setTimeout(() => prev.scrollIntoView({behavior:'smooth', block:'start'}), 100);
-        });
-    });
-
     // Dispo Modal Toggle Logic
     const sU = document.getElementById('selectUnit');
     const sP = document.getElementById('selectUser');

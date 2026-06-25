@@ -523,7 +523,7 @@ class LetterController extends Controller
         ]);
 
         return redirect()
-            ->route($request->action === 'send' ? 'letters.outbound' : 'letters.inbound')
+            ->route('letters.drafts')
             ->with('success', $request->action === 'send'
                 ? 'Surat berhasil diajukan untuk persetujuan.'
                 : 'Draf surat berhasil disimpan.');

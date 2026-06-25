@@ -32,7 +32,7 @@
             color: var(--text-main);
             margin: 0;
             overflow: hidden;
-            zoom: 85%;
+            zoom: 90%;
         }
 
         /* ══ HEADER ══ */
@@ -117,7 +117,7 @@
         /* ══ APP LAYOUT ══ */
         .mb-app {
             display: flex;
-            height: 117.65vh;
+            height: 111.11vh;
             padding-top: var(--header-h);
             position: relative;
         }
@@ -389,7 +389,7 @@
 
         /* Mobile Scrolling Override */
         @media (max-width: 991px) {
-            body { overflow: auto !important; }
+            body { zoom: 85%; overflow: auto !important; }
             .mb-app { height: auto !important; min-height: 117.65vh; }
             .mb-main { overflow: visible !important; min-height: calc(117.65vh - var(--header-h) - .5rem); }
             .mail-list, .compose-body, .mail-scroll { overflow: visible !important; }
