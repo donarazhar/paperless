@@ -292,7 +292,9 @@
                         <a class="nav-dd-item" href="{{ route('letters.reportOutboundExternal') }}"><i class="bi bi-send-check-fill me-2" style="color:var(--primary)"></i>Surat Keluar Eksternal</a>
                         @endif
                         <a class="nav-dd-item" href="{{ route('letters.index') }}"><i class="bi bi-clock-history me-2" style="color:var(--primary)"></i>History</a>
+                        @if($role === 'admin_sekretariat')
                         <a class="nav-dd-item" href="{{ route('letters.arsip') }}"><i class="bi bi-archive-fill me-2" style="color:var(--primary)"></i>Arsip Surat</a>
+                        @endif
                     </div>
                 </div>
                 @endif
@@ -435,7 +437,9 @@
                 <a class="mm-link" href="{{ route('letters.reportOutboundExternal') }}"><i class="bi bi-send-check-fill"></i> Surat Keluar Eksternal</a>
                 @endif
                 <a class="mm-link" href="{{ route('letters.index') }}"><i class="bi bi-clock-history"></i> History</a>
+                @if($role === 'admin_sekretariat')
                 <a class="mm-link" href="{{ route('letters.arsip') }}"><i class="bi bi-archive-fill"></i> Arsip Surat</a>
+                @endif
             </div>
         </div>
         @endif

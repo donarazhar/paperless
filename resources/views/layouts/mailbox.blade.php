@@ -560,7 +560,7 @@
                     <a href="{{ route('tugas.myDisposisi') }}"
                        class="mb-nav-link {{ request()->routeIs('tugas.myDisposisi') ? 'active' : '' }}">
                         <i class="bi bi-inboxes-fill"></i>
-                        <span>Disposisi Saya</span>
+                        <span>{{ $role === 'bagian_tu' ? 'Disposisi' : 'Disposisi Saya' }}</span>
                         @if(isset($unreadMyDispCount) && $unreadMyDispCount > 0)
                             <span class="mb-nav-badge danger">{{ $unreadMyDispCount }}</span>
                         @endif
@@ -577,6 +577,7 @@
                         <span>Log Task</span>
                     </a>
                 </li>
+                @if(!in_array($role, ['subag_persuratan', 'bagian_tu', 'kepala_unit', 'sub_unit']))
                 <li class="mb-nav-item">
                     <a href="{{ route('letters.arsip') }}"
                        class="mb-nav-link {{ request()->routeIs('letters.arsip') ? 'active' : '' }}">
@@ -584,6 +585,7 @@
                         <span>Arsip</span>
                     </a>
                 </li>
+                @endif
                 @endif
 
                 {{-- MASTER DATA (admin only) --}}
