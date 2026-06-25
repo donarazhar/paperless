@@ -8,7 +8,7 @@ class User extends Authenticatable
 {
     use Notifiable;
 
-    protected $fillable = ['name', 'email', 'password', 'role', 'organ_id'];
+    protected $fillable = ['name', 'email', 'password', 'role', 'organ_id', 'photo'];
     protected $hidden = ['password', 'remember_token'];
 
     public function organ()

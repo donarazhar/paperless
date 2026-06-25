@@ -427,9 +427,13 @@
                     <span style="font-size:.85rem;font-weight:700;color:#0f172a;line-height:1.2;">{{ Auth::user()->name ?? 'User' }}</span>
                     <span style="font-size:.7rem;color:#64748b;line-height:1.2;text-transform:lowercase;">{{ Auth::user()->email ?? '' }}</span>
                 </div>
-                <div style="width:36px;height:36px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">
-                    {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
-                </div>
+                @if(Auth::user() && Auth::user()->photo)
+                    <img src="{{ asset('storage/' . Auth::user()->photo) }}" alt="Avatar" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;border: 1.5px solid #e2e8f0;">
+                @else
+                    <div style="width:36px;height:36px;border-radius:50%;background:#4f46e5;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:bold;flex-shrink:0;">
+                        {{ substr(Auth::user()->name ?? 'A', 0, 1) }}
+                    </div>
+                @endif
             </a>
             <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0"
                 style="border-radius:.75rem;margin-top:.5rem;min-width:180px;">
@@ -517,7 +521,7 @@
                     <a href="{{ route('letters.createExternal') }}"
                        class="mb-nav-link {{ request()->routeIs('letters.createExternal') ? 'active' : '' }}">
                         <i class="bi bi-file-earmark-plus-fill"></i>
-                        <span>Catat Surat Masuk</span>
+                        <span>Surat Eksternal</span>
                     </a>
                 </li>
                 @endif

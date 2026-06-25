@@ -9,7 +9,7 @@
     .compose-topbar h1 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0; flex: 1; }
     .btn-back-compose { display: inline-flex; align-items: center; gap: .4rem; background: none; border: 1.5px solid #e2e8f0; color: #475569; border-radius: 100px; padding: .4rem 1rem; font-size: .82rem; font-weight: 600; text-decoration: none; transition: all .2s; cursor: pointer; }
     .btn-back-compose:hover { background: #f8fafc; color: #0f172a; border-color: #cbd5e1; }
-    .compose-body { flex: 1; overflow-y: auto; display: flex; justify-content: center; padding: 1.5rem 1rem 2rem; }
+    .compose-body { flex: 1; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; padding: 1.5rem 1rem 2rem; }
 
     /* ─── Profile specific ─── */
     .profile-page { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 1.25rem; }
@@ -134,18 +134,22 @@
             {{-- Hero Banner --}}
             <div class="profile-hero">
                 <div class="ph-z d-flex align-items-center gap-3">
-                    <div class="ph-avatar-lg">{{ $initials }}</div>
-                    <div>
-                        <div class="ph-name">{{ $user->name }}</div>
-                        <div>
-                            <span class="ph-badge"><i class="bi bi-shield-check-fill"></i> {{ $roleLabel }}</span>
+                    @if($user->photo)
+                        <img src="{{ asset('storage/' . $user->photo) }}" style="width: 64px; height: 64px; border-radius: 1rem; object-fit: cover; object-position: center; flex-shrink: 0; border: 2px solid #e0e7ff;" alt="Avatar">
+                    @else
+                        <div class="ph-avatar-lg">{{ $initials }}</div>
+                    @endif
+                    <div style="min-width: 0; flex: 1;">
+                        <div class="ph-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">{{ $user->name }}</div>
+                        <div style="display: flex; flex-wrap: wrap; gap: 4px; margin-top: .4rem;">
+                            <span class="ph-badge" style="margin-top:0;"><i class="bi bi-shield-check-fill"></i> {{ $roleLabel }}</span>
                             @if($hasGoogle)
-                                <span class="ph-badge ms-1" style="background:rgba(99,102,241,0.1);">
+                                <span class="ph-badge" style="margin-top:0; background:rgba(99,102,241,0.1);">
                                     <i class="bi bi-google"></i> Google
                                 </span>
                             @endif
                         </div>
-                        <div class="ph-email"><i class="bi bi-envelope-fill" style="font-size:.7rem;"></i> {{ $user->email }}</div>
+                        <div class="ph-email" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><i class="bi bi-envelope-fill" style="font-size:.7rem;"></i> {{ $user->email }}</div>
                     </div>
                 </div>
             </div>
@@ -206,8 +210,18 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('profile.update') }}">
+                    <form method="POST" action="{{ route('profile.update') }}" enctype="multipart/form-data">
                         @csrf @method('PUT')
+
+                        <div class="field-group">
+                            <label class="field-label" for="photo">Foto Profil (Opsional)</label>
+                            <input type="file" id="photo" name="photo" accept="image/*"
+                                class="field-input {{ $errors->has('photo') ? 'is-invalid' : '' }}" style="padding-top: .4rem; font-size: .85rem;">
+                            @error('photo')
+                                <div class="field-error"><i class="bi bi-exclamation-circle-fill"></i> {{ $message }}</div>
+                            @enderror
+                            <div class="field-hint">Format yang diizinkan: JPG, PNG, GIF. Maks. 2MB.</div>
+                        </div>
 
                         <div class="field-group">
                             <label class="field-label" for="name">Nama Lengkap</label>

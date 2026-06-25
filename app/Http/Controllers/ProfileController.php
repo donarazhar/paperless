@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -21,8 +22,17 @@ class ProfileController extends Controller
     {
         $data = $r->validate([
             'name' => 'required',
-            'email' => 'required|email|unique:users,email,' . Auth::id()
+            'email' => 'required|email|unique:users,email,' . Auth::id(),
+            'photo' => 'nullable|image|max:2048'
         ]);
+        
+        if ($r->hasFile('photo')) {
+            if (Auth::user()->photo && Storage::disk('public')->exists(Auth::user()->photo)) {
+                Storage::disk('public')->delete(Auth::user()->photo);
+            }
+            $data['photo'] = $r->file('photo')->store('photos', 'public');
+        }
+
         Auth::user()->update($data);
         return back()->with('success', 'Profil diperbarui.');
     }
