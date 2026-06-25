@@ -150,6 +150,9 @@
                 @if(($role==='admin_sekretariat' || $role==='admin_unit') && $letter->status==='pending_agenda' && $letter->to_unit_id === $user->unit_id)
                     <button data-bs-toggle="modal" data-bs-target="#agendaModal" class="btn-action btn-primary-custom"><i class="bi bi-journal-plus"></i> Beri Agenda</button>
                 @endif
+                @if(in_array($role, ['admin_sekretariat', 'admin_unit']) && $letter->status !== 'completed' && !in_array($letter->status, ['draft', 'pending_approval', 'pending_sending']))
+                    <button onclick="event.preventDefault(); if(confirm('Yakin ingin menandai surat ini sebagai Selesai / Diarsipkan?')) document.getElementById('formComplete').submit();" class="btn-action btn-secondary-custom"><i class="bi bi-archive-fill"></i> Arsipkan</button>
+                @endif
             </div>
         </div>
         <div class="card-body-custom">

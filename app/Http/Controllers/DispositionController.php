@@ -197,7 +197,7 @@ class DispositionController extends Controller
 
     public function selesai(Request $request, Letter $letter)
     {
-        if (!in_array(Auth::user()->role, ['bagian_tu', 'subag_persuratan', 'kepala_sekretariat', 'admin_unit', 'kepala_unit', 'sub_unit'])) {
+        if (!in_array(Auth::user()->role, ['bagian_tu', 'subag_persuratan', 'kepala_sekretariat', 'admin_unit', 'kepala_unit', 'sub_unit', 'admin_sekretariat'])) {
             abort(403);
         }
 
