@@ -386,6 +386,15 @@
         @media (min-width: 1025px) {
             .mb-search { display: block; }
         }
+
+        /* Mobile Scrolling Override */
+        @media (max-width: 991px) {
+            body { overflow: auto !important; }
+            .mb-app { height: auto !important; min-height: 117.65vh; }
+            .mb-main { overflow: visible !important; min-height: calc(117.65vh - var(--header-h) - .5rem); }
+            .mail-list, .compose-body, .mail-scroll { overflow: visible !important; }
+            .acc-wrap, .compose-wrapper { height: auto !important; min-height: 100%; overflow: visible !important; }
+        }
     </style>
     @stack('styles')
 </head>

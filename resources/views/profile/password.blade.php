@@ -12,7 +12,6 @@
     .compose-body { flex: 1; overflow-y: auto; display: flex; justify-content: center; align-items: flex-start; padding: 1.5rem 1rem 2rem; }
 
     /* ─── Profile specific ─── */
-    .profile-page { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 1.25rem; }
 
     .profile-hero {
         background: #fff; border: 1px solid #e2e8f0;
@@ -22,19 +21,26 @@
     }
     .ph-z { position: relative; z-index: 1; }
     .ph-avatar-lg {
-        width: 64px; height: 64px; border-radius: 1rem; flex-shrink: 0;
-        background: #eef2ff; border: 2px solid #e0e7ff;
+        width: 64px; height: 64px; border-radius: 1rem;
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: #fff; font-size: 1.5rem; font-weight: 700;
         display: flex; align-items: center; justify-content: center;
-        font-size: 1.5rem; font-weight: 800; color: #6366f1;
+        box-shadow: 0 4px 12px rgba(99,102,241,.25);
+        flex-shrink: 0;
     }
-    .ph-name { font-size: 1.25rem; font-weight: 800; color: #0f172a; line-height: 1.2; }
+    .ph-name { font-size: 1.25rem; font-weight: 800; color: #0f172a; letter-spacing: -0.02em; line-height: 1.2; }
+    .ph-email { font-size: .85rem; color: #64748b; margin-top: .2rem; }
     .ph-badge {
-        display: inline-flex; align-items: center; gap: 5px;
-        font-size: .7rem; font-weight: 600; color: #6366f1;
-        background: #eef2ff; border: 1px solid #e0e7ff;
-        padding: .25rem .7rem; border-radius: 100px; margin-top: .4rem;
+        display: inline-flex; align-items: center; gap: .3rem;
+        background: #f1f5f9; color: #475569;
+        padding: .2rem .6rem; border-radius: 100px;
+        font-size: .7rem; font-weight: 700;
+        margin-top: .4rem; border: 1px solid #e2e8f0;
     }
-    .ph-email { font-size: .8rem; color: #94a3b8; margin-top: .2rem; }
+
+    /* ─── Cards & Layout ─── */
+    .profile-page { width: 100%; max-width: 900px; display: flex; flex-direction: column; gap: 1.25rem; margin: 0 auto; }
+    .profile-grid { display: flex; flex-direction: column; gap: 1.25rem; width: 100%; }
 
     .profile-tabs {
         display: flex; gap: .35rem; background: #fff;
@@ -52,7 +58,7 @@
     .profile-tab.active { background: #f1f5f9; color: #0f172a; font-weight: 700; }
     .profile-tab i { font-size: .9rem; }
 
-    .profile-grid { display: grid; grid-template-columns: 1fr 1.65fr; gap: 1.25rem; align-items: start; }
+    /* ─── Cards ─── */
 
     .profile-card {
         background: #fff; border: 1px solid #e2e8f0; border-radius: 1rem;
@@ -175,35 +181,6 @@
 
             {{-- Grid --}}
             <div class="profile-grid">
-
-                {{-- LEFT: Info + Tips --}}
-                <div class="d-flex flex-column gap-3">
-                    <div class="profile-card">
-                        <div class="pc-section-title"><i class="bi bi-person-vcard-fill" style="color:#6366f1;"></i> Informasi Akun</div>
-
-                        <div style="display:flex; flex-direction:column; gap:.75rem; padding-top:.25rem;">
-                            <div style="display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:#374151; font-weight:600;">
-                                <i class="bi bi-building-fill" style="color:#6366f1; font-size:1.05rem; width:20px; text-align:center;"></i>
-                                {{ $user->unit->name ?? '—' }}
-                            </div>
-                            <div style="display:flex; align-items:center; gap:.6rem; font-size:.85rem; color:#374151; font-weight:600;">
-                                <i class="bi bi-person-badge-fill" style="color:#16a34a; font-size:1.05rem; width:20px; text-align:center;"></i>
-                                {{ $roleLabel }}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="tips-card">
-                        <div class="pc-section-title" style="margin-bottom:.75rem;">
-                            <i class="bi bi-shield-lock-fill" style="color:#6366f1;"></i> Tips Keamanan
-                        </div>
-                        <div class="tip-item"><i class="bi bi-check-circle-fill"></i> Gunakan minimal 8 karakter</div>
-                        <div class="tip-item"><i class="bi bi-check-circle-fill"></i> Kombinasi huruf besar, kecil & angka</div>
-                        <div class="tip-item"><i class="bi bi-check-circle-fill"></i> Tambahkan karakter khusus (!@#$)</div>
-                        <div class="tip-item"><i class="bi bi-x-circle-fill" style="color:#ef4444;"></i> Hindari nama atau tanggal lahir</div>
-                        <div class="tip-item"><i class="bi bi-x-circle-fill" style="color:#ef4444;"></i> Jangan gunakan ulang password lama</div>
-                    </div>
-                </div>
 
                 {{-- RIGHT: Password Form --}}
                 <div class="profile-card">
