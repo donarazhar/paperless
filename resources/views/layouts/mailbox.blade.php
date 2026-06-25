@@ -32,9 +32,7 @@
             color: var(--text-main);
             margin: 0;
             overflow: hidden;
-        }
-        @media (min-width: 992px) {
-            body { zoom: 85%; }
+            zoom: 85%;
         }
 
         /* ══ HEADER ══ */
@@ -119,12 +117,9 @@
         /* ══ APP LAYOUT ══ */
         .mb-app {
             display: flex;
-            height: 100vh;
+            height: 117.65vh;
             padding-top: var(--header-h);
             position: relative;
-        }
-        @media (min-width: 992px) {
-            .mb-app { height: 117.65vh; }
         }
 
         /* ══ SIDEBAR OVERLAY (mobile/tablet) ══ */
