@@ -332,22 +332,38 @@
     $user = Auth::user(); $role = $user->role;
     $dispRecv = $letter->dispositions->sortByDesc('created_at')->first(fn($d) => $d->to_user_id === $user->id || $d->to_unit_id === $user->unit_id);
 
+    $latestDispo = $letter->dispositions->sortByDesc('created_at')->first();
+    $isInMyUnit = false;
+    if ($latestDispo) {
+        if ($latestDispo->to_unit_id == $user->unit_id) {
+            $isInMyUnit = true;
+        } elseif ($latestDispo->toUser && $latestDispo->toUser->unit_id == $user->unit_id) {
+            $isInMyUnit = true;
+        }
+    } else {
+        if ($letter->to_unit_id == $user->unit_id) {
+            $isInMyUnit = true;
+        }
+    }
+
     $canDispose = false;
+    $hasPendingDispo = $dispRecv && $dispRecv->status === 'pending';
+
     if ($letter->status !== 'completed') {
         if (in_array($role, ['admin_sekretariat', 'admin_unit'])) {
-            $canDispose = true;
+            if ($isInMyUnit) {
+                $canDispose = true;
+            }
         } elseif (in_array($role, ['bagian_tu', 'kepala_sekretariat'])) {
-            if (in_array($letter->status, ['in_review_bagian_tu', 'in_consideration']) || ($dispRecv && $dispRecv->status === 'pending')) {
+            if (in_array($letter->status, ['in_review_bagian_tu', 'in_consideration']) || $hasPendingDispo) {
                 $canDispose = true;
             }
         } elseif ($role === 'subag_persuratan') {
-            if (in_array($letter->status, ['in_review_subag', 'in_consideration']) || ($dispRecv && $dispRecv->status === 'pending')) {
+            if (in_array($letter->status, ['in_review_subag', 'in_consideration']) || $hasPendingDispo) {
                 $canDispose = true;
             }
         } else {
-            if ($letter->to_unit_id == $user->unit_id && in_array($role, ['kepala_unit'])) {
-                $canDispose = true;
-            } elseif ($dispRecv && $dispRecv->status === 'pending' && in_array($role, ['kepala_unit', 'sub_unit'])) {
+            if ($hasPendingDispo && in_array($role, ['kepala_unit', 'sub_unit'])) {
                 $canDispose = true;
             }
         }
@@ -406,19 +422,28 @@
         </div>
 
         <div class="sv-bar-right">
-            {{-- Cetak --}}
-            @if(in_array($role, ['admin_sekretariat', 'admin_unit']))
+            {{-- Ajukan Surat --}}
+            @if($letter->status === 'draft')
+                <form action="{{ route('letters.submitDraft', $letter->id) }}" method="POST" class="d-inline">
+                    @csrf
+                    <button type="submit" class="sv-action-btn primary" title="Ajukan Surat">
+                        <i class="bi bi-send"></i>
+                        <span>Ajukan Surat</span>
+                    </button>
+                </form>
+            @endif
+            @if(in_array($role, ['admin_sekretariat', 'admin_unit']) && !in_array($letter->status, ['draft', 'pending_approval']))
                 <a href="{{ route('letters.printDisposition', ['letter' => $encodedId]) }}"
                    target="_blank" class="sv-btn sv-btn-outline">
-                    <i class="bi bi-printer"></i>
-                    <span>Cetak PDF</span>
+                    <i class="bi bi-eye"></i>
+                    <span>Lihat Disposisi</span>
                 </a>
             @endif
 
             {{-- Catatan / Balas --}}
             @if(!in_array($letter->status, ['pending_approval', 'pending_sending', 'pending_agenda', 'draft']))
                 @if(!$hideCatatanAndModifyDispo)
-                    @if($isRespondingDispo)
+                    @if($isRespondingDispo && !in_array($role, ['sub_unit', 'kepala_unit']))
                         <button class="sv-btn sv-btn-outline" data-bs-toggle="modal" data-bs-target="#acceptModal">
                             <i class="bi bi-reply"></i>
                             <span>Balas</span>
@@ -437,11 +462,6 @@
                         <i class="bi bi-forward-fill"></i>
                         <span>{{ $hideCatatanAndModifyDispo ? 'Teruskan' : 'Disposisi' }}</span>
                     </button>
-                @else
-                    <a href="{{ route('letters.create', ['forward' => $encodedId]) }}" class="sv-btn sv-btn-blue">
-                        <i class="bi bi-forward-fill"></i>
-                        <span>Teruskan</span>
-                    </a>
                 @endif
             @endif
 
@@ -454,12 +474,12 @@
                 </button>
             @endif
 
-            {{-- Kirim Fisik --}}
+            {{-- Kirim Surat --}}
             @if(in_array($role, ['admin_unit', 'admin_sekretariat']) && $letter->status === 'pending_sending')
                 <button class="sv-btn sv-btn-green"
                         onclick="event.preventDefault(); document.getElementById('formSendFinal').submit();">
                     <i class="bi bi-send-fill"></i>
-                    <span>Kirim Fisik</span>
+                    <span>Kirim Surat</span>
                 </button>
             @endif
 
@@ -837,7 +857,7 @@
                 <div class="modal-body">
                     <textarea name="response_note" class="form-control mb-3" rows="3"
                               placeholder="Isi catatan Anda..." required></textarea>
-                    <input type="file" name="attachment" class="form-control">
+                    <input type="file" name="attachments[]" class="form-control" multiple>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>
@@ -873,7 +893,7 @@
                     </select>
                     <textarea name="response_note" class="form-control mb-3" rows="3"
                               placeholder="Catatan hasil..." required></textarea>
-                    <input type="file" name="attachment" class="form-control">
+                    <input type="file" name="attachments[]" class="form-control" multiple>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Batal</button>

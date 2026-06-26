@@ -730,25 +730,50 @@ class LetterController extends Controller
     {
         $data = $request->validate([
             'response_note' => 'required|string',
-            'attachment' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx',
         ]);
 
-        if ($request->hasFile('attachment')) {
-            $path = $request->file('attachment')->store('attachments', 'public');
-            \App\Models\Attachment::create([
-                'letter_id' => $letter->id,
-                'file_path' => $path,
-            ]);
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $basename = pathinfo($originalName, PATHINFO_FILENAME);
+                $extension = $file->getClientOriginalExtension();
+                $filename = $basename . '_' . time() . '.' . $extension;
+                
+                $path = $file->storeAs('attachments', $filename, 'public');
+                \App\Models\Attachment::create([
+                    'letter_id' => $letter->id,
+                    'file_path' => $path,
+                    'file_name' => $originalName
+                ]);
+            }
         }
+
+        $user = \Illuminate\Support\Facades\Auth::user();
+
+        // Tutup disposisi yang tertunda jika ada (agar hilang dari menu disposisi)
+        \App\Models\Disposition::where('letter_id', $letter->id)
+            ->where(function($q) use ($user) {
+                $q->where('to_user_id', $user->id)
+                  ->orWhere('to_unit_id', $user->unit_id);
+            })
+            ->where('status', 'pending')
+            ->update([
+                'status' => 'accepted',
+                'response_note' => 'Catatan ditambahkan: ' . $data['response_note']
+            ]);
+
+        $letter->touch();
 
         \App\Models\LetterHistory::create([
             'letter_id' => $letter->id,
-            'user_id' => \Illuminate\Support\Facades\Auth::id(),
+            'user_id' => $user->id,
             'action' => 'replied',
             'note' => $data['response_note'],
         ]);
 
-        return back()->with('success', 'Balasan/Catatan berhasil ditambahkan.');
+        return redirect()->route('tugas.index')->with('success', 'Balasan/Catatan berhasil ditambahkan.');
     }
 
     public function markRead(Letter $letter)
@@ -800,7 +825,7 @@ class LetterController extends Controller
             'note' => 'Draft diajukan untuk proses ACC'
         ]);
         
-        return redirect()->route('letters.drafts')->with('success', 'Draft surat berhasil diajukan untuk proses ACC.');
+        return redirect()->route('letters.outbound')->with('success', 'Draft surat berhasil diajukan untuk proses ACC.');
     }
 
     public function sendFinal(Letter $letter)
@@ -824,6 +849,6 @@ class LetterController extends Controller
         
         LetterHistory::create(['letter_id' => $letter->id, 'user_id' => $user->id, 'action' => 'sent', 'note' => $note]);
         
-        return back()->with('success', $note);
+        return redirect()->route('letters.outbound')->with('success', $note);
     }
 }

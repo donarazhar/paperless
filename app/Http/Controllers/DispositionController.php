@@ -164,6 +164,7 @@ class DispositionController extends Controller
         }
 
         $letter->update(['status' => $newStatus]);
+        $letter->touch();
 
         LetterHistory::create([
             'letter_id' => $letter->id,
@@ -172,8 +173,10 @@ class DispositionController extends Controller
             'note' => $data['note'],
         ]);
 
+        $route = in_array(Auth::user()->role, ['admin_unit', 'admin_sekretariat']) ? 'letters.inbound' : 'tugas.index';
+
         return redirect()
-            ->route('letters.show', ['letter' => Hashids::encode($letter->id)])
+            ->route($route)
             ->with('success', 'Disposisi berhasil dikirim.');
     }
 
@@ -187,7 +190,8 @@ class DispositionController extends Controller
         $data = $request->validate([
             'action' => 'required|in:pertimbangan,accepted,rejected,followup',
             'response_note' => 'required|string',
-            'attachment' => 'nullable|file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx',
+            'attachments' => 'nullable|array',
+            'attachments.*' => 'file|max:10240|mimes:pdf,jpg,jpeg,png,doc,docx,xls,xlsx',
         ]);
 
         $disposition->update([
@@ -195,12 +199,22 @@ class DispositionController extends Controller
             'response_note' => $data['response_note'],
         ]);
 
-        if ($request->hasFile('attachment')) {
-            $path = $request->file('attachment')->store('attachments', 'public');
-            \App\Models\Attachment::create([
-                'letter_id' => $disposition->letter_id,
-                'file_path' => $path,
-            ]);
+        $disposition->letter->touch();
+
+        if ($request->hasFile('attachments')) {
+            foreach ($request->file('attachments') as $file) {
+                $originalName = $file->getClientOriginalName();
+                $basename = pathinfo($originalName, PATHINFO_FILENAME);
+                $extension = $file->getClientOriginalExtension();
+                $filename = $basename . '_' . time() . '.' . $extension;
+                
+                $path = $file->storeAs('attachments', $filename, 'public');
+                \App\Models\Attachment::create([
+                    'letter_id' => $disposition->letter_id,
+                    'file_path' => $path,
+                    'file_name' => $originalName
+                ]);
+            }
         }
 
         LetterHistory::create([

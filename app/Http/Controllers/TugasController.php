@@ -31,7 +31,7 @@ class TugasController extends Controller
         $q = Letter::with(['sender', 'recipientUser', 'recipientUnit'])
             ->whereHas('histories', function ($query) use ($user) {
                 $query->where('user_id', $user->id)
-                      ->whereIn('action', ['approved', 'disposed', 'forwarded', 'completed', 'agendakan', 'disposition_responded', 'forwarded_disposition']);
+                      ->whereIn('action', ['approved', 'disposed', 'forwarded', 'completed', 'agendakan', 'disposition_responded', 'forwarded_disposition', 'replied']);
             });
 
         if ($request->filled('search')) {
