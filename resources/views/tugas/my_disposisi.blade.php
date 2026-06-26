@@ -215,7 +215,7 @@
                 $isUnread = $letter->is_unread;
                 $showUrl = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
                 $disp = $letter->dispositions->sortByDesc('created_at')->first();
-                $senderName = $disp->fromUser->name ?? 'Unknown';
+                $senderName = $disp->fromUser->organ->name ?? ($disp->fromUser->name ?? 'Unknown');
                 $initial = mb_strtoupper(mb_substr($senderName, 0, 1));
             @endphp
 

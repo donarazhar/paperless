@@ -56,13 +56,19 @@ class AppServiceProvider extends ServiceProvider
                 // Count pending Disposisi
                 $qDisp = \App\Models\Letter::query();
                 if ($user->role === 'subag_persuratan') {
-                    $qDisp->whereNotNull('agenda_number')->where('status', 'in_review_subag');
+                    $qDisp->where(function($query) use ($user) {
+                        $query->where(function($q1) {
+                            $q1->whereNotNull('agenda_number')
+                               ->where('status', 'in_review_subag');
+                        })->orWhereHas('dispositions', function($sq) use ($user) {
+                            $sq->where('to_user_id', $user->id)
+                               ->where('status', 'pending');
+                        });
+                    });
                 } else {
                     $qDisp->whereHas('dispositions', function ($sq) use ($user) {
-                        $sq->where(function($q2) use ($user) {
-                            $q2->where('to_user_id', $user->id)
-                               ->orWhere('to_unit_id', $user->unit_id);
-                        })->where('status', 'pending');
+                        $sq->where('to_user_id', $user->id)
+                           ->where('status', 'pending');
                     });
                 }
                 $pendingDispCount = $qDisp->count();
@@ -96,7 +102,7 @@ class AppServiceProvider extends ServiceProvider
                     $qIn->where(function($q) use ($user) {
                         $q->where('to_unit_id', $user->unit_id)->orWhere('to_user_id', $user->id)
                           ->orWhereHas('dispositions', function($dq) use ($user) {
-                              $dq->where('to_unit_id', $user->unit_id)->orWhere('to_user_id', $user->id);
+                              $dq->where('to_user_id', $user->id);
                           });
                     });
                 } elseif (in_array($user->role, ['admin_unit', 'staf_unit'])) {

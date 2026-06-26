@@ -237,11 +237,12 @@ class LetterController extends Controller
 
         $q->where('status', 'completed');
 
-        // Apply visibility rules for non-Staf TU users
-        if ($user->role === 'staf_unit') {
-            // Untuk unit: Hanya arsip dari surat keluar internal mereka sendiri
-            $q->where('from_user_id', $user->id);
-        }
+        $q->whereHas('histories', function($hq) use ($user) {
+            $hq->where('action', 'completed')
+               ->whereHas('user.organ', function($oq) use ($user) {
+                   $oq->where('unit_id', $user->unit_id);
+               });
+        });
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -276,7 +277,27 @@ class LetterController extends Controller
             })
             ->where('id', '!=', Auth::id())
             ->orderBy('name')->get();
-        return view('letters.create_external', compact('units', 'users'));
+            
+        // Generate next agenda_number
+        $userUnit = Auth::user()->unit;
+        $unitCode = $userUnit->code ?? 'UNIT';
+        $year = date('Y');
+        
+        $allAgendas = Letter::whereNotNull('agenda_number')
+            ->where('agenda_number', 'like', '%/' . $unitCode . '/' . $year)
+            ->pluck('agenda_number');
+            
+        $nextNumber = 1;
+        if ($allAgendas->isNotEmpty()) {
+            $max = $allAgendas->map(function($agenda) {
+                return (int) explode('/', $agenda)[0];
+            })->max();
+            $nextNumber = $max + 1;
+        }
+        $nomorUrut = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        $nextAgendaNumber = "{$nomorUrut}/{$unitCode}/{$year}";
+            
+        return view('letters.create_external', compact('units', 'users', 'nextAgendaNumber'));
     }
 
     public function storeExternal(Request $request)
@@ -284,12 +305,13 @@ class LetterController extends Controller
         $data = $request->validate([
             'external_sender_name' => 'required|string|max:255',
             'letter_number'        => 'required|string|max:255',
+            'agenda_number'        => 'required|string|max:255',
             'subject'              => 'required|string|max:255',
             'body'                 => 'required|string',
             'attachments.*'        => 'file|mimes:pdf,doc,docx,jpg,jpeg,png|max:5120',
             'action_type'          => 'required|in:archive,forward_unit,forward_personal',
-            'to_unit_id'           => 'nullable|exists:units,id',
-            'to_user_id'           => 'nullable|exists:users,id',
+            'to_unit_id'           => 'nullable|required_if:action_type,forward_unit|exists:units,id',
+            'to_user_id'           => 'nullable|required_if:action_type,forward_personal|exists:users,id',
         ]);
 
         $to_unit_id = null;
@@ -310,6 +332,7 @@ class LetterController extends Controller
             'from_user_id'         => null,
             'to_unit_id'           => $to_unit_id,
             'letter_number'        => $data['letter_number'],
+            'agenda_number'        => $data['agenda_number'],
             'subject'              => $data['subject'],
             'body'                 => $data['body'],
             'status'               => $status,

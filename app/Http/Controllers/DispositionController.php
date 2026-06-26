@@ -125,11 +125,12 @@ class DispositionController extends Controller
         $targetUnit = \App\Models\Unit::find($data['to_unit_id'] ?? null);
         $targetUser = \App\Models\User::with('unit')->find($data['to_user_id'] ?? null);
         
-        $isSekretariat = ($targetUnit && $targetUnit->is_sekretariat) || 
-                         ($targetUser && $targetUser->unit && $targetUser->unit->is_sekretariat);
+        // Jika disposisi ditujukan secara UMUM ke Unit Sekretariat, maka diteruskan ke Bagian TU.
+        // Tetapi jika disposisi sudah ditujukan ke PERSONAL spesifik, jangan di-override.
+        $isSekretariat = ($targetUnit && $targetUnit->is_sekretariat);
 
-        if ($isSekretariat) {
-            // Jika ke sekretariat, arahkan ke subag_persuratan atau bagian_tu
+        if ($isSekretariat && empty($data['to_user_id'])) {
+            // Jika ke sekretariat secara umum, arahkan ke bagian_tu
             $bagTu = \App\Models\User::where('role', 'bagian_tu')->first();
             if ($bagTu) {
                 $data['to_unit_id'] = null;

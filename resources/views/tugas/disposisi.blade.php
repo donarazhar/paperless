@@ -328,7 +328,14 @@
             @php
                 $isUnread   = $letter->is_unread;
                 $showUrl    = route('letters.show', ['letter' => \Vinkla\Hashids\Facades\Hashids::encode($letter->id)]);
-                $senderName = $letter->sender->unit->name ?? ($letter->sender->name ?? 'Unknown');
+                // Determine sender name for display
+                if ($letter->type === 'outbound_external') {
+                    $senderName = $letter->external_recipient_name ?? 'Pihak Luar';
+                } elseif ($letter->type === 'external') {
+                    $senderName = $letter->external_sender_name ?? 'Unknown';
+                } else {
+                    $senderName = $letter->sender->unit->name ?? ($letter->sender->name ?? 'Unknown');
+                }
                 $initial    = mb_strtoupper(mb_substr($senderName, 0, 1));
             @endphp
 

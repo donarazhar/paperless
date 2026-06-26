@@ -174,7 +174,7 @@
     /* Profile dropdown */
     .g-profile-dd {
         position: absolute; top: calc(100% + 8px); right: 0;
-        min-width: 220px;
+        min-width: 220px; max-width: 260px;
         background: var(--surface);
         border: 1px solid var(--border);
         border-radius: 12px;
@@ -193,8 +193,14 @@
         border-bottom: 1px solid var(--border);
         margin-bottom: .35rem;
     }
-    .g-dd-name  { font-size: .85rem; font-weight: 700; color: var(--text); }
-    .g-dd-email { font-size: .72rem; color: var(--text-2); margin-top: 2px; }
+    .g-dd-name  { 
+        font-size: .85rem; font-weight: 700; color: var(--text); 
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .g-dd-email { 
+        font-size: .72rem; color: var(--text-2); margin-top: 2px;
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
     .g-dd-item {
         display: flex; align-items: center; gap: .6rem;
         padding: .5rem .75rem;
@@ -803,7 +809,7 @@
                 <a href="{{ route('letters.createExternal') }}"
                    class="g-nav-link {{ request()->routeIs('letters.createExternal') ? 'active' : '' }}">
                     <i class="bi bi-file-earmark-plus-fill"></i>
-                    <span>Surat Eksternal</span>
+                    <span>Catat Manual</span>
                 </a>
             </li>
             @endif

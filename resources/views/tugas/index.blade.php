@@ -338,7 +338,11 @@
                     $displayName = $isExternal ? ($letter->external_recipient_name ?: 'Tanpa Tujuan') : ($letter->recipientUnit->name ?? ($letter->recipientUser->name ?? 'Internal'));
                     $label = 'Ke:';
                 } else {
-                    $displayName = $letter->sender->unit->name ?? ($letter->sender->name ?? 'Sistem');
+                    if ($letter->type === 'external') {
+                        $displayName = $letter->external_sender_name ?? 'Unknown';
+                    } else {
+                        $displayName = $letter->sender->unit->name ?? ($letter->sender->name ?? 'Sistem');
+                    }
                     $label = 'Dari:';
                 }
                 $initial = mb_strtoupper(mb_substr($displayName, 0, 1));

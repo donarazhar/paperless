@@ -63,16 +63,20 @@ class TugasController extends Controller
         $q = Letter::with(['sender', 'recipientUser', 'recipientUnit', 'dispositions']);
 
         if ($user->role === 'subag_persuratan') {
-            // Surat yang sudah diagendakan, siap untuk direview/didisposisi subag_persuratan
-            $q->whereNotNull('agenda_number')
-              ->where('status', 'in_review_subag');
+            $q->where(function($query) use ($user) {
+                $query->where(function($q1) {
+                    $q1->whereNotNull('agenda_number')
+                       ->where('status', 'in_review_subag');
+                })->orWhereHas('dispositions', function($sq) use ($user) {
+                    $sq->where('to_user_id', $user->id)
+                       ->where('status', 'pending');
+                });
+            });
         } else {
             // kepala_unit: Surat yang didisposisikan kepadanya atau unitnya yang belum direspon
             $q->whereHas('dispositions', function ($sq) use ($user) {
-                $sq->where(function($q2) use ($user) {
-                    $q2->where('to_user_id', $user->id)
-                       ->orWhere('to_unit_id', $user->unit_id);
-                })->where('status', 'pending');
+                $sq->where('to_user_id', $user->id)
+                   ->where('status', 'pending');
             });
         }
 
@@ -150,19 +154,15 @@ class TugasController extends Controller
             $q->where(function($query) use ($user) {
                 $query->where('status', 'in_review_bagian_tu')
                       ->orWhereHas('dispositions', function($sq) use ($user) {
-                          $sq->where(function($q2) use ($user) {
-                              $q2->where('to_user_id', $user->id)
-                                 ->orWhere('to_unit_id', $user->unit_id);
-                          })->where('status', 'pending');
+                          $sq->where('to_user_id', $user->id)
+                             ->where('status', 'pending');
                       });
             });
         } else {
             // kepala_sekretariat, sub_unit
             $q->whereHas('dispositions', function ($sq) use ($user) {
-                $sq->where(function($q2) use ($user) {
-                    $q2->where('to_user_id', $user->id)
-                       ->orWhere('to_unit_id', $user->unit_id);
-                })->where('status', 'pending');
+                $sq->where('to_user_id', $user->id)
+                   ->where('status', 'pending');
             });
         }
 

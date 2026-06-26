@@ -287,6 +287,8 @@
                 // Determine sender name for display
                 if ($letter->type === 'outbound_external') {
                     $senderName = $letter->external_recipient_name ?? 'Pihak Luar';
+                } elseif ($letter->type === 'external') {
+                    $senderName = $letter->external_sender_name ?? 'Unknown';
                 } else {
                     $senderName = $letter->sender->unit->name ?? ($letter->sender->name ?? 'Unknown');
                 }

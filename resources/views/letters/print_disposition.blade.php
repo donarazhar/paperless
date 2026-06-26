@@ -74,22 +74,28 @@
         
         $dispoHistory = collect();
         
-        // Proses awal: Semua surat masuk ke Subag Persuratan terlebih dahulu
-        $dispoHistory->push([
-            'sort_date' => $letter->created_at->timestamp - 1,
-            'tanggal'   => $letter->created_at->format('d-m-Y'),
-            'aksi'      => 'Disposisi',
-            'aktor'     => 'Subag Persuratan',
-            'catatan'   => '-',
-            'by'        => 'Sistem'
-        ]);
+        // Proses awal: Semua surat internal masuk ke Subag Persuratan terlebih dahulu
+        if ($letter->type === 'internal') {
+            $dispoHistory->push([
+                'sort_date' => $letter->created_at->timestamp - 1,
+                'tanggal'   => $letter->created_at->format('d-m-Y'),
+                'aksi'      => 'Disposisi',
+                'aktor'     => 'Subag Persuratan',
+                'catatan'   => '-',
+                'by'        => 'Sistem'
+            ]);
+        }
 
         foreach($letter->dispositions as $d) {
             if (\Illuminate\Support\Str::contains($d->note, 'Diteruskan kepada personal terkait di unit')) continue;
             
-            $target = $d->toUser ? $d->toUser->name : ($d->unit ? $d->unit->name : '--');
-            $actor  = $d->fromUser ? $d->fromUser->name : 'Sistem';
-            $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d-m-Y'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$d->note ?? '-','by'=>$actor]);
+            $target = $d->toUser ? ($d->toUser->organ->name ?? $d->toUser->name) : ($d->unit ? $d->unit->name : '--');
+            $actor  = $d->fromUser ? ($d->fromUser->organ->name ?? $d->fromUser->name) : 'Sistem';
+            $catatan = $d->note ?? '-';
+            if ($catatan === 'Disposisi langsung dari Catat Surat Fisik') {
+                $catatan = '-';
+            }
+            $dispoHistory->push(['sort_date'=>$d->created_at->timestamp,'tanggal'=>$d->created_at->format('d-m-Y'),'aksi'=>'Disposisi','aktor'=>$target,'catatan'=>$catatan,'by'=>$actor]);
         }
 
         foreach($letter->histories->where('action', 'replied') as $h) {
@@ -97,7 +103,7 @@
                 'sort_date' => $h->created_at->timestamp,
                 'tanggal' => $h->created_at->format('d-m-Y'),
                 'aksi' => 'Catatan',
-                'aktor' => 'Catatan oleh: ' . ($h->user->name ?? 'User'),
+                'aktor' => 'Catatan oleh: ' . ($h->user->organ->name ?? ($h->user->name ?? 'User')),
                 'catatan' => $h->note,
                 'by' => $h->user->name ?? 'User'
             ]);

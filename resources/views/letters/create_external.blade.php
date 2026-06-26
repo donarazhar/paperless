@@ -1,5 +1,5 @@
 @extends('layouts.mailbox')
-@section('title', 'Catat Surat Fisik Masuk')
+@section('title', 'Catat Manual Surat')
 
 @section('content')
 <style>
@@ -294,8 +294,8 @@
             <i class="bi bi-arrow-left"></i>
         </a>
         <div>
-            <div class="ce-topbar-title">Catat Surat Fisik Masuk</div>
-            <div class="ce-topbar-sub">Rekam surat dari instansi luar untuk diarsipkan atau didisposisikan</div>
+            <div class="ce-topbar-title">Catat Manual Surat</div>
+            <div class="ce-topbar-sub">Catat manual surat yang tidak diinput dari unit lain</div>
         </div>
     </div>
 
@@ -307,8 +307,8 @@
             <div class="ce-card-header">
                 <div class="ce-card-icon"><i class="bi bi-envelope-arrow-down-fill"></i></div>
                 <div>
-                    <div class="ce-card-title">Surat Masuk Eksternal</div>
-                    <div class="ce-card-sub">Surat fisik dari pihak di luar organisasi</div>
+                    <div class="ce-card-title">Input Surat Baru</div>
+                    <div class="ce-card-sub">Surat yang tidak diinput disystem oleh unit lain</div>
                 </div>
             </div>
 
@@ -336,6 +336,16 @@
 
                 {{-- Pengirim --}}
                 <div class="ce-section-label"><i class="bi bi-person-vcard"></i> Pengirim</div>
+
+                <div class="ce-field">
+                    <span class="ce-field-label required">No. Agenda</span>
+                    <input type="text"
+                           name="agenda_number"
+                           value="{{ old('agenda_number', $nextAgendaNumber ?? '') }}"
+                           readonly
+                           style="background-color: #f1f5f9; cursor: not-allowed;"
+                           required>
+                </div>
 
                 <div class="ce-field">
                     <span class="ce-field-label required">Dari</span>

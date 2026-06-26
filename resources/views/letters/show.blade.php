@@ -443,7 +443,7 @@
             {{-- Catatan / Balas --}}
             @if(!in_array($letter->status, ['pending_approval', 'pending_sending', 'pending_agenda', 'draft']))
                 @if(!$hideCatatanAndModifyDispo)
-                    @if($isRespondingDispo && !in_array($role, ['sub_unit', 'kepala_unit']))
+                    @if($isRespondingDispo && !in_array($role, ['sub_unit', 'kepala_unit', 'bagian_tu']))
                         <button class="sv-btn sv-btn-outline" data-bs-toggle="modal" data-bs-target="#acceptModal">
                             <i class="bi bi-reply"></i>
                             <span>Balas</span>
@@ -635,7 +635,7 @@
                                 @elseif($h->action === 'disposed' && !Str::contains($h->note, 'Diteruskan kepada personal terkait di unit'))
                                     @php
                                         $dispMatch  = $letter->dispositions->where('from_user_id', $h->user_id)->where('note', $h->note)->first();
-                                        $targetName = $dispMatch->toUser->name ?? ($dispMatch->unit->name ?? '—');
+                                        $targetName = $dispMatch ? ($dispMatch->toUser ? ($dispMatch->toUser->organ->name ?? $dispMatch->toUser->name) : ($dispMatch->unit->name ?? '—')) : '—';
                                     @endphp
                                     <div class="sv-tl-item">
                                         <div class="sv-tl-dot blue"></div>
@@ -650,8 +650,9 @@
                                                 <span class="sv-tl-time">{{ $h->created_at->format('d M, H:i') }}</span>
                                             </div>
                                             <div class="sv-tl-note">
-                                                Oleh {{ $h->user->name ?? 'User' }} —
-                                                "{{ preg_replace('/^\[.*?\]\s*/', '', $h->note) }}"
+                                                Oleh {{ $h->user->organ->name ?? ($h->user->name ?? 'User') }} —
+                                                @php $displayNote = preg_replace('/^\[.*?\]\s*/', '', $h->note); @endphp
+                                                "{{ $displayNote === 'Disposisi langsung dari Catat Surat Fisik' ? '-' : $displayNote }}"
                                             </div>
                                         </div>
                                     </div>
@@ -662,7 +663,7 @@
                                         <div class="sv-tl-card note-card">
                                             <div class="sv-tl-actor">
                                                 <span>
-                                                    {{ $h->user->name ?? 'User' }}
+                                                    {{ $h->user->organ->name ?? ($h->user->name ?? 'User') }}
                                                     @if($h->user_id === Auth::id())
                                                         <span class="sv-tl-mine">Anda</span>
                                                     @endif

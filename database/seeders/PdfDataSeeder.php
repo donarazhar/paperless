@@ -75,7 +75,7 @@ class PdfDataSeeder extends Seeder
         $ittd = Unit::firstOrCreate(['name' => 'Direktorat ITTD', 'is_sekretariat' => false, 'branch_id' => $pusat->id, 'code' => 'ITTD']);
         $createUser($ittd, 'Admin ITTD', 'Admin ITTD', 'admin_ittd@alazhar.com', 'admin_unit');
         $createUser($ittd, 'Kepala Dirat ITTD', 'Damarahmad Setiobudi, M.M', 'damarahmad@alazhar.com', 'kepala_unit');
-        $createUser($ittd, 'Subag Teknologi Informasi', 'Mohammad Noeseir, M.M.', 'mohammad@alazhar.com', 'sub_unit');
+        $createUser($ittd, 'Subag Teknologi Informasi', 'Mohammad Noeseir, M.M.', 'noeseir@alazhar.com', 'sub_unit');
         $createUser($ittd, 'Subag Transformasi Digital', 'Doni Sutrisno', 'doni@alazhar.com', 'sub_unit');
 
         // 6. Pusdiklat Anyer
