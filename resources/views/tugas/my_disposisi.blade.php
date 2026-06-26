@@ -200,7 +200,7 @@
     {{-- ── Context info bar ── --}}
     <div class="acc-infobar">
         <i class="bi bi-person-lines-fill"></i>
-        <span>Surat disposisi yang ditugaskan kepada Anda untuk ditindaklanjuti.</span>
+        <span>Surat perlu disposisi</span>
         @php $userRole = Auth::user()->role; @endphp
         <span class="acc-role-chip"><i class="bi bi-person-badge"></i> {{ ucwords(str_replace('_', ' ', $userRole)) }}</span>
         @if(isset($letters) && $letters->total() > 0)

@@ -3,7 +3,6 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\GoogleAuthController;
-use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\DispositionController;
 use App\Http\Controllers\UserController;
@@ -20,7 +19,16 @@ Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->n
 Route::middleware('auth')->group(function () {
     Route::get('letters', [LetterController::class, 'index'])->name('letters.index');
 
-    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/', function () {
+        $role = auth()->user()->role ?? '';
+        if (in_array($role, ['bagian_tu', 'kepala_sekretariat', 'sub_unit'])) {
+            return redirect()->route('tugas.myDisposisi');
+        }
+        if (in_array($role, ['subag_persuratan', 'kepala_unit'])) {
+            return redirect()->route('tugas.disposisi');
+        }
+        return redirect()->route('letters.inbound');
+    })->name('dashboard');
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::get('profile/password', [ProfileController::class, 'showPasswordForm'])->name('profile.password');

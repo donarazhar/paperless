@@ -5,7 +5,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Unit extends Model
 {
-    protected $fillable = ['name', 'is_sekretariat', 'branch_id'];
+    protected $fillable = ['name', 'branch_id', 'is_sekretariat', 'code'];
 
     public function branch()
     {

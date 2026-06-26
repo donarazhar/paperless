@@ -37,7 +37,15 @@ class GoogleAuthController extends Controller
                 
                 Auth::login($user, true);
                 
-                return redirect()->route('dashboard');
+                $role = $user->role;
+                if (in_array($role, ['bagian_tu', 'kepala_sekretariat', 'sub_unit'])) {
+                    return redirect()->route('tugas.myDisposisi');
+                }
+                if (in_array($role, ['subag_persuratan', 'kepala_unit'])) {
+                    return redirect()->route('tugas.disposisi');
+                }
+                
+                return redirect()->route('letters.inbound');
             } else {
                 // User does not exist, redirect back with error
                 return redirect()->route('login')->with('error', 'Email Anda (' . $googleUser->getEmail() . ') belum terdaftar di sistem. Silakan hubungi Administrator.');

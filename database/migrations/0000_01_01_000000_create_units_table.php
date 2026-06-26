@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('branch_id')->nullable()->constrained('branches')->onDelete('cascade');
             $table->string('name');
+            $table->string('code')->nullable();
             $table->boolean('is_sekretariat')->default(false);
             $table->timestamps();
         });

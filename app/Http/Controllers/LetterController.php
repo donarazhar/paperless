@@ -147,14 +147,22 @@ class LetterController extends Controller
             // Internal Logic
             $query->where(function($qInt) use ($user) {
                 $qInt->where('type', 'internal');
+                
+                // Pastikan surat yang dikirim oleh unit sendiri tidak muncul di Inbox (masuk ke Outbox)
+                $qInt->whereHas('sender.organ', function($sq) use ($user) {
+                    $sq->where('unit_id', '!=', $user->unit_id);
+                });
+
                 if (in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu', 'kepala_sekretariat'])) {
                     $qInt->whereNotNull('id');
                 } else {
-                    $qInt->where('to_unit_id', $user->unit_id)
-                         ->orWhereHas('dispositions', function ($d) use ($user) {
-                             $d->where('to_user_id', $user->id)
-                               ->orWhere('to_unit_id', $user->unit_id);
-                         });
+                    $qInt->where(function($qDest) use ($user) {
+                        $qDest->where('to_unit_id', $user->unit_id)
+                             ->orWhereHas('dispositions', function ($d) use ($user) {
+                                 $d->where('to_user_id', $user->id)
+                                   ->orWhere('to_unit_id', $user->unit_id);
+                             });
+                    });
                 }
             });
 

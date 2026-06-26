@@ -24,7 +24,16 @@ class LoginController extends Controller
 
         if (Auth::attempt($credentials, $request->filled('remember'))) {
             $request->session()->regenerate();
-            return redirect()->intended('/');
+            
+            $role = Auth::user()->role;
+            if (in_array($role, ['bagian_tu', 'kepala_sekretariat', 'sub_unit'])) {
+                return redirect()->intended(route('tugas.myDisposisi'));
+            }
+            if (in_array($role, ['subag_persuratan', 'kepala_unit'])) {
+                return redirect()->intended(route('tugas.disposisi'));
+            }
+            
+            return redirect()->intended(route('letters.inbound'));
         }
 
         return back()

@@ -21,7 +21,6 @@ class DispositionController extends Controller
         if (!in_array($role, ['admin_sekretariat', 'admin_unit'])) abort(403);
         
         $rules = [
-            'agenda_number' => 'required|string',
             'note' => 'nullable|string',
         ];
 
@@ -31,11 +30,30 @@ class DispositionController extends Controller
 
         $data = $request->validate($rules);
 
+        // Auto-generate agenda_number: nomor_urut / kodeunit / tahun
+        $userUnit = Auth::user()->unit;
+        $unitCode = $userUnit->code ?? 'UNIT';
+        $year = date('Y');
+        
+        $allAgendas = Letter::whereNotNull('agenda_number')
+            ->where('agenda_number', 'like', '%/' . $unitCode . '/' . $year)
+            ->pluck('agenda_number');
+            
+        $nextNumber = 1;
+        if ($allAgendas->isNotEmpty()) {
+            $max = $allAgendas->map(function($agenda) {
+                return (int) explode('/', $agenda)[0];
+            })->max();
+            $nextNumber = $max + 1;
+        }
+        $nomorUrut = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        $agendaNumber = "{$nomorUrut}/{$unitCode}/{$year}";
+
         $newStatus = ($role === 'admin_unit') ? 'in_consideration' : 'in_review_subag';
         $successMsg = ($role === 'admin_unit') ? 'Surat berhasil diagendakan dan didisposisikan.' : 'Surat berhasil diagendakan dan diteruskan ke Subag Persuratan.';
 
         $letter->update([
-            'agenda_number' => $data['agenda_number'],
+            'agenda_number' => $agendaNumber,
             'status' => $newStatus
         ]);
 
@@ -43,7 +61,7 @@ class DispositionController extends Controller
             'letter_id' => $letter->id,
             'user_id' => Auth::id(),
             'action' => 'agenda_assigned',
-            'note' => 'Agenda: ' . $data['agenda_number'],
+            'note' => 'Agenda: ' . $agendaNumber,
         ]);
 
         if ($role === 'admin_unit') {
