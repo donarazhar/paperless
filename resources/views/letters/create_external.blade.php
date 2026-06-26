@@ -134,7 +134,7 @@
         font-family: inherit; font-size: .875rem;
         color: #0f172a; font-weight: 400;
         resize: none; outline: none;
-        min-height: 100px; line-height: 1.6;
+        min-height: 80px; line-height: 1.6;
     }
     .ce-body textarea::placeholder { color: #cbd5e1; }
 
@@ -203,17 +203,19 @@
         box-shadow: 0 0 0 3px rgba(79,70,229,.1);
     }
 
-    /* ── Attachment drop zone (compact) ── */
     .ce-attach-zone {
         margin: 0 1.25rem .75rem;
         border: 1.5px dashed #e2e8f0;
-        border-radius: 10px;
-        padding: .85rem 1rem;
+        border-radius: .5rem;
+        padding: .5rem 1rem;
         background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
         cursor: pointer;
         transition: all .15s;
         position: relative;
-        text-align: center;
     }
     .ce-attach-zone:hover { border-color: #4f46e5; background: #eef2ff; }
     .ce-attach-zone.has-files { border-style: solid; border-color: #10b981; background: #f0fdf4; }
@@ -379,14 +381,13 @@
                            name="attachments[]"
                            id="attachInput"
                            multiple required
-                           accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                           accept=".pdf">
                     <div class="ce-attach-label" id="attachLabel">
                         <i class="bi bi-cloud-upload"></i>
-                        <span>Klik atau seret file hasil scan (PDF, DOCX, JPG, PNG)</span>
+                        <span>Pilih / Tarik File Hasil Scan (Khusus PDF)</span>
                     </div>
                 </div>
                 <div id="ceChips" class="ce-chips"></div>
-                <div id="cePdfPreview"></div>
 
                 {{-- Tindakan --}}
                 <div class="ce-section-label"><i class="bi bi-arrow-right-circle"></i> Tindakan Selanjutnya</div>
@@ -433,7 +434,7 @@
                         <option value="">— Pilih Pegawai Tujuan —</option>
                         @foreach($users as $usr)
                             <option value="{{ $usr->id }}" {{ old('to_user_id') == $usr->id ? 'selected' : '' }}>
-                                {{ $usr->name }} ({{ $usr->unit->name ?? 'Tanpa Unit' }})
+                                {{ $usr->organ->name ?? 'Tanpa Jabatan' }}
                             </option>
                         @endforeach
                     </select>
@@ -500,13 +501,11 @@ document.addEventListener('DOMContentLoaded', function () {
     const input      = document.getElementById('attachInput');
     const zone       = document.getElementById('attachZone');
     const chipsEl    = document.getElementById('ceChips');
-    const pdfPreview = document.getElementById('cePdfPreview');
     const labelEl    = document.getElementById('attachLabel');
 
     input.addEventListener('change', function () {
         const files = this.files;
         chipsEl.innerHTML    = '';
-        pdfPreview.innerHTML = '';
 
         if (!files.length) {
             zone.classList.remove('has-files');
@@ -531,15 +530,7 @@ document.addEventListener('DOMContentLoaded', function () {
             chip.innerHTML = `<i class="bi ${icon}"></i><span title="${file.name}">${file.name}</span><span style="color:#94a3b8;margin-left:.2rem;">${size}MB</span>`;
             chipsEl.appendChild(chip);
 
-            /* PDF inline preview untuk 1 file */
-            if (files.length === 1 && ext === 'pdf') {
-                const wrap = document.createElement('div');
-                wrap.className = 'ce-pdf-preview';
-                const frame = document.createElement('iframe');
-                frame.src = URL.createObjectURL(file);
-                wrap.appendChild(frame);
-                pdfPreview.appendChild(wrap);
-            }
+
         });
     });
 

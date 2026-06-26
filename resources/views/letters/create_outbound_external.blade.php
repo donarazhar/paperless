@@ -78,8 +78,7 @@
 @endif
 
 <style>
-    .create-grid { display: grid; grid-template-columns: 340px 1fr; gap: 1.5rem; align-items: start; }
-    @media(max-width:991px) { .create-grid { grid-template-columns: 1fr; } }
+    .create-grid { max-width: 600px; margin: 0 auto; }
 </style>
 
 <div class="create-grid">
@@ -114,11 +113,10 @@
 
             <div class="mb-4">
                 <label class="form-label">Lampiran Dokumen <span class="text-muted text-lowercase fw-normal">(Opsional)</span></label>
-                <div class="upload-box" id="uploadBox" style="padding:1.5rem 1rem;">
-                    <i class="bi bi-cloud-arrow-up-fill ub-icon" style="font-size:2rem;"></i>
-                    <div class="ub-title" style="font-size:0.9rem;">Pilih / Tarik File</div>
-                    <div class="ub-desc" style="font-size:0.75rem;margin-bottom:0;">Format: PDF, DOC, DOCX</div>
-                    <input type="file" name="attachments[]" class="upload-input" id="attachmentInput" multiple>
+                <div class="upload-box" id="uploadBox" style="padding:.5rem 1rem; display:flex; align-items:center; justify-content:center; gap:.5rem;">
+                    <i class="bi bi-cloud-arrow-up-fill ub-icon" style="font-size:1.2rem; margin:0;"></i>
+                    <div class="ub-title" style="font-size:0.8rem; margin:0;">Pilih / Tarik File (Khusus PDF)</div>
+                    <input type="file" name="attachments[]" class="upload-input" id="attachmentInput" multiple accept=".pdf">
                 </div>
             </div>
 
@@ -149,69 +147,16 @@
         </div>
     </div>
     
-    <div>
-        <div class="form-panel shadow-sm h-100" style="padding:1.5rem;min-height:700px;">
-            <div class="form-label mb-3">Pratinjau Dokumen Lampiran</div>
-            <div id="previewList">
-                <div class="text-center p-5 mt-4" style="border:2px dashed #e8edf4;border-radius:1rem;color:#94a3b8;">
-                    <i class="bi bi-file-earmark-pdf" style="font-size:3rem;color:#cbd5e1;margin-bottom:1rem;display:block;"></i>
-                    Belum ada dokumen yang diunggah.<br>Silakan unggah file PDF untuk melihat pratinjau.
-                </div>
-            </div>
-        </div>
-    </div>
+
 </div>
 
 @push('scripts')
 <script>
 document.getElementById('attachmentInput').addEventListener('change', function () {
     const files = this.files;
-    const previewList = document.getElementById('previewList');
-    previewList.innerHTML = '';
-
-    if (files.length === 0) {
-        previewList.innerHTML = `
-            <div class="text-center p-5 mt-4" style="border:2px dashed #e8edf4;border-radius:1rem;color:#94a3b8;">
-                <i class="bi bi-file-earmark-pdf" style="font-size:3rem;color:#cbd5e1;margin-bottom:1rem;display:block;"></i>
-                Belum ada dokumen yang diunggah.<br>Silakan unggah file PDF untuk melihat pratinjau.
-            </div>
-        `;
-        return;
-    }
-
-    const fileListDiv = document.createElement('div');
-    fileListDiv.className = 'd-flex flex-wrap gap-2 mb-3';
-    previewList.appendChild(fileListDiv);
-
-    Array.from(files).forEach((file) => {
-        const ext = file.name.split('.').pop().toLowerCase();
-        const sizeMB = (file.size / 1024 / 1024).toFixed(2);
-        
-        let typeClass = 'other';
-        let iconName = 'bi-file-earmark';
-        if (ext === 'pdf') { typeClass = 'pdf'; iconName = 'bi-file-earmark-pdf-fill'; }
-        else if (['doc','docx'].includes(ext)) { typeClass = 'doc'; iconName = 'bi-file-earmark-word-fill'; }
-
-        const item = document.createElement('div');
-        item.className = 'file-preview-item flex-fill';
-        item.innerHTML = `
-            <div class="fpi-icon ${typeClass}"><i class="bi ${iconName}"></i></div>
-            <div class="fpi-info">
-                <div class="fpi-name" title="${file.name}">${file.name}</div>
-                <div class="fpi-meta">${sizeMB} MB &bull; File ${ext.toUpperCase()}</div>
-            </div>
-            <i class="bi bi-check-circle-fill text-success ms-2"></i>
-        `;
-        fileListDiv.appendChild(item);
-
-        if (files.length === 1 && ext === 'pdf') {
-            const url = URL.createObjectURL(file);
-            const frame = document.createElement('iframe');
-            frame.src = url;
-            frame.style.cssText = 'width:100%;height:650px;border:1px solid #e8edf4;border-radius:0.75rem;background:#fff;';
-            previewList.appendChild(frame);
-        }
-    });
+    document.querySelector('.ub-title').textContent = files.length > 0 
+        ? files.length + ' file PDF dipilih (Bisa tambah file lagi)'
+        : 'Pilih / Tarik File (Khusus PDF)';
 });
 </script>
 @endpush

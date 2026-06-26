@@ -745,7 +745,7 @@
                                 @foreach($myUnit->organs as $organ)
                                     @foreach($organ->users as $u)
                                         @if($u->id !== $user->id)
-                                            <option value="{{ $u->id }}">{{ $u->name }}</option>
+                                            <option value="{{ $u->id }}">{{ $organ->name }}</option>
                                         @endif
                                     @endforeach
                                 @endforeach
@@ -799,7 +799,7 @@
                                 @foreach($myUnit2->organs as $organ)
                                     @foreach($organ->users as $u)
                                         @if($u->id !== $user->id)
-                                            <option value="{{ $u->id }}">{{ $u->name }}</option>
+                                            <option value="{{ $u->id }}">{{ $organ->name }}</option>
                                         @endif
                                     @endforeach
                                 @endforeach

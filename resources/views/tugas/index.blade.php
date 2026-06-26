@@ -407,13 +407,7 @@
 
                 {{-- Date --}}
                 <span class="tk-date">
-                    @if($letter->created_at->isToday())
-                        {{ $letter->created_at->format('H:i') }}
-                    @elseif($letter->created_at->isCurrentYear())
-                        {{ $letter->created_at->format('d M') }}
-                    @else
-                        {{ $letter->created_at->format('d/m/y') }}
-                    @endif
+                    {{ $letter->created_at->format('d/m/Y') }}
                 </span>
 
                 {{-- Hover quick-actions --}}

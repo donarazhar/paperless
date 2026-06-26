@@ -144,7 +144,7 @@
         line-height: 1.65;
         resize: none;
         background: transparent;
-        min-height: 160px;
+        min-height: 80px;
     }
     .compose-body-field textarea::placeholder { color: #cbd5e1; }
 
@@ -154,10 +154,13 @@
     }
     .attach-drop {
         border: 1.5px dashed #e2e8f0;
-        border-radius: .75rem;
+        border-radius: .5rem;
         background: #fafbfc;
-        padding: 1.1rem;
-        text-align: center;
+        padding: .5rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: .5rem;
         cursor: pointer;
         position: relative;
         transition: all .25s;
@@ -167,9 +170,9 @@
         position: absolute; inset: 0;
         opacity: 0; cursor: pointer; width: 100%; height: 100%;
     }
-    .attach-drop i { font-size: 1.4rem; color: #94a3b8; transition: color .2s; }
+    .attach-drop i { font-size: 1.2rem; color: #94a3b8; transition: color .2s; }
     .attach-drop:hover i { color: #6366f1; }
-    .attach-drop p { margin: .3rem 0 0; font-size: .78rem; color: #94a3b8; font-weight: 500; }
+    .attach-drop p { margin: 0; font-size: .78rem; color: #94a3b8; font-weight: 500; }
     .attach-drop.has-files { border-color: #6366f1; background: #eef2ff; }
     .attach-drop.has-files i { color: #4f46e5; }
 
@@ -330,7 +333,7 @@
                         @foreach($units as $unit)
                             <option value="{{ $unit->id }}"
                                 {{ $defaultToUnit == $unit->id ? 'selected' : '' }}>
-                                {{ $unit->name }}{{ $unit->branch ? ' (Cab. '.$unit->branch->name.')' : '' }}
+                                {{ $unit->name }}
                             </option>
                         @endforeach
                     </select>
@@ -377,9 +380,9 @@
                 <div class="compose-attach">
                     <div class="attach-drop" id="attachDrop">
                         <i class="bi bi-paperclip"></i>
-                        <p id="attachLabel">Lampirkan dokumen (PDF, DOC, JPG, PNG)</p>
+                        <p id="attachLabel">Pilih / Tarik Dokumen (Khusus PDF)</p>
                         <input type="file" name="attachments[]" id="attachmentInput"
-                               multiple required accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                               multiple required accept=".pdf">
                     </div>
                     <div class="file-chips" id="fileChips"></div>
                 </div>
@@ -467,7 +470,7 @@
 
             if (allFiles.length > 0) {
                 drop.classList.add('has-files');
-                label.textContent = allFiles.length + ' file dipilih';
+                label.textContent = allFiles.length + ' file PDF dipilih (Bisa tambah file lagi)';
 
                 allFiles.forEach(function (file, index) {
                     const ext = file.name.split('.').pop().toLowerCase();
