@@ -5,6 +5,8 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Pagination\Paginator;
+use Laravel\Socialite\Facades\Socialite;
+use App\Socialite\PresensiProvider;
 
 // Import model & policy
 use App\Models\Letter;
@@ -25,6 +27,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Daftarkan Provider SSO PresensiGPS
+        Socialite::extend('presensi', function ($app) {
+            $config = $app['config']['services.presensi'];
+            return Socialite::buildProvider(PresensiProvider::class, $config);
+        });
+
         // Daftarkan mapping model → policy
         Gate::policy(Letter::class, LetterPolicy::class);
 

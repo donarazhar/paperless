@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\GoogleAuthController;
+use App\Http\Controllers\Auth\PresensiAuthController;
 use App\Http\Controllers\LetterController;
 use App\Http\Controllers\DispositionController;
 use App\Http\Controllers\UserController;
@@ -15,6 +16,9 @@ Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
 Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+
+Route::get('auth/presensi', [PresensiAuthController::class, 'redirect'])->name('presensi.login');
+Route::get('auth/presensi/callback', [PresensiAuthController::class, 'callback'])->name('presensi.callback');
 
 Route::middleware('auth')->group(function () {
     Route::get('letters', [LetterController::class, 'index'])->name('letters.index');

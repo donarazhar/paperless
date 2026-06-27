@@ -41,4 +41,10 @@ return [
         'redirect' => env('GOOGLE_REDIRECT_URI', 'http://127.0.0.1:8000/auth/google/callback'),
     ],
 
+    'presensi' => [
+        'client_id' => env('PRESENSI_CLIENT_ID'),
+        'client_secret' => env('PRESENSI_CLIENT_SECRET'),
+        'redirect' => env('PRESENSI_REDIRECT_URI', 'https://surat.masjidagungalazhar.com/auth/presensi/callback'),
+    ],
+
 ];

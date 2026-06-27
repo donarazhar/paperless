@@ -507,10 +507,10 @@
         <span>atau</span>
     </div>
 
-    <!-- Google Login -->
-    <a href="{{ route('google.login') }}" class="btn-google">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
-        Masuk dengan Google
+    <!-- Presensi SSO Login -->
+    <a href="{{ route('presensi.login') }}" class="btn-google">
+        <i class="bi bi-shield-lock" style="font-size: 1.1rem; color: #3b82f6;"></i>
+        Masuk via SSO PresensiGPS
     </a>
 
     <div class="footer-links">
