@@ -282,14 +282,21 @@
         .modal-content {
             background: #fff;
             width: 100%;
-            max-width: 500px;
+            max-width: 600px;
             border-radius: 1.25rem;
-            padding: 2rem;
+            padding: 1.25rem;
             transform: translateY(20px);
             transition: transform 0.3s ease;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             max-height: 90vh;
             overflow-y: auto;
+        }
+
+        @media (min-width: 768px) {
+            .modal-content {
+                padding: 2rem;
+                max-width: 700px;
+            }
         }
 
         .modal-overlay.active .modal-content {
@@ -300,15 +307,19 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 1.5rem;
-            padding-bottom: 1rem;
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.75rem;
             border-bottom: 1px solid #e2e8f0;
         }
 
         .modal-header h2 {
-            font-size: 1.25rem;
+            font-size: 1.15rem;
             color: #0f172a;
             font-weight: 700;
+        }
+
+        @media (min-width: 768px) {
+            .modal-header h2 { font-size: 1.25rem; }
         }
 
         .btn-close {
@@ -318,6 +329,7 @@
             color: #64748b;
             cursor: pointer;
             transition: color 0.2s;
+            line-height: 1;
         }
 
         .btn-close:hover {
@@ -325,24 +337,41 @@
         }
 
         .modal-body {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             color: #334155;
-            line-height: 1.6;
+            line-height: 1.5;
+        }
+        
+        @media (min-width: 768px) {
+            .modal-body { font-size: 0.9rem; line-height: 1.6; }
         }
 
         .modal-body h4 {
             color: #0f172a;
-            margin: 1.5rem 0 0.5rem;
-            font-size: 1rem;
+            margin: 0 0 0.25rem;
+            font-size: 0.95rem;
         }
 
         .modal-body ul, .modal-body ol {
-            padding-left: 1.5rem;
+            padding-left: 1.25rem;
             margin-bottom: 1rem;
         }
 
         .modal-body p {
             margin-bottom: 1rem;
+        }
+
+        .help-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        @media (min-width: 768px) {
+            .help-grid {
+                grid-template-columns: 1fr 1fr;
+            }
         }
 
         .contact-card {
@@ -505,12 +534,17 @@
         </div>
         <div class="modal-body">
             <div style="text-align: center; margin-bottom: 1.5rem;">
-                <img src="{{ asset('img/logo.png') }}" alt="Logo" style="width: 80px; margin-bottom: 10px;">
-                <h3 style="color: #0f172a; font-weight: 700;">Al Azhar Paperless System (APS)</h3>
+                <img src="{{ asset('img/logo.png') }}" alt="Logo" style="width: 70px; margin-bottom: 10px;">
+                <h3 style="color: #0f172a; font-weight: 700; margin-bottom: 0.25rem;">Al Azhar Paperless System (APS)</h3>
                 <p style="color: #64748b; font-size: 0.85rem;">Sistem Informasi Persuratan Digital</p>
             </div>
-            <p><strong>Al Azhar Paperless System (APS)</strong> adalah aplikasi berbasis web yang dikembangkan khusus untuk mengelola tata kelola persuratan secara digital dan terintegrasi di lingkungan Al Azhar.</p>
-            <p>Aplikasi ini dibuat dan dikembangkan pada tahun <strong>2026</strong> oleh tim pengembang <strong>DAL Army</strong>, dengan tujuan untuk mempercepat birokrasi, menghemat penggunaan kertas (paperless), dan mempermudah pelacakan dokumen surat menyurat.</p>
+            <p><strong>Al Azhar Paperless System (APS)</strong> adalah aplikasi persuratan berbasis <em>Paperless</em> dengan arsitektur <strong>Terdesentralisasi (Peer-to-Peer)</strong> antar unit di lingkungan Yayasan Pesantren Islam (YPI) Al Azhar.</p>
+            <p>Mengambil inspirasi dari tata letak Gmail, sistem ini menawarkan antarmuka bergaya <em>mailbox</em> yang intuitif dan rapi. Aplikasi ini menghilangkan kebutuhan dokumen fisik dengan menjadikan setiap surat elektronik, yang dilengkapi dengan pelacakan riwayat (<em>audit trail</em>) dan lampiran dokumen.</p>
+            <ul>
+                <li><strong>Otonomi Unit:</strong> Surat internal dapat dikirimkan secara langsung (Peer-to-Peer) antar unit tanpa harus melewati birokrasi satu pintu.</li>
+                <li><strong>Multi-Cabang & Multi-Peran:</strong> Mendukung struktur organisasi kompleks (Cabang &rarr; Unit &rarr; Organ &rarr; Pengguna).</li>
+            </ul>
+            <p>Aplikasi ini dibuat dan dikembangkan pada tahun <strong>2026</strong> oleh tim pengembang <strong>DAL Army</strong>, untuk mempercepat birokrasi dan mempermudah pelacakan dokumen surat menyurat.</p>
         </div>
     </div>
 </div>
@@ -523,16 +557,37 @@
             <button class="btn-close" onclick="closeModal(null, 'modal-bantuan')"><i class="bi bi-x"></i></button>
         </div>
         <div class="modal-body">
-            <p>Berikut adalah alur kerja standar (workflow) dalam menggunakan Al Azhar Paperless System:</p>
-            <ol>
-                <li><strong>Pembuatan Akun:</strong> Akun baru hanya dapat dibuat dengan menghubungi administrator sistem (DAL Army). Silakan kontak kami jika Anda membutuhkan akses.</li>
-                <li><strong>Pengaturan Profil:</strong> Setelah masuk, lengkapi profil Anda dan unggah spesimen tanda tangan digital (jika Anda memiliki wewenang penandatanganan).</li>
-                <li><strong>Pembuatan Surat (Draft):</strong> Pengguna dapat membuat konsep surat melalui menu Draft, mengisi tujuan, perihal, dan melampirkan dokumen pendukung.</li>
-                <li><strong>Proses ACC (Persetujuan):</strong> Surat yang sudah dibuat akan melalui tahapan persetujuan (ACC) berjenjang sesuai dengan struktur wewenang.</li>
-                <li><strong>Distribusi & Disposisi:</strong> Surat yang telah disahkan akan masuk ke Inbox penerima. Pimpinan dapat memberikan disposisi kepada staf di bawahnya untuk ditindaklanjuti.</li>
-                <li><strong>Arsip:</strong> Semua surat keluar dan surat masuk akan otomatis terarsip dengan aman di dalam database dan dapat dilacak kapan saja.</li>
-            </ol>
-            <p>Jika Anda mengalami kendala teknis (seperti lupa kata sandi atau gagal login), silakan gunakan menu <strong>Kontak</strong>.</p>
+            <p>Aplikasi ini memiliki alur kerja yang sangat ringkas dan terpusat pada 6 menu utama:</p>
+            
+            <div class="help-grid">
+                <div>
+                    <h4>1. Kotak Masuk (Inbox)</h4>
+                    <p style="margin-bottom:0">Semua surat yang dikirimkan ke unit Anda akan bermuara di sini. Admin/Pimpinan dapat membaca dan langsung memproses surat (Arsip/Disposisi).</p>
+                </div>
+                <div>
+                    <h4>2. Terkirim (Outbox)</h4>
+                    <p style="margin-bottom:0">Berisi seluruh riwayat surat yang telah berhasil dikirimkan oleh unit Anda, lengkap dengan status baca dan pelacakan (<em>Audit Trail</em>).</p>
+                </div>
+                <div>
+                    <h4>3. Draft</h4>
+                    <p style="margin-bottom:0">Tempat pembuatan konsep surat oleh Admin yang wajib di-<strong>ACC (Disetujui)</strong> oleh Kepala Unit sebelum dapat dikirimkan.</p>
+                </div>
+                <div>
+                    <h4>4. Disposisi</h4>
+                    <p style="margin-bottom:0">Alur delegasi tugas. Pimpinan dapat meneruskan surat masuk beserta instruksi ke jabatan/staf di bawahnya untuk ditindaklanjuti hingga selesai.</p>
+                </div>
+                <div>
+                    <h4>5. Arsip</h4>
+                    <p style="margin-bottom:0">Pusat penyimpanan permanen untuk seluruh surat (dari Inbox maupun Disposisi) yang prosesnya telah ditandai "Selesai".</p>
+                </div>
+                <div>
+                    <h4>6. Master Data</h4>
+                    <p style="margin-bottom:0">Menu administratif (khusus Admin) untuk mengelola data inti organisasi seperti Cabang, Unit Kerja, Organ (Jabatan), dan Pengguna.</p>
+                </div>
+            </div>
+
+            <hr style="margin: 1.5rem 0; border: 0; border-top: 1px solid #e2e8f0;">
+            <p style="font-size: 0.85rem; color: #64748b;">Jika Anda mengalami kendala login, silakan gunakan menu <strong>Kontak</strong>.</p>
         </div>
     </div>
 </div>

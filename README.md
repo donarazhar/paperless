@@ -54,115 +54,62 @@ Cabang (Branch)
 
 ---
 
-## 🔄 Alur Kerja (Workflow)
+## 🔄 Alur Kerja (Workflow) & Menu Utama
 
-Berikut adalah diagram visual alur kerja pada aplikasi Al Azhar Paperless System berdasarkan jenis suratnya.
+Aplikasi ini menggunakan alur kerja yang sangat ringkas dan terpusat pada 6 menu utama, menyerupai antarmuka kotak surat (mailbox) yang familiar.
 
-### 1. Surat Internal (Antar Unit)
+### 1. Kotak Masuk (Inbox)
+Semua surat yang dikirimkan ke unit Anda akan bermuara di sini.
+- Surat yang masuk akan berstatus **Baru / Belum Dibaca**.
+- Admin atau Pimpinan Unit dapat membuka surat, membaca isi, melihat lampiran, dan langsung memprosesnya.
+- Dari Kotak Masuk, surat dapat **Diarsipkan** atau **Didisposisikan** ke bawahan.
 
-Surat yang dibuat oleh sebuah unit dan ditujukan ke unit lain dalam YPI Al Azhar. Proses ini wajib melewati pusat (Sekretariat) untuk pendataan nomor agenda.
+### 2. Terkirim (Outbox)
+Menu ini berisi seluruh riwayat surat yang telah berhasil dikirimkan oleh unit Anda ke unit lain atau pihak eksternal.
+- Anda dapat melacak apakah surat tersebut sudah dibaca oleh unit tujuan atau belum.
+- Berisi *Audit Trail* kapan surat dikirim dan siapa pengirimnya.
 
-```mermaid
-flowchart TD
-    A([Admin Unit Pengirim]) -->|1. Buat Draft| B{Butuh ACC<br>Kepala Unit?}
-    B -- Ya --> C([Kepala Unit Pengirim])
-    C -->|2. ACC Surat| D([Admin Unit Pengirim])
-    B -- Tidak --> D
-    D -->|3. Klik Kirim| E([Admin Sekretariat Pusat])
-    E -->|4. Beri Nomor Agenda| F([Subag Persuratan Pusat])
-    F -->|5. Review & Distribusi| G([Bagian TU Pusat])
-    G -->|6. Disposisi ke Unit Tujuan| H([Admin Unit Penerima])
-    H --> I{Perlu Disposisi<br>Lanjutan?}
-    I -- Ya --> J([Kepala Unit Penerima])
-    J -->|7. Disposisi Internal| K([Sub Unit Penerima])
-    K -->|8. Tindak Lanjut| L([Selesai / Arsip])
-    I -- Tidak --> L
-    H -->|Langsung Arsip| L
-```
+### 3. Draft
+Tempat penyimpanan sementara untuk surat yang sedang dibuat sebelum dikirimkan.
+- **Admin** membuat konsep/draf surat di sini.
+- Surat yang ada di menu Draft harus melalui proses **ACC (Persetujuan)** dari Kepala Unit sebelum sistem memvalidasinya untuk dikirim.
+- Surat yang belum di-ACC dapat diedit kembali atau dihapus.
 
-**Aturan Penting Alur Internal:**
-### 1. Surat Internal (Antar Unit / Sekretariat)
+### 4. Disposisi
+Alur delegasi tugas secara hierarkis.
+- Saat surat masuk ke Inbox, Pimpinan dapat meneruskan (disposisi) surat tersebut beserta instruksi ke jabatan/staf di bawahnya.
+- Staf penerima disposisi akan melihat daftar tugas di menu ini (atau **Disposisi Saya**).
+- Staf menindaklanjuti arahan dan dapat menyelesaikan (*Complete*) disposisi tersebut.
 
-Surat yang dibuat oleh satu unit untuk dikirim ke unit lain, atau ke Sekretariat Pusat. Surat internal kini wajib diberikan **Nomor Agenda** oleh **Unit Penerima** saat surat tiba di Inbox mereka.
+### 5. Arsip
+Pusat penyimpanan permanen untuk seluruh surat yang prosesnya telah selesai.
+- Surat dari *Inbox* maupun *Disposisi* yang sudah ditandai "Selesai" akan dipindahkan ke menu Arsip.
+- Tujuannya agar Kotak Masuk tetap bersih dari tumpukan surat lama, namun data tetap tersimpan rapi dan dapat dicari sewaktu-waktu.
 
-**Alur Desentralisasi Penomoran Agenda:**
-1. Semua surat internal yang telah di-ACC oleh Kepala Unit pengirim dan dikirim, akan masuk ke Inbox unit tujuan dengan status **Menunggu Agenda (pending_agenda)**.
-2. Jika surat masuk ke **Sekretariat**, maka `admin_sekretariat` hanya akan memberikan Nomor Agenda, dan sistem otomatis meneruskannya ke Subag Persuratan untuk didisposisikan.
-3. Jika surat masuk ke **Unit Kerja**, maka `admin_unit` akan memberikan Nomor Agenda lokasinya sendiri, dan secara bersamaan dalam pop-up yang sama, `admin_unit` dapat langsung memulai disposisi (meneruskan ke personal di unitnya).
-4. Pemegang hak disposisi (`bagian_tu`, `kepala_sekretariat`, `kepala_unit`, `sub_unit`) kemudian akan memproses surat (disposisi ke bawahannya atau membalas/menyelesaikan).
-
-```mermaid
-flowchart TD
-    A([Admin Unit Pengirim]) -->|1. Draft & Kirim ACC| B([Kepala Unit Pengirim])
-    B -->|2. ACC| A
-    A -->|3. Kirim Surat Final| C([Inbox Unit Tujuan - Pending Agenda])
-    C -->|4. Beri Agenda & Teruskan| D([Admin Unit Penerima])
-    D -->|5. Disposisi ke Personal| E([Kepala Unit / Staf Tujuan])
-    E -->|6. Tindak Lanjut| F([Selesai / Arsip])
-```
-
-### 2. Surat Masuk Eksternal
-
-Surat dari pihak luar (eksternal) yang diterima oleh organisasi. Surat ini masuk ke satu pintu Sekretariat untuk kemudian didistribusikan.
-
-```mermaid
-flowchart TD
-    A(Pihak Luar / Eksternal) -->|Kirim Fisik / Email| B([Admin Sekretariat])
-    B -->|1. Input Surat & Agenda| C([Subag Persuratan])
-    C -->|2. Review| D([Bagian TU])
-    D -->|3. Disposisi ke Unit| E([Admin Unit Tujuan])
-    E -->|4. Teruskan Disposisi| F([Kepala Unit / Sub Unit])
-    F -->|5. Tindak Lanjut| G([Selesai / Arsip])
-```
-
-### 3. Surat Keluar Eksternal
-
-Surat yang ditujukan ke luar organisasi (eksternal). Tidak perlu melalui sentralisasi Sekretariat (nomor surat dan agenda dikelola sendiri oleh unit jika ada kebijakan masing-masing).
-
-```mermaid
-flowchart TD
-    A([Admin Unit]) -->|1. Buat Draft Eksternal| B([Kepala Unit])
-    B -->|2. ACC Surat| C([Admin Unit])
-    C -->|3. Kirim Fisik / Email ke Eksternal| D([Status Terkirim])
-    D -.->|Update Keterangan Resi| D
-```
-*Status langsung berubah menjadi **Terkirim**. Unit dapat memperbarui kolom "Keterangan" (misal: "Resi JNE: 12345").*
+### 6. Master Data
+Menu administratif (khusus Role Admin) untuk mengelola data inti organisasi, meliputi:
+- **Cabang**: Mengelola wilayah operasional atau lokasi cabang.
+- **Unit Kerja**: Mengelola berbagai unit/departemen di dalam setiap cabang.
+- **Organ**: Mengelola struktur jabatan (Pimpinan, Staf, dsb).
+- **Pengguna**: Mengelola akun pengguna (menambah/menghapus user, *reset password*, menetapkan *role*).
 
 ---
 
 ## 🧑‍💼 Hak Akses & Peran (Roles)
 
-| Role | Tanggung Jawab Utama |
-|------|----------------------|
-| **`admin_sekretariat`** | Memberikan nomor agenda, meneruskan disposisi surat yang masuk ke sekretariat ke personal yang ada di sekretariat, membuat surat, dan mengarsipkan surat khusus sekretariat. |
-| **`admin_unit`** | Membuat surat, memberikan nomor agenda, memulai proses disposisi, meneruskan disposisi surat yang masuk ke unitnya, dan mengarsipkan surat khusus unitnya. |
-| **`subag_persuratan`** | Meng-ACC surat dari admin_sekretariat, memulai proses disposisi, dan mendisposisi surat yang spesifik ditujukan kepadanya. |
-| **`bagian_tu`** | Mendisposisikan surat yang spesifik ditujukan kepadanya. |
-| **`kepala_unit`** | Mendisposisikan surat yang spesifik ditujukan kepadanya (termasuk ACC surat keluar unitnya). |
-| **`sub_unit`** | Mendisposisikan surat yang spesifik ditujukan kepadanya (melaksanakan tugas). |
-| **`kepala_sekretariat`** | Memantau seluruh laju surat masuk dan keluar secara *read-only*, dan menerima/membuat disposisi. |
+| Role | Akses Menu Utama |
+|------|------------------|
+| **`admin_sekretariat` / `admin_unit`** | Pembuat Draft, Pengelola Inbox & Outbox, Arsip, (serta Master Data untuk Admin). |
+| **`kepala_unit` / `subag_persuratan`** | Pemberi ACC Draft, Pengelola Inbox, Pemberi Disposisi. |
+| **`sub_unit` / `bagian_tu`** | Penerima & Pelaksana Disposisi (Disposisi Saya). |
+| **`kepala_sekretariat`** | Pemantau (*Read-only*) & Penerima Disposisi tingkat tinggi. |
 
 ---
 
-## ✨ Fitur Lengkap
+## 🗄 Skema Lifecycle Surat
 
-### 📬 Manajemen & Tracking Surat
-- **Laporan & History Terpusat**: Menu History untuk memantau semua surat yang sedang berproses disposisi (khusus role Sekretariat).
-- **Inbox & Outbox Cerdas**: Filter otomatis memblokir surat draf/menunggu pengiriman agar tidak membingungkan penerima.
-- **Badge Status Dinamis**: Menampilkan label "Terkirim" untuk surat keluar dan "Selesai" untuk surat masuk eksternal.
-- **Notifikasi "Tugas"**: Menu sidebar akan memunculkan *badge* notifikasi merah berisikan angka jika ada tugas ACC atau Disposisi yang menunggu tindakan.
-
-### 📋 Disposisi Lanjutan
-- **Disposisi Lintas Unit & Personal**: Disposisi dapat ditujukan ke Unit (organisasi) maupun langsung ke Personal (jabatan/orang).
-- **Cetak Lembar Disposisi**: Halaman *print-friendly* untuk mencetak riwayat dan arahan disposisi secara fisik.
-
-
-## 🗄 Skema Database (ERD) & Status
-
-**Status Lifecycle (Surat Internal):**
-`draft` → `pending_approval` (Menunggu ACC) → `pending_sending` (Menunggu Dikirim Admin) → `pending_agenda` (Menunggu Agenda Pusat) → `in_review_subag` (Review Subag) → `in_review_bagian_tu` (Review TU) → `in_consideration` (Dipertimbangkan Unit Tujuan) → `completed` (Selesai/Arsip)
-
-*(Catatan: Saat surat `completed`, label yang tampil di UI bisa berupa **Selesai** atau **Terkirim** tergantung jenis dan asal surat).*
+Proses perjalanan surat di dalam sistem:
+`Draft` &rarr; `Menunggu ACC` &rarr; `Terkirim (Masuk ke Inbox Tujuan)` &rarr; `Didisposisikan` (Opsional) &rarr; `Selesai / Diarsipkan`
 
 ---
 
