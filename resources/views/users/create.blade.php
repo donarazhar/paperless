@@ -77,7 +77,7 @@
 
             <div class="mb-4">
                 <label class="form-label">Alamat Email <span class="text-danger">*</span></label>
-                <input type="email" id="emailInput" name="email" class="form-control" value="{{ old('email') }}" required placeholder="Contoh: budi@alazhar.com" {!! count($karyawan) > 0 ? 'readonly style="background-color: #f1f5f9;"' : '' !!}>
+                <input type="email" id="emailInput" name="email" class="form-control" value="{{ old('email') }}" required placeholder="Contoh: budi@alazhar.com">
                 <div style="font-size:0.75rem;color:#64748b;margin-top:8px;">
                     Pastikan email sesuai dengan yang digunakan di PresensiGPS.
                 </div>
