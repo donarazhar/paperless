@@ -37,7 +37,14 @@ class UserController extends Controller
 
     public function create()
     {
-        return view('users.create');
+        $karyawan = \Illuminate\Support\Facades\DB::table('presensigps.karyawan')
+            ->select('nik', 'nama_lengkap', 'email')
+            ->whereNotNull('email')
+            ->where('email', '!=', '')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        return view('users.create', compact('karyawan'));
     }
 
     public function store(Request $request)

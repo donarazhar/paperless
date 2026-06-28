@@ -51,8 +51,23 @@
             @csrf
 
             <div class="mb-4">
+                <label class="form-label">Pilih Karyawan (Dari PresensiGPS)</label>
+                <select id="karyawanSelect" class="form-select">
+                    <option value="" disabled selected>-- Ketik atau Pilih Karyawan --</option>
+                    @foreach($karyawan as $k)
+                        <option value="{{ $k->nik }}" data-name="{{ $k->nama_lengkap }}" data-email="{{ $k->email }}">
+                            {{ $k->nama_lengkap }} ({{ $k->email }})
+                        </option>
+                    @endforeach
+                </select>
+                <div style="font-size:0.75rem;color:#64748b;margin-top:8px;">
+                    <i class="bi bi-magic"></i> Pilih karyawan untuk mengisi otomatis Nama dan Email.
+                </div>
+            </div>
+
+            <div class="mb-4">
                 <label class="form-label">Nama Pengguna (Opsional)</label>
-                <input type="text" name="name" class="form-control" value="{{ old('name') }}" placeholder="Contoh: Budi Santoso">
+                <input type="text" id="nameInput" name="name" class="form-control" value="{{ old('name') }}" placeholder="Contoh: Budi Santoso">
                 <div style="font-size:0.75rem;color:#64748b;margin-top:8px;">
                     <i class="bi bi-info-circle"></i> Nama ini akan diperbarui otomatis saat karyawan login SSO pertama kali.
                 </div>
@@ -60,7 +75,7 @@
 
             <div class="mb-4">
                 <label class="form-label">Alamat Email <span class="text-danger">*</span></label>
-                <input type="email" name="email" class="form-control" value="{{ old('email') }}" required placeholder="Contoh: budi@alazhar.com">
+                <input type="email" id="emailInput" name="email" class="form-control" value="{{ old('email') }}" required placeholder="Contoh: budi@alazhar.com" readonly style="background-color: #f1f5f9;">
                 <div style="font-size:0.75rem;color:#64748b;margin-top:8px;">
                     Pastikan email sesuai dengan yang digunakan di PresensiGPS.
                 </div>
@@ -105,4 +120,26 @@
     </div>
 </div>
 </div>
+</div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const select = document.getElementById('karyawanSelect');
+        const nameInput = document.getElementById('nameInput');
+        const emailInput = document.getElementById('emailInput');
+
+        select.addEventListener('change', function() {
+            const option = this.options[this.selectedIndex];
+            if (option.value) {
+                nameInput.value = option.getAttribute('data-name');
+                emailInput.value = option.getAttribute('data-email');
+            } else {
+                nameInput.value = '';
+                emailInput.value = '';
+            }
+        });
+    });
+</script>
+@endpush
