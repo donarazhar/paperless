@@ -763,6 +763,17 @@
 
         <ul class="g-nav">
 
+        {{-- ── SUPERADMIN ONLY ── --}}
+            @if($role === 'admin')
+            <li class="g-nav-item">
+                <a href="{{ route('admin.dashboard') }}"
+                   class="g-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+                    <i class="bi bi-speedometer2"></i>
+                    <span>Dashboard</span>
+                </a>
+            </li>
+            @endif
+
         {{-- ── ADMIN GROUP ── --}}
             @if(in_array($role, ['admin_sekretariat', 'admin_unit', 'admin']))
             <li class="g-nav-item">
