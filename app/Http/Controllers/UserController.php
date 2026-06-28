@@ -37,10 +37,14 @@ class UserController extends Controller
 
     public function create()
     {
+        // Get all emails that are already registered in the persuratan database
+        $registeredEmails = \App\Models\User::pluck('email')->toArray();
+
         $karyawan = \Illuminate\Support\Facades\DB::table('presensigps.karyawan')
             ->select('nik', 'nama_lengkap', 'email')
             ->whereNotNull('email')
             ->where('email', '!=', '')
+            ->whereNotIn('email', $registeredEmails)
             ->orderBy('nama_lengkap')
             ->get();
 
