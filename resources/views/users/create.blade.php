@@ -50,6 +50,7 @@
         <form action="{{ route('users.store') }}" method="POST" class="form-panel shadow-sm">
             @csrf
 
+            @if(count($karyawan) > 0)
             <div class="mb-4">
                 <label class="form-label">Pilih Karyawan (Dari PresensiGPS)</label>
                 <select id="karyawanSelect" class="form-select">
@@ -64,6 +65,7 @@
                     <i class="bi bi-magic"></i> Pilih karyawan untuk mengisi otomatis Nama dan Email.
                 </div>
             </div>
+            @endif
 
             <div class="mb-4">
                 <label class="form-label">Nama Pengguna (Opsional)</label>
@@ -75,7 +77,7 @@
 
             <div class="mb-4">
                 <label class="form-label">Alamat Email <span class="text-danger">*</span></label>
-                <input type="email" id="emailInput" name="email" class="form-control" value="{{ old('email') }}" required placeholder="Contoh: budi@alazhar.com" readonly style="background-color: #f1f5f9;">
+                <input type="email" id="emailInput" name="email" class="form-control" value="{{ old('email') }}" required placeholder="Contoh: budi@alazhar.com" {!! count($karyawan) > 0 ? 'readonly style="background-color: #f1f5f9;"' : '' !!}>
                 <div style="font-size:0.75rem;color:#64748b;margin-top:8px;">
                     Pastikan email sesuai dengan yang digunakan di PresensiGPS.
                 </div>

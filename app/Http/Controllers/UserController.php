@@ -46,13 +46,19 @@ class UserController extends Controller
         // Get all emails that are already registered in the persuratan database
         $registeredEmails = \App\Models\User::pluck('email')->toArray();
 
-        $karyawan = \Illuminate\Support\Facades\DB::table('presensigps.karyawan')
-            ->select('nik', 'nama_lengkap', 'email')
-            ->whereNotNull('email')
-            ->where('email', '!=', '')
-            ->whereNotIn('email', $registeredEmails)
-            ->orderBy('nama_lengkap')
-            ->get();
+        $karyawan = [];
+        try {
+            $dbName = env('DB_PRESENSI_DATABASE', 'presensigps');
+            $karyawan = \Illuminate\Support\Facades\DB::table($dbName . '.karyawan')
+                ->select('nik', 'nama_lengkap', 'email')
+                ->whereNotNull('email')
+                ->where('email', '!=', '')
+                ->whereNotIn('email', $registeredEmails)
+                ->orderBy('nama_lengkap')
+                ->get();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::warning('Cross-DB query failed in UserController@create: ' . $e->getMessage());
+        }
 
         return view('users.create', compact('karyawan'));
     }
