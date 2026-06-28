@@ -113,6 +113,15 @@ class SSOController extends Controller
             $role = 'pimpinan_unit';
         }
 
+        // --- PREVENT OVERWRITING ADMIN ROLE ---
+        $existingUser = User::where('email', $userEmail)->first();
+        if ($existingUser && in_array($existingUser->role, ['admin', 'admin_sekretariat', 'subag_persuratan', 'kepala_sekretariat'])) {
+            $role = $existingUser->role; // keep original privileged role
+        }
+
+        Log::info('SSO Payload received:', $ssoUser);
+        Log::info('Photo URL set to:', ['photoUrl' => $photoUrl]);
+
         // Find or create local user based on NIK or Email
         $user = User::updateOrCreate(
             ['email' => $userEmail],
