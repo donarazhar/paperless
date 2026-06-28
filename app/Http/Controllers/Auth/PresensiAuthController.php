@@ -28,6 +28,8 @@ class PresensiAuthController extends Controller
             $rawUser = $presensiUser->user;
             
             // Sync Branch, Unit, Organ based on SSO Data
+            \Illuminate\Database\Eloquent\Model::unguard();
+
             if (isset($rawUser['cabang'])) {
                 $cabangData = $rawUser['cabang'];
                 \App\Models\Branch::updateOrCreate(
@@ -42,7 +44,6 @@ class PresensiAuthController extends Controller
                 $unitData = $organData['unit'] ?? null;
                 
                 if ($unitData) {
-                    // Pastikan branch_id valid dengan mengecek apakah branch tersebut ada (dijaga oleh logika cabang di atas)
                     \App\Models\Unit::updateOrCreate(
                         ['id' => $unitData['id']],
                         [
@@ -63,6 +64,7 @@ class PresensiAuthController extends Controller
                 );
                 $organId = $organData['id'];
             }
+            \Illuminate\Database\Eloquent\Model::reguard();
             
             // Cari user berdasarkan email atau NIK
             // Karena ini SSO Master, kita asumsikan email selalu sinkron.
