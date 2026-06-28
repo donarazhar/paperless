@@ -56,8 +56,11 @@
                 <select id="karyawanSelect" class="form-select">
                     <option value="" disabled selected>-- Ketik atau Pilih Karyawan --</option>
                     @foreach($karyawan as $k)
-                        <option value="{{ $k->nik }}" data-name="{{ $k->nama_lengkap }}" data-email="{{ $k->email }}">
-                            {{ $k->nama_lengkap }} ({{ $k->email }})
+                        @php
+                            $isRegistered = in_array($k->email, $registeredEmails);
+                        @endphp
+                        <option value="{{ $k->nik }}" data-name="{{ $k->nama_lengkap }}" data-email="{{ $k->email }}" {{ $isRegistered ? 'disabled' : '' }}>
+                            {{ $k->nama_lengkap }} ({{ $k->email }}) {{ $isRegistered ? '- Sudah Terdaftar' : '' }}
                         </option>
                     @endforeach
                 </select>

@@ -54,16 +54,14 @@ class UserController extends Controller
             if ($response->successful()) {
                 $allKaryawan = $response->json();
                 foreach ($allKaryawan as $k) {
-                    if (!in_array($k['email'], $registeredEmails)) {
-                        $karyawan[] = (object) $k;
-                    }
+                    $karyawan[] = (object) $k;
                 }
             }
         } catch (\Exception $e) {
             \Illuminate\Support\Facades\Log::warning('Failed to fetch karyawan from API in UserController@create: ' . $e->getMessage());
         }
 
-        return view('users.create', compact('karyawan'));
+        return view('users.create', compact('karyawan', 'registeredEmails'));
     }
 
     public function store(Request $request)
