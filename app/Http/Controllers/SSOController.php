@@ -99,6 +99,20 @@ class SSOController extends Controller
         // Generate a fallback email since Karyawan API might not have an email
         $userEmail = $ssoUser['email'] ?? ($ssoUser['nik_karyawan'] . '@alazhar.com');
 
+        // Calculate Photo URL if exists
+        $photoUrl = null;
+        if (!empty($ssoUser['foto'])) {
+            $photoUrl = env('SSO_URL') . '/storage/karyawan/' . $ssoUser['foto'];
+        }
+
+        // Determine Role
+        // Default to 'staf_unit', but if they are the head of the unit or branch, they should be 'pimpinan_unit' or 'pimpinan_cabang'
+        // Since PresensiGPS does not explicitly send role, we can infer from 'is_sekretariat' or other attributes, or just leave it for now.
+        $role = 'staf_unit';
+        if (isset($ssoUser['organ']['name']) && stripos($ssoUser['organ']['name'], 'kepala') !== false) {
+            $role = 'pimpinan_unit';
+        }
+
         // Find or create local user based on NIK or Email
         $user = User::updateOrCreate(
             ['email' => $userEmail],
@@ -106,7 +120,8 @@ class SSOController extends Controller
                 'name' => $ssoUser['name'],
                 'password' => bcrypt(Str::random(16)), // Random password, authentication relies on SSO
                 'organ_id' => $organId,
-                'role' => 'staf_unit', // Default role. You may need logic to determine real roles.
+                'role' => $role,
+                'photo' => $photoUrl,
             ]
         );
 

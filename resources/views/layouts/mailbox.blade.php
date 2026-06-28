@@ -708,7 +708,7 @@
             <!-- Avatar -->
             <div class="g-avatar">
                 @if($authUser && $authUser->photo)
-                    <img src="{{ asset('storage/' . $authUser->photo) }}" alt="Avatar">
+                    <img src="{{ \Illuminate\Support\Str::startsWith($authUser->photo, 'http') ? $authUser->photo : asset('storage/' . $authUser->photo) }}" alt="Avatar">
                 @else
                     {{ strtoupper(substr($profileName, 0, 1)) }}
                 @endif

@@ -140,7 +140,7 @@
             <div class="profile-hero">
                 <div class="ph-z d-flex align-items-center gap-3">
                     @if($user->photo)
-                        <img src="{{ asset('storage/' . $user->photo) }}" style="width: 64px; height: 64px; border-radius: 1rem; object-fit: cover; object-position: center; flex-shrink: 0; border: 2px solid #e0e7ff;" alt="Avatar">
+                        <img src="{{ \Illuminate\Support\Str::startsWith($user->photo, 'http') ? $user->photo : asset('storage/' . $user->photo) }}" style="width: 64px; height: 64px; border-radius: 1rem; object-fit: cover; object-position: center; flex-shrink: 0; border: 2px solid #e0e7ff;" alt="Avatar">
                     @else
                         <div class="ph-avatar-lg">{{ $initials }}</div>
                     @endif
