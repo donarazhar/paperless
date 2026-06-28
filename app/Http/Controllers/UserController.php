@@ -48,16 +48,19 @@ class UserController extends Controller
 
         $karyawan = [];
         try {
-            $dbName = env('DB_PRESENSI_DATABASE', 'presensigps');
-            $karyawan = \Illuminate\Support\Facades\DB::table($dbName . '.karyawan')
-                ->select('nik', 'nama_lengkap', 'email')
-                ->whereNotNull('email')
-                ->where('email', '!=', '')
-                ->whereNotIn('email', $registeredEmails)
-                ->orderBy('nama_lengkap')
-                ->get();
+            $url = env('PRESENSI_URL', 'https://presensigps.masjidagungalazhar.com') . '/api/karyawan-list';
+            $response = \Illuminate\Support\Facades\Http::get($url);
+            
+            if ($response->successful()) {
+                $allKaryawan = $response->json();
+                foreach ($allKaryawan as $k) {
+                    if (!in_array($k['email'], $registeredEmails)) {
+                        $karyawan[] = (object) $k;
+                    }
+                }
+            }
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::warning('Cross-DB query failed in UserController@create: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::warning('Failed to fetch karyawan from API in UserController@create: ' . $e->getMessage());
         }
 
         return view('users.create', compact('karyawan'));
