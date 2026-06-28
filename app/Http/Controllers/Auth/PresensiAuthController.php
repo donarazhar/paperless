@@ -72,7 +72,7 @@ class PresensiAuthController extends Controller
             
             $photoUrl = null;
             if (!empty($rawUser['foto'])) {
-                $photoUrl = env('PRESENSI_URL', 'https://presensigps.masjidagungalazhar.com') . '/storage/karyawan/' . $rawUser['foto'];
+                $photoUrl = env('PRESENSI_URL', 'https://presensigps.masjidagungalazhar.com') . '/storage/uploads/karyawan/' . $rawUser['foto'];
             }
             
             $user = User::updateOrCreate(
