@@ -297,14 +297,29 @@
                                     </span>
                                 </td>
                                 <td style="text-align: right; padding-right: 1.25rem;">
-                                    @if($user->role === 'admin')
+                                    @php
+                                        $currentUser = auth()->user();
+                                        $canDelete = true;
+                                        if ($currentUser->role === 'admin') {
+                                            $canDelete = ($user->role !== 'admin');
+                                        } else {
+                                            $protectedRoles = ['admin', 'admin_sekretariat', 'subag_persuratan', 'bagian_tu', 'kepala_sekretariat'];
+                                            if (in_array($user->role, $protectedRoles)) {
+                                                $canDelete = false;
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if($user->role === 'admin' && $currentUser->role !== 'admin')
+                                        {{-- Sembunyikan sama sekali jika bukan admin melihat admin (walaupun controller sudah memfilter ini) --}}
+                                    @elseif($user->role === 'admin' && $currentUser->role === 'admin')
                                         <span class="btn-lock"><i class="bi bi-shield-lock-fill"></i> Dikunci</span>
                                     @else
                                         <div class="d-flex gap-2 justify-content-end align-items-center">
                                             <a href="{{ route('users.edit', $user) }}" class="action-btn btn-edit" title="Edit Pengguna">
                                                 <i class="bi bi-pencil-fill"></i> <span class="table-responsive-hide">Edit</span>
                                             </a>
-                                            @if(!in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu']))
+                                            @if($canDelete)
                                             <form action="{{ route('users.destroy', $user) }}" method="POST" class="d-inline" style="margin:0;">
                                                 @csrf @method('DELETE')
                                                 <button class="action-btn btn-del" type="submit" title="Hapus Pengguna" onclick="return confirm('Yakin ingin menghapus pengguna ini secara permanen?')">

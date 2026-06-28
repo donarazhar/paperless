@@ -16,6 +16,12 @@ class UserController extends Controller
     public function index(Request $request)
     {
         $query = User::with(['organ.unit.branch']);
+        $currentUser = auth()->user();
+
+        // Admin Sekretariat (dan lainnya) tidak boleh melihat Superadmin (role: admin)
+        if ($currentUser->role !== 'admin') {
+            $query->where('role', '!=', 'admin');
+        }
 
         if ($request->filled('branch_id')) {
             $query->whereHas('organ.unit', function($q) use ($request) {
@@ -89,8 +95,19 @@ class UserController extends Controller
 
     public function destroy(User $user)
     {
-        if (in_array($user->role, ['admin_sekretariat', 'subag_persuratan', 'bagian_tu'])) {
-            return back()->with('error', 'User dengan role ini tidak dapat dihapus, hanya dapat diedit.');
+        $currentUser = auth()->user();
+
+        if ($currentUser->role === 'admin') {
+            // Superadmin (admin) tidak boleh menghapus dirinya/admin lain
+            if ($user->role === 'admin') {
+                return back()->with('error', 'Role Superadmin tidak dapat dihapus.');
+            }
+        } else {
+            // Role selain admin tidak boleh menghapus admin & petinggi sekretariat
+            $protectedRoles = ['admin', 'admin_sekretariat', 'subag_persuratan', 'bagian_tu', 'kepala_sekretariat'];
+            if (in_array($user->role, $protectedRoles)) {
+                return back()->with('error', 'User dengan role ini tidak dapat dihapus, hanya dapat diedit.');
+            }
         }
 
         $user->delete();
