@@ -35,6 +35,31 @@ class UserController extends Controller
         return view('users.index', compact('users', 'branches', 'units'));
     }
 
+    public function create()
+    {
+        return view('users.create');
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'email' => 'required|email|unique:users,email',
+            'role' => 'required|in:admin,admin_sekretariat,subag_persuratan,bagian_tu,kepala_sekretariat,admin_unit,kepala_unit,sub_unit,staf_unit',
+            'name' => 'nullable|string'
+        ]);
+
+        User::create([
+            'email' => $data['email'],
+            'role' => $data['role'],
+            'name' => $data['name'] ?? explode('@', $data['email'])[0],
+            'password' => \Illuminate\Support\Facades\Hash::make(\Illuminate\Support\Str::random(16)),
+            'organ_id' => null, // Will be synced via SSO
+        ]);
+
+        return redirect()->route('users.index')
+            ->with('success', 'Pengguna berhasil dipra-daftar. Hak akses (role) sudah ditetapkan.');
+    }
+
     public function edit(User $user)
     {
         return view('users.edit', compact('user'));

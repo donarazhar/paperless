@@ -244,7 +244,7 @@
             
             <!-- Toolbar -->
             <div class="add-bar">
-                <form method="GET" action="{{ route('users.index') }}" class="search-form" style="max-width: 100%;">
+                <form method="GET" action="{{ route('users.index') }}" class="search-form">
                     <div class="search-wrapper">
                         <i class="bi bi-search"></i>
                         <input type="text" name="search" class="search-input" placeholder="Cari nama atau email..." value="{{ request('search') }}">
@@ -254,7 +254,10 @@
                         <a href="{{ route('users.index') }}" class="btn-reset">Reset</a>
                     @endif
                 </form>
-                <!-- Tombol Tambah Pengguna dihapus karena user otomatis sinkron dari PresensiGPS via SSO -->
+
+                <a href="{{ route('users.create') }}" class="btn-add">
+                    <i class="bi bi-person-plus-fill"></i> Tambah Pengguna
+                </a>
             </div>
 
             <!-- Table -->
