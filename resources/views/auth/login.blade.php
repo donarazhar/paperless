@@ -454,64 +454,17 @@
         </div>
     @endif
 
-    <!-- Form -->
-    <form method="POST" action="{{ route('login') }}" id="loginForm" novalidate>
-        @csrf
+    <div style="margin-top: 1.5rem; text-align: center;">
+        <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 1.25rem;">
+            Silakan masuk menggunakan akun PresensiGPS Anda.
+        </p>
 
-        <div class="form-group">
-            <label class="form-label" for="email">Alamat Email</label>
-            <div class="input-wrap">
-                <i class="bi bi-envelope input-icon"></i>
-                <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    class="form-input"
-                    placeholder="nama@al-azhar.or.id"
-                    value="{{ old('email') }}"
-                    required
-                    autofocus
-                    autocomplete="username"
-                >
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label class="form-label" for="password">Kata Sandi</label>
-            <div class="input-wrap">
-                <i class="bi bi-lock input-icon"></i>
-                <input
-                    type="password"
-                    id="password"
-                    name="password"
-                    class="form-input"
-                    placeholder="Masukkan kata sandi"
-                    required
-                    autocomplete="current-password"
-                    style="padding-right: 2.5rem;"
-                >
-                <button type="button" class="btn-eye" id="togglePwd" aria-label="Tampilkan sandi">
-                    <i class="bi bi-eye" id="eyeIcon"></i>
-                </button>
-            </div>
-        </div>
-
-        <button type="submit" class="btn-submit" id="submitBtn">
-            <span class="btn-label">Masuk &nbsp;<i class="bi bi-arrow-right"></i></span>
-            <span class="spinner"></span>
-        </button>
-    </form>
-
-    <!-- Divider -->
-    <div class="divider">
-        <span>atau</span>
+        <!-- Presensi SSO Login -->
+        <a href="{{ route('presensi.login') }}" class="btn-submit" style="text-decoration: none;">
+            <i class="bi bi-shield-lock" style="font-size: 1.1rem;"></i>
+            Masuk via SSO PresensiGPS
+        </a>
     </div>
-
-    <!-- Presensi SSO Login -->
-    <a href="{{ route('presensi.login') }}" class="btn-google">
-        <i class="bi bi-shield-lock" style="font-size: 1.1rem; color: #3b82f6;"></i>
-        Masuk via SSO PresensiGPS
-    </a>
 
     <div class="footer-links">
         <a href="#" onclick="openModal('modal-tentang'); return false;">Tentang</a>

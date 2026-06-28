@@ -244,7 +244,7 @@
             
             <!-- Toolbar -->
             <div class="add-bar">
-                <form method="GET" action="{{ route('users.index') }}" class="search-form">
+                <form method="GET" action="{{ route('users.index') }}" class="search-form" style="max-width: 100%;">
                     <div class="search-wrapper">
                         <i class="bi bi-search"></i>
                         <input type="text" name="search" class="search-input" placeholder="Cari nama atau email..." value="{{ request('search') }}">
@@ -254,10 +254,7 @@
                         <a href="{{ route('users.index') }}" class="btn-reset">Reset</a>
                     @endif
                 </form>
-
-                <a href="{{ route('users.create') }}" class="btn-add">
-                    <i class="bi bi-person-plus-fill"></i> Tambah Pengguna
-                </a>
+                <!-- Tombol Tambah Pengguna dihapus karena user otomatis sinkron dari PresensiGPS via SSO -->
             </div>
 
             <!-- Table -->
@@ -268,7 +265,6 @@
                             <th style="width: 50px; text-align: center;">#</th>
                             <th>Profil Pengguna</th>
                             <th>Hak Akses (Role)</th>
-                            <th class="table-responsive-hide">Cabang & Unit</th>
                             <th style="text-align: right; width: 120px; padding-right: 1.25rem;">Aksi</th>
                         </tr>
                     </thead>
@@ -289,9 +285,6 @@
                                         <div>
                                             <div class="user-name">{{ $user->name }}</div>
                                             <div class="user-email">{{ $user->email }}</div>
-                                            <div class="table-responsive-show-sm" style="display:none; font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">
-                                                <i class="bi bi-diagram-3-fill me-1"></i> {{ $user->unit->name ?? '—' }}
-                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -299,10 +292,6 @@
                                     <span class="role-pill {{ $rp['class'] }}">
                                         <i class="bi {{ $rp['icon'] }}"></i> {{ $rp['label'] }}
                                     </span>
-                                </td>
-                                <td class="table-responsive-hide">
-                                    <div style="font-weight: 600; color: #334155; font-size: 0.85rem;">{{ $user->unit->branch->name ?? '—' }}</div>
-                                    <div style="color: #64748b; font-size: 0.75rem; margin-top: 0.2rem;">{{ $user->unit->name ?? '—' }} <span style="opacity:0.5">•</span> {{ $user->organ->name ?? '' }}</div>
                                 </td>
                                 <td style="text-align: right; padding-right: 1.25rem;">
                                     @if($user->role === 'admin')

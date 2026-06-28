@@ -84,6 +84,11 @@ class PresensiAuthController extends Controller
                 $user->update(['role' => 'staf_unit']);
             }
 
+            // [Khusus Super Admin] Pastikan email donarazhar@gmail.com selalu menjadi admin
+            if ($user->email === 'donarazhar@gmail.com') {
+                $user->update(['role' => 'admin']);
+            }
+
             Auth::login($user);
 
             // Redirect sesuai logic role di aplikasi persuratan
@@ -98,7 +103,9 @@ class PresensiAuthController extends Controller
             return redirect()->intended(route('letters.inbound'));
 
         } catch (\Exception $e) {
-            return redirect()->route('login')->with('error', 'Gagal login melalui SSO: ' . $e->getMessage());
+            \Illuminate\Support\Facades\Log::error('SSO Login Error: ' . get_class($e) . ' - ' . $e->getMessage() . "\n" . $e->getTraceAsString());
+            $errorMsg = $e->getMessage() ?: get_class($e);
+            return redirect()->route('login')->with('error', 'Gagal login melalui SSO: ' . $errorMsg);
         }
     }
 }

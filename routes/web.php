@@ -14,8 +14,7 @@ use App\Http\Controllers\ProfileController;
 Route::get('login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('login', [LoginController::class, 'login']);
 Route::post('logout', [LoginController::class, 'logout'])->name('logout');
-Route::get('auth/google', [GoogleAuthController::class, 'redirect'])->name('google.login');
-Route::get('auth/google/callback', [GoogleAuthController::class, 'callback'])->name('google.callback');
+
 
 Route::get('auth/presensi', [PresensiAuthController::class, 'redirect'])->name('presensi.login');
 Route::get('auth/presensi/callback', [PresensiAuthController::class, 'callback'])->name('presensi.callback');
@@ -84,11 +83,9 @@ Route::middleware('auth')->group(function () {
     Route::post('letters/{letter}/dispositions', [DispositionController::class, 'store'])->name('letters.dispositions.store');
     Route::put('dispositions/{disposition}/respond', [DispositionController::class, 'respond'])->name('letters.dispositions.respond');
 
-    // Master Data
+    // Master Data (Hanya Hak Akses Role)
     Route::middleware('role:admin,admin_sekretariat,subag_persuratan,bagian_tu')->group(function () {
         Route::resource('users', UserController::class);
-        Route::resource('organs', \App\Http\Controllers\OrganController::class)->except(['show']);
-        Route::resource('units', UnitController::class)->except(['show']);
-        Route::resource('branches', \App\Http\Controllers\BranchController::class)->except(['show']);
+        // Note: organs, units, dan branches sekarang dikelola secara terpusat di PresensiGPS
     });
 });

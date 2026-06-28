@@ -68,51 +68,22 @@
             </div>
 
             <div class="mb-4">
-                <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                <input type="text" name="name" class="form-control" value="{{ old('name', $user->name) }}" required>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">Alamat Email <span class="text-danger">*</span></label>
-                <input type="email" name="email" class="form-control" value="{{ old('email', $user->email) }}" required>
-            </div>
-
-            <div class="row g-3 mb-4">
-                <div class="col-md-6">
-                    <label class="form-label">Kata Sandi Baru</label>
-                    <input type="password" name="password" class="form-control" placeholder="Kosongkan jika tidak diubah">
-                    <div style="font-size:0.72rem;color:#94a3b8;margin-top:5px;display:flex;gap:4px;">
-                        <i class="bi bi-info-circle text-primary"></i> Biarkan kosong untuk mempertahankan kata sandi lama.
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <label class="form-label">Konfirmasi Kata Sandi Baru</label>
-                    <input type="password" name="password_confirmation" class="form-control" placeholder="Ulangi kata sandi baru">
-                </div>
-            </div>
-
-            <div class="mb-4">
                 <label class="form-label">Role / Hak Akses <span class="text-danger">*</span></label>
                 <select name="role" class="form-select" required>
+                    <option value="" disabled selected>-- Pilih Role --</option>
+                    <option value="admin"                    {{ old('role',$user->role)==='admin'                    ? 'selected':'' }}>Super Admin</option>
                     <option value="admin_sekretariat"        {{ old('role',$user->role)==='admin_sekretariat'        ? 'selected':'' }}>Admin Sekretariat</option>
-                    <option value="subag_persuratan"   {{ old('role',$user->role)==='subag_persuratan'   ? 'selected':'' }}>Subag Persuratan (Admin Sekretariat)</option>
-                    <option value="bagian_tu"          {{ old('role',$user->role)==='bagian_tu'          ? 'selected':'' }}>Bagian TU (Kuasa Disposisi Pusat)</option>
-                    <option value="kepala_sekretariat" {{ old('role',$user->role)==='kepala_sekretariat' ? 'selected':'' }}>Kepala Sekretariat (Monitoring)</option>
-                    <option value="admin_unit"         {{ old('role',$user->role)==='admin_unit'         ? 'selected':'' }}>Admin Unit (Staf TU Unit)</option>
-                    <option value="kepala_unit"        {{ old('role',$user->role)==='kepala_unit'        ? 'selected':'' }}>Kepala Unit (Pimpinan Unit)</option>
-                    <option value="sub_unit"           {{ old('role',$user->role)==='sub_unit'           ? 'selected':'' }}>Sub Unit (Wakil/Pimpinan Divisi)</option>
+                    <option value="subag_persuratan"         {{ old('role',$user->role)==='subag_persuratan'         ? 'selected':'' }}>Subag Persuratan (Admin Sekretariat)</option>
+                    <option value="bagian_tu"                {{ old('role',$user->role)==='bagian_tu'                ? 'selected':'' }}>Bagian TU (Kuasa Disposisi Pusat)</option>
+                    <option value="kepala_sekretariat"       {{ old('role',$user->role)==='kepala_sekretariat'       ? 'selected':'' }}>Kepala Sekretariat (Monitoring)</option>
+                    <option value="admin_unit"               {{ old('role',$user->role)==='admin_unit'               ? 'selected':'' }}>Admin Unit (Staf TU Unit)</option>
+                    <option value="kepala_unit"              {{ old('role',$user->role)==='kepala_unit'              ? 'selected':'' }}>Kepala Unit (Pimpinan Unit)</option>
+                    <option value="sub_unit"                 {{ old('role',$user->role)==='sub_unit'                 ? 'selected':'' }}>Sub Unit (Wakil/Pimpinan Divisi)</option>
+                    <option value="staf_unit"                {{ old('role',$user->role)==='staf_unit'                ? 'selected':'' }}>Karyawan Biasa (Staf Unit)</option>
                 </select>
-            </div>
-
-            <div class="mb-4">
-                <label class="form-label">Penempatan Organ (Jabatan) <span class="text-danger">*</span></label>
-                <select name="organ_id" class="form-select" required>
-                    @foreach($organs as $organ)
-                        <option value="{{ $organ->id }}" {{ $user->organ_id == $organ->id ? 'selected':'' }}>
-                            {{ $organ->name }} di Unit {{ $organ->unit->name }}
-                        </option>
-                    @endforeach
-                </select>
+                <div style="font-size:0.75rem;color:#64748b;margin-top:8px;">
+                    <i class="bi bi-info-circle"></i> Nama, Email, Password, dan Unit Kerja dikelola secara otomatis melalui integrasi SSO dengan PresensiGPS.
+                </div>
             </div>
 
             <div class="d-flex justify-content-end pt-3" style="border-top:1px solid #e8edf4;">

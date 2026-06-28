@@ -35,52 +35,20 @@ class UserController extends Controller
         return view('users.index', compact('users', 'branches', 'units'));
     }
 
-    public function create()
-    {
-        $organs = \App\Models\Organ::with('unit')->get();
-        return view('users.create', compact('organs'));
-    }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:6|confirmed',
-            'role' => 'required|in:admin_sekretariat,subag_persuratan,bagian_tu,kepala_sekretariat,admin_unit,kepala_unit,sub_unit',
-            'organ_id' => 'required|exists:organs,id',
-        ]);
-
-        $data['password'] = Hash::make($data['password']);
-        User::create($data);
-
-        return redirect()->route('users.index')
-            ->with('success', 'User berhasil dibuat.');
-    }
-
     public function edit(User $user)
     {
-        $organs = \App\Models\Organ::with('unit')->get();
-        return view('users.edit', compact('user', 'organs'));
+        return view('users.edit', compact('user'));
     }
 
     public function update(Request $request, User $user)
     {
         $data = $request->validate([
-            'name' => 'required|string',
-            'email' => 'required|email|unique:users,email,' . $user->id,
-            'role' => 'required|in:admin_sekretariat,subag_persuratan,bagian_tu,kepala_sekretariat,admin_unit,kepala_unit,sub_unit',
-            'organ_id' => 'required|exists:organs,id',
+            'role' => 'required|in:admin,admin_sekretariat,subag_persuratan,bagian_tu,kepala_sekretariat,admin_unit,kepala_unit,sub_unit',
         ]);
-
-        if ($request->filled('password')) {
-            $request->validate(['password' => 'string|min:6|confirmed']);
-            $data['password'] = Hash::make($request->password);
-        }
 
         $user->update($data);
         return redirect()->route('users.index')
-            ->with('success', 'User berhasil diperbarui.');
+            ->with('success', 'Role user berhasil diperbarui.');
     }
 
     public function destroy(User $user)

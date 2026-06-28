@@ -863,46 +863,16 @@
             </li>
             @endif
 
-            {{-- ── MASTER DATA (admin only) ── --}}
+            {{-- ── PENGGUNA & ROLE (admin only) ── --}}
             @if(in_array($role, ['admin', 'admin_sekretariat']))
-            @php $isMasterActive = request()->routeIs('users.*', 'units.*', 'branches.*', 'organs.*'); @endphp
             <div class="g-sb-divider"></div>
             <li class="g-nav-item">
-                <button class="g-nav-toggle {{ $isMasterActive ? 'open' : '' }}"
-                        id="toggleMaster" type="button"
-                        data-bs-toggle="collapse" data-bs-target="#collapseMaster"
-                        aria-expanded="{{ $isMasterActive ? 'true' : 'false' }}">
-                    <i class="bi bi-database-fill nav-icon"></i>
-                    <span>Master Data</span>
-                    <i class="bi bi-chevron-down g-chevron"></i>
-                </button>
+                <a href="{{ route('users.index') }}"
+                   class="g-nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Hak Akses Pengguna</span>
+                </a>
             </li>
-            <div class="collapse g-nav-sub {{ $isMasterActive ? 'show' : '' }}" id="collapseMaster">
-                <li class="g-nav-item">
-                    <a href="{{ route('branches.index') }}"
-                       class="g-nav-link {{ request()->routeIs('branches.*') ? 'active' : '' }}">
-                        <i class="bi bi-geo-alt-fill"></i> Cabang
-                    </a>
-                </li>
-                <li class="g-nav-item">
-                    <a href="{{ route('units.index') }}"
-                       class="g-nav-link {{ request()->routeIs('units.*') ? 'active' : '' }}">
-                        <i class="bi bi-building-fill"></i> Unit Kerja
-                    </a>
-                </li>
-                <li class="g-nav-item">
-                    <a href="{{ route('organs.index') }}"
-                       class="g-nav-link {{ request()->routeIs('organs.*') ? 'active' : '' }}">
-                        <i class="bi bi-diagram-3-fill"></i> Organ
-                    </a>
-                </li>
-                <li class="g-nav-item">
-                    <a href="{{ route('users.index') }}"
-                       class="g-nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
-                        <i class="bi bi-people-fill"></i> Pengguna
-                    </a>
-                </li>
-            </div>
             @endif
 
         </ul>
