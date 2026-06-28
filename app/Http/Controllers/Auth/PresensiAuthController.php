@@ -70,12 +70,18 @@ class PresensiAuthController extends Controller
             // Karena ini SSO Master, kita asumsikan email selalu sinkron.
             $userEmail = $presensiUser->email ?? ($presensiUser->nickname . '@alazhar.com');
             
+            $photoUrl = null;
+            if (!empty($rawUser['foto'])) {
+                $photoUrl = env('PRESENSI_URL', 'https://presensigps.masjidagungalazhar.com') . '/storage/karyawan/' . $rawUser['foto'];
+            }
+            
             $user = User::updateOrCreate(
                 ['email' => $userEmail],
                 [
                     'name' => $presensiUser->name,
                     'password' => bcrypt(\Illuminate\Support\Str::random(16)), // Autentikasi via SSO
                     'organ_id' => $organId,
+                    'photo' => $photoUrl,
                     // Note: Untuk role, saat ini kita tidak menimpanya jika user sudah ada, agar admin lokal tetap admin.
                     // Namun jika baru, beri role default staf_unit.
                 ]
