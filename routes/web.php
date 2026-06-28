@@ -22,8 +22,12 @@ Route::get('auth/presensi/callback', [PresensiAuthController::class, 'callback']
 // API Internal untuk mengecek akses dari PresensiGPS
 Route::get('api/check-user', function (\Illuminate\Http\Request $request) {
     $email = $request->query('email');
-    if (!$email) return response()->json(['exists' => false]);
-    return response()->json(['exists' => \App\Models\User::where('email', $email)->exists()]);
+    if (!$email) return response()->json(['exists' => false, 'role' => null]);
+    $user = \App\Models\User::where('email', $email)->first();
+    return response()->json([
+        'exists' => $user !== null,
+        'role' => $user ? $user->role : null
+    ]);
 });
 
 Route::middleware('auth')->group(function () {
