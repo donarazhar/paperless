@@ -749,8 +749,8 @@
     <!-- ════ SIDEBAR ════ -->
     <aside class="g-sidebar" id="gSidebar">
 
-        {{-- Compose / Tulis Surat --}}
-        @if(in_array($role, ['admin_sekretariat', 'admin_unit', 'admin']))
+        {{-- Compose / Tulis Surat (TIDAK untuk Superadmin) --}}
+        @if(in_array($role, ['admin_sekretariat', 'admin_unit']))
         <div class="g-compose-wrap">
             <a href="{{ route('letters.create') }}" class="g-compose-btn">
                 <span class="g-compose-icon"><i class="bi bi-pencil-fill"></i></span>
@@ -763,19 +763,34 @@
 
         <ul class="g-nav">
 
-        {{-- ── SUPERADMIN ONLY ── --}}
+        {{-- ── SUPERADMIN GROUP ── --}}
             @if($role === 'admin')
             <li class="g-nav-item">
-                <a href="{{ route('admin.dashboard') }}"
-                   class="g-nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
-                    <i class="bi bi-speedometer2"></i>
-                    <span>Dashboard</span>
+                <a href="{{ route('users.index') }}"
+                   class="g-nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Hak Akses Pengguna</span>
                 </a>
             </li>
+            <li class="g-nav-item">
+                <a href="{{ route('admin.monitoring') }}"
+                   class="g-nav-link {{ request()->routeIs('admin.monitoring') ? 'active' : '' }}">
+                    <i class="bi bi-envelope-open-fill"></i>
+                    <span>Monitoring Surat</span>
+                </a>
+            </li>
+            <li class="g-nav-item">
+                <a href="{{ route('admin.logs') }}"
+                   class="g-nav-link {{ request()->routeIs('admin.logs') ? 'active' : '' }}">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Log Activity</span>
+                </a>
+            </li>
+            <div class="g-sb-divider"></div>
             @endif
 
-        {{-- ── ADMIN GROUP ── --}}
-            @if(in_array($role, ['admin_sekretariat', 'admin_unit', 'admin']))
+        {{-- ── ADMIN UNIT / SEKRETARIAT GROUP (TIDAK untuk Superadmin) ── --}}
+            @if(in_array($role, ['admin_sekretariat', 'admin_unit']))
             <li class="g-nav-item">
                 <a href="{{ route('letters.inbound') }}"
                    class="g-nav-link {{ request()->routeIs('letters.inbound*') ? 'active' : '' }}">
@@ -874,8 +889,8 @@
             </li>
             @endif
 
-            {{-- ── PENGGUNA & ROLE (admin only) ── --}}
-            @if(in_array($role, ['admin', 'admin_sekretariat']))
+            {{-- ── PENGGUNA & ROLE (admin_sekretariat) ── --}}
+            @if($role === 'admin_sekretariat')
             <div class="g-sb-divider"></div>
             <li class="g-nav-item">
                 <a href="{{ route('users.index') }}"

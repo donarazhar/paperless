@@ -8,23 +8,24 @@ use App\Models\Letter;
 
 class AdminDashboardController extends Controller
 {
-    public function index()
+    public function monitoring(Request $request)
     {
-        $usersCount = User::count();
-        $adminCount = User::where('role', 'admin')->count();
+        $query = Letter::with('sender', 'unit');
         
-        $totalSurat = Letter::count();
-        $suratInternal = Letter::where('type', 'internal')->count(); // Adjust if type values differ
-        $suratEksternal = Letter::where('type', 'external')->count(); // Adjust if type values differ
-        $suratDraft = Letter::where('status', 'draft')->count();
+        if ($request->filled('search')) {
+            $query->where('subject', 'like', '%' . $request->search . '%')
+                  ->orWhere('letter_number', 'like', '%' . $request->search . '%');
+        }
         
-        $recentUsers = User::latest()->take(5)->get();
-        $recentLetters = Letter::with('sender')->latest()->take(5)->get();
+        $letters = $query->latest()->paginate(20);
+        return view('admin.monitoring', compact('letters'));
+    }
 
-        return view('admin.dashboard', compact(
-            'usersCount', 'adminCount', 'totalSurat', 
-            'suratInternal', 'suratEksternal', 'suratDraft',
-            'recentUsers', 'recentLetters'
-        ));
+    public function logs()
+    {
+        // For now, if no activity log table exists, we pass empty collection.
+        // If there's an Activity model, we can use it. But let's assume we just have a placeholder or we can query authentication logs if available.
+        $logs = collect([]);
+        return view('admin.logs', compact('logs'));
     }
 }

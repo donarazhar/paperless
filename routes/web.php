@@ -25,7 +25,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/', function () {
         $role = auth()->user()->role ?? '';
         if ($role === 'admin') {
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('users.index');
         }
         if (in_array($role, ['bagian_tu', 'kepala_sekretariat', 'sub_unit'])) {
             return redirect()->route('tugas.myDisposisi');
@@ -36,9 +36,10 @@ Route::middleware('auth')->group(function () {
         return redirect()->route('letters.inbound');
     })->name('dashboard');
     
-    // Superadmin Dashboard
+    // Superadmin Routes
     Route::middleware('role:admin')->group(function () {
-        Route::get('/admin/dashboard', [\App\Http\Controllers\AdminDashboardController::class, 'index'])->name('admin.dashboard');
+        Route::get('/admin/monitoring', [\App\Http\Controllers\AdminDashboardController::class, 'monitoring'])->name('admin.monitoring');
+        Route::get('/admin/logs', [\App\Http\Controllers\AdminDashboardController::class, 'logs'])->name('admin.logs');
     });
     Route::get('profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('profile', [ProfileController::class, 'update'])->name('profile.update');
